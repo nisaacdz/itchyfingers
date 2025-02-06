@@ -1,13 +1,20 @@
-const SpeedIcon = ({ speed }: { speed: number}) => {
+import { CSSProperties } from "react";
+
+type SpeedIconProps = {
+    speed: number,
+    styles?: CSSProperties
+}
+
+const SpeedIcon = ({ speed, styles }: SpeedIconProps) => {
     // draw a icon with speed value
     return (
-        <Icon speed={speed}/>
+        <Icon speed={speed} styles={styles}/>
     );
 }
 
-const Icon = ({ speed }: { speed: number}) => {
+const Icon = ({ styles }: SpeedIconProps) => {
     return (
-        <img src="/tortoise.svg"/>
+        <img src="/tortoise.svg" className="size-12" style={styles}/>
     )
 }
 
