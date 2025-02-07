@@ -1,10 +1,15 @@
-import { useEffect, useState, RefObject } from 'react';
-import { ParagraphStyles } from '../types/util';
+import { useEffect, useState, RefObject } from "react";
+import { ParagraphStyles } from "../types/util";
 
 function useParagraphStyles(
-  elementRef: RefObject<HTMLParagraphElement | null>
-): ParagraphStyles | null {
-  const [styles, setStyles] = useState<ParagraphStyles | null>(null);
+  elementRef: RefObject<HTMLParagraphElement | null>,
+): ParagraphStyles {
+  const [styles, setStyles] = useState<ParagraphStyles>({
+    fontSize: 0,
+    letterSpacing: 0,
+    lineHeight: 0,
+    lineSpacing: 0,
+  });
 
   useEffect(() => {
     if (!elementRef.current) return;
@@ -14,11 +19,16 @@ function useParagraphStyles(
     const updateStyles = () => {
       const computedStyles = window.getComputedStyle(element);
 
+      console.log(
+        "At useParagraphStyles.tsx, lineHeight: ",
+        parseFloat(computedStyles.fontSize) ?? 0,
+      );
+
       setStyles({
-        fontSize: Number(computedStyles.fontSize),
-        letterSpacing: Number(computedStyles.letterSpacing),
-        lineHeight: Number(computedStyles.lineHeight),
-        lineSpacing: Number(computedStyles.marginBottom),
+        fontSize: parseFloat(computedStyles.fontSize) ?? 0,
+        letterSpacing: parseFloat(computedStyles.letterSpacing) ?? 0,
+        lineHeight: parseFloat(computedStyles.lineHeight) ?? 0,
+        lineSpacing: parseFloat(computedStyles.marginBottom) ?? 0,
       });
     };
 

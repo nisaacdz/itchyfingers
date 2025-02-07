@@ -1,17 +1,24 @@
 export type User = {
-    id: string;
+  userId: string;
+  correctPos: number;
+  currentPos: number;
+  keyStrokes: number;
+  speed: number;
+  accuracy: number;
+  startTime?: Date;
+  endTime?: Date;
 };
 
-export type UserProgress = {
-    userId: string,
-    currentPos: number,
-    totalCount: number,
-    speed: number,
-}
+export type Participant = {
+  id: string;
+  correctPos: number;
+  speed: number;
+  endTime?: Date;
+};
 
 export type ZoneData = {
-    userProgress: UserProgress,
-    participants: UserProgress[],
-    challengeId: string,
-    sessionId: string,
-}
+  user: User;
+  participants: Participant[];
+  challengeId: string;
+  sessionId: string;
+};
