@@ -48,8 +48,8 @@ function startRace() {
 
       if (fakeParticipant.intervalId) return;
       const waitTime = 100 + Math.random() * 300;
-      // Represents the maximum |speed change| after waitTime, will be in [4, 20]
-      const baseSpeedChangeRate = 4 + (Math.random() * waitTime * 2) / 50;
+      // Represents the maximum |speed change| after waitTime, will be in [2, 10]
+      const baseSpeedChangeRate = 2 + (Math.random() * waitTime) / 50;
 
       const continueTyping = () => {
         const len = text.length;
@@ -172,27 +172,30 @@ export function handleTypedCharacters(inputString: string) {
   const now = Date.now();
   const elapsedTime = startTime ? now - startTime.getTime() : 0;
 
-  for (let inputIndex = 0; inputIndex < inputString.length; inputIndex++) {
+  for (
+    let inputIndex = 0;
+    inputIndex < inputString.length && user.correctPos < text.length;
+    inputIndex++
+  ) {
     const currentChar = inputString[inputIndex];
     if (currentChar === "\b") {
-      // Handle backspace
       if (user.currentPos > user.correctPos) {
-        // In error zone: move currentPos back
         user.currentPos--;
       } else if (user.currentPos === user.correctPos) {
-        // In correct zone: move both back if allowed
         if (user.currentPos > 0 && text[user.currentPos - 1] !== " ") {
           user.currentPos--;
           user.correctPos--;
         }
       }
     } else {
-      // Count ALL non-backspace keystrokes (including errors)
       user.keyStrokes++;
 
       if (user.currentPos >= text.length) continue;
 
-      if (currentChar === text[user.currentPos]) {
+      if (
+        user.correctPos === user.currentPos &&
+        currentChar === text[user.currentPos]
+      ) {
         // Correct character
         user.correctPos++;
         user.currentPos++;
@@ -203,13 +206,10 @@ export function handleTypedCharacters(inputString: string) {
     }
   }
 
-  // Update completion state
-  if (user.currentPos === text.length && user.correctPos === text.length) {
+  if (user.correctPos >= text.length) {
     user.endTime = new Date();
-    startTime = null;
   }
 
-  // Calculate metrics
   const minutesElapsed = elapsedTime / 60000;
   user.speed =
     minutesElapsed > 0 ? Math.round(user.correctPos / 5 / minutesElapsed) : 0;

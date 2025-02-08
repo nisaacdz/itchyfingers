@@ -6,7 +6,6 @@ function useParagraphStyles(
 ): ParagraphStyles {
   const [styles, setStyles] = useState<ParagraphStyles>({
     fontSize: 0,
-    letterSpacing: 0,
     lineHeight: 0,
     lineSpacing: 0,
   });
@@ -19,14 +18,8 @@ function useParagraphStyles(
     const updateStyles = () => {
       const computedStyles = window.getComputedStyle(element);
 
-      console.log(
-        "At useParagraphStyles.tsx, lineHeight: ",
-        parseFloat(computedStyles.fontSize) ?? 0,
-      );
-
       setStyles({
         fontSize: parseFloat(computedStyles.fontSize) ?? 0,
-        letterSpacing: parseFloat(computedStyles.letterSpacing) ?? 0,
         lineHeight: parseFloat(computedStyles.lineHeight) ?? 0,
         lineSpacing: parseFloat(computedStyles.marginBottom) ?? 0,
       });

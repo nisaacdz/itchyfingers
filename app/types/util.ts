@@ -5,7 +5,6 @@ export type Size = {
 
 export type ParagraphStyles = {
   fontSize: number;
-  letterSpacing: number;
   lineHeight: number;
   lineSpacing: number;
 };

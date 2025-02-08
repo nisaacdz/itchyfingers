@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import Caret from "./Caret";
+import { Caret, WhiteSpaceErrorHighlight } from "./Elems";
 import { handleTypedCharacters } from "../dummy_api";
 import { Participant, User } from "../types/request";
 import useParagraphStyles from "../hooks/useParagraphStyles";
@@ -13,6 +13,7 @@ type TypingAreaProps = {
 const TypingArea = ({ text, participants, user }: TypingAreaProps) => {
   const paragraphRef = useRef<HTMLParagraphElement>(null);
   const { fontSize } = useParagraphStyles(paragraphRef);
+
   useEffect(() => {
     const onKeyPress = (e: KeyboardEvent) => {
       e.preventDefault();
@@ -42,6 +43,7 @@ const TypingArea = ({ text, participants, user }: TypingAreaProps) => {
         styles={{
           ...absPos,
           position: "absolute",
+          zIndex: 10,
           height: fontSize,
           opacity: participant.id == user.userId ? 1 : 0.4,
         }}
@@ -49,11 +51,28 @@ const TypingArea = ({ text, participants, user }: TypingAreaProps) => {
     );
   });
 
+  const whiteSpaceErrorHighlights = paragraphRef.current
+    ? Array.from(
+        { length: user.currentPos - user.correctPos },
+        (_, i) => user.correctPos + i,
+      )
+        .filter((pos) => text[pos] === " ")
+        .map((pos) => (
+          <WhiteSpaceErrorHighlight
+            key={pos}
+            position={computeAbsolutePosition(paragraphRef, pos)}
+            height={fontSize}
+            width={fontSize}
+          />
+        ))
+    : [];
+
   return (
     <div className="relative w-full h-full mb-8">
       {caretElements}
+      {whiteSpaceErrorHighlights}
       <p
-        className="text-2xl font-medium text-gray-400 font-courier-prime w-full h-full select-none"
+        className="text-2xl font-medium text-muted-foreground font-courier-prime w-full h-full select-none"
         ref={paragraphRef}
       >
         <span className="text-yellow-600">

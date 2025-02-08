@@ -31,7 +31,7 @@ const StatsBoard = ({ user, text }: StatsBoardProps) => {
   return (
     <div className="flex flex-col w-full h-full gap-4 p-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-100">Your Stats</h1>
+        <h1 className="text-2xl font-bold text-muted-foreground">Your Stats</h1>
         {user.endTime ? (
           <button
             onClick={onRestart}

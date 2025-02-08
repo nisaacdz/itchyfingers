@@ -1,6 +1,8 @@
-import { BellDot, Crown, Info, Keyboard, Settings, User } from "lucide-react";
+import { BellDot, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import NavHiddenMenu from "./HiddenNav";
+import { NavMenuItems } from "../util/etc";
 
 const NavBar = () => {
   return (
@@ -31,31 +33,20 @@ const NavBar = () => {
           {/* Center Section - Navigation Icons */}
           <div className="hidden md:flex items-center justify-center flex-1 max-w-2xl">
             <div className="flex items-center space-x-6 lg:space-x-8">
-              <NavLink
-                href="/zone"
-                icon={<Keyboard className="size-6" />}
-                label="Challenge"
-              />
-              <NavLink
-                href="/info"
-                icon={<Info className="size-6" />}
-                label="Info"
-              />
-              <NavLink
-                href="/leaderboard"
-                icon={<Crown className="size-6" />}
-                label="Leaderboard"
-              />
-              <NavLink
-                href="/settings"
-                icon={<Settings className="size-6" />}
-                label="Settings"
-              />
+              {NavMenuItems.map((v) => (
+                <NavLink
+                  key={v.label}
+                  href={v.href}
+                  icon={v.icon}
+                  label={v.label}
+                />
+              ))}
             </div>
           </div>
 
           {/* Right Section - User Actions */}
           <div className="flex items-center space-x-4 md:space-x-6">
+            <NavHiddenMenu />
             <NavLink
               href="/notifications"
               icon={<BellDot className="size-6" />}
