@@ -16,7 +16,14 @@ const SpeedIcon = ({ speed, styles, ref }: SpeedIconProps) => {
         : speed < 80
           ? "/dog.svg"
           : "/rocket.svg";
-  return <img src={img_src} className="size-10" style={styles} ref={ref} />;
+  return (
+    <img
+      src={img_src}
+      className="size-8 2xl:size-10"
+      style={styles}
+      ref={ref}
+    />
+  );
 };
 
 export default SpeedIcon;

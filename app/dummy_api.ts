@@ -35,6 +35,7 @@ function generateFakeParticipants() {
         id: Math.random().toString(36).substring(7),
         correctPos: 0,
         speed: 30 + Math.random() * 100,
+        accuracy: 100,
       },
     };
   });
@@ -107,6 +108,7 @@ export function getZoneData() {
       correctPos: user.correctPos,
       speed: user.speed,
       endTime: user.endTime,
+      accuracy: user.accuracy,
     },
     ...fakeParticipants.map((fakeParticipant) => fakeParticipant.data),
   ];

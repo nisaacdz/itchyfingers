@@ -43,7 +43,7 @@ export default function Page() {
 
   return (
     <main className="w-full h-full p-4 pt-8 bg-background dark:bg-background">
-      <div className="grid md:grid-cols-5 grid-cols-1 gap-4 md:gap-6">
+      <div className="grid md:grid-cols-5 grid-cols-1 gap-y-4 md:gap-6">
         <div className="col-span-1 w-full h-full items-center justify-center">
           <StatsBoard user={zoneData.user} text={typingText} />
         </div>

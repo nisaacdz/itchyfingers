@@ -21,35 +21,54 @@ const ParticipantsRanking = ({
 
   rankings.sort((a, b) => a.endTime!.getTime() - b.endTime!.getTime());
 
+  const formatTime = (endTime: Date): string => {
+    const timeDiff = endTime.getTime() - user.startTime!.getTime();
+    const minutes = Math.floor(timeDiff / 60000);
+    const seconds = Math.floor((timeDiff % 60000) / 1000);
+    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  };
+
   return (
     <div className="w-full">
-      <div className="w-full max-w-2xl flex flex-col gap-3 pb-6 items-start text-white">
+      <div className="w-full max-w-4xl flex flex-col gap-3 pb-6 items-start text-accent-foreground">
         <h3 className="ml-2 text-2xl font-semibold font-courier-prime">
           Rankings
         </h3>
-        {rankings.map((participant, index) => (
-          <div
-            key={participant.id}
-            className={`flex items-center justify-between w-full p-2 ${participant.id === user.userId ? "bg-gray-800 rounded-md" : ""}`} // Keep user highlight
-          >
-            <div className="flex items-center space-x-2">
-              <span className="text-lg font-medium text-gray-400 font-courier-prime">
+        <div className="w-full flex flex-col">
+          {rankings.map((participant, index) => (
+            <div
+              key={participant.id}
+              className={`grid grid-cols-7 w-full p-2 ${participant.id === user.userId ? "bg-secondary" : ""} border-t border-muted-foreground`}
+            >
+              <span className="text-lg font-medium text-muted-foreground font-courier-prime">
                 {index + 1}.
               </span>
-              {index === 0 && <Crown className="size-4 text-yellow-500" />}{" "}
+              <div className="flex items-center gap-2 col-span-3">
+                {index === 0 && <Crown className="size-4 text-chart-3" />}{" "}
+                <p
+                  className={`text-lg font-medium font-courier-prime ${participant.id === user.userId ? "text-foreground" : "text-muted-foreground"}`}
+                >
+                  {participant.id} {participant.id === user.userId && "(You)"}
+                </p>
+              </div>
               <p
-                className={`text-lg font-medium font-courier-prime ${participant.id === user.userId ? "text-white" : "text-gray-300"}`}
+                className={`text-lg font-medium font-courier-prime ${participant.id === user.userId ? "text-foreground" : "text-muted-foreground"}`}
               >
-                {participant.id} {participant.id === user.userId && "(You)"}
+                {formatTime(participant.endTime!)}
+              </p>
+              <p
+                className={`text-lg text-right mr-8 font-medium font-courier-prime ${participant.id === user.userId ? "text-foreground" : "text-muted-foreground"}`}
+              >
+                {participant.accuracy!} %
+              </p>
+              <p
+                className={`text-lg text-right mr-2 font-medium font-courier-prime ${participant.id === user.userId ? "text-foreground" : "text-muted-foreground"}`}
+              >
+                {participant.speed.toFixed(0)} WPM
               </p>
             </div>
-            <p
-              className={`text-lg font-medium font-courier-prime ${participant.id === user.userId ? "text-white" : "text-gray-300"}`}
-            >
-              {participant.speed.toFixed(2)} WPM
-            </p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

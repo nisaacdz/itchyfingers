@@ -19,10 +19,10 @@ const ProgressMeter = ({
   const progress = length === 0 ? 0 : (correctPos / length) * width;
 
   return (
-    <div className="w-full bg-black">
+    <div className="w-full bg-muted py-1">
       <div
         ref={containerRef}
-        className="flex my-2 border-r-4 box-border"
+        className="flex border-r-4 box-border border-muted-foreground"
         style={{ width: `calc(100% - ${iconWidth}px)`, height: iconHeight }}
       >
         <SpeedIcon

@@ -24,7 +24,7 @@ const NavHiddenMenu = () => {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuGroup className="space-y-2 bg-gray-900 backdrop-blur-md border border-gray-700 py-3">
+        <DropdownMenuGroup className="space-y-2 bg-gray-900/50 backdrop-blur-md border border-gray-700 py-3">
           {NavMenuItems.map((v, index) => (
             <DropdownMenuItem key={index} onClick={toggleOpen}>
               <Link

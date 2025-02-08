@@ -14,6 +14,7 @@ export type Participant = {
   correctPos: number;
   speed: number;
   endTime?: Date;
+  accuracy: number;
 };
 
 export type ZoneData = {

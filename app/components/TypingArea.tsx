@@ -62,7 +62,7 @@ const TypingArea = ({ text, participants, user }: TypingAreaProps) => {
             key={pos}
             position={computeAbsolutePosition(paragraphRef, pos)}
             height={fontSize}
-            width={fontSize}
+            width={fontSize * 0.6}
           />
         ))
     : [];
