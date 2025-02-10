@@ -1,4 +1,10 @@
-import { Participant, User, ZoneData } from "./types/request";
+import {
+  Challenge,
+  ChallengePrivacy,
+  Participant,
+  User,
+  ZoneData,
+} from "./types/request";
 
 const text2 =
   "Ipsum dolor sit amet, consectetur adipiscing elit. Sed ac purus sit amet nisl tincidunt tincidunt";
@@ -198,11 +204,9 @@ export function handleTypedCharacters(inputString: string) {
         user.correctPos === user.currentPos &&
         currentChar === text[user.currentPos]
       ) {
-        // Correct character
         user.correctPos++;
         user.currentPos++;
       } else {
-        // Incorrect character (track error position)
         user.currentPos++;
       }
     }
@@ -222,4 +226,36 @@ export function handleTypedCharacters(inputString: string) {
       : Math.round((user.correctPos / user.keyStrokes) * 100);
 
   updateStates();
+}
+
+export async function fetchChallenges({ pageParam = 1, pageSize = 10 }) {
+  const challenges = await new Promise<Challenge[]>((resolve) => {
+    setTimeout(() => {
+      const mockChallenges = Array.from({ length: pageSize }).map(
+        (_, index) => ({
+          challengeId: Math.random().toString(36).substring(7),
+          createdBy: Math.random().toString(36).substring(7),
+          scheduledTime: new Date(
+            Date.now() + 15000 + Math.floor(Math.random() * 600000),
+          ),
+          privacy:
+            Math.random() > 0.5
+              ? ChallengePrivacy.Open
+              : ChallengePrivacy.Invitational,
+          duration: 10 + Math.floor(Math.random() * 100),
+          activeParticipants: Array.from({
+            length: 1 + Math.random() * 10,
+          }).map((_, index) => Math.random().toString(36).substring(7)),
+        }),
+      );
+      resolve(mockChallenges);
+    }, 1000);
+  });
+
+  return {
+    challenges,
+    page: pageParam,
+    pageSize,
+    totalPages: 13,
+  };
 }
