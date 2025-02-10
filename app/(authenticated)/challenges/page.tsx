@@ -1,10 +1,7 @@
-"use client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import ChallengesList from "../components/ChallengesList";
+import ChallengesList from "../../components/ChallengesList";
+import React from "react";
 
 export default function Page() {
-  const queryClient = new QueryClient();
-
   return (
     <div className="flex flex-col items-center justify-start w-full h-full p-8 bg-background">
       <div className="space-y-1">
@@ -16,9 +13,7 @@ export default function Page() {
         </p>
       </div>
       <div className="w-full h-full max-h-full overflow-auto">
-        <QueryClientProvider client={queryClient}>
-          <ChallengesList />
-        </QueryClientProvider>
+        <ChallengesList />
       </div>
     </div>
   );

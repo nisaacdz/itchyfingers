@@ -1,16 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ZoneData } from "../types/request";
-import StatsBoard from "../components/StatsBoard";
-import ProgressBoard from "../components/ProgressBoard";
-import TypingArea from "../components/TypingArea";
+import { ZoneData } from "../../types/request";
+import StatsBoard from "../../components/StatsBoard";
+import ProgressBoard from "../../components/ProgressBoard";
+import TypingArea from "../../components/TypingArea";
 import {
   getTypingText,
   getEverything,
   initialize,
   getZoneData,
-} from "../dummy_api";
-import ParticipantsRanking from "../components/ParticipantsRanking";
+} from "../../dummy_api";
+import ParticipantsRanking from "../../components/ParticipantsRanking";
 
 export default function Page() {
   const [zoneData, setZoneData] = useState<ZoneData | null>(null);

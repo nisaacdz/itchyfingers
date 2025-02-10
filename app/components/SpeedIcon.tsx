@@ -9,13 +9,15 @@ type SpeedIconProps = {
 const SpeedIcon = ({ speed, styles, ref }: SpeedIconProps) => {
   // draw different icons based on speed
   const img_src =
-    speed < 30
-      ? "/tortoise.svg"
+    speed < 25
+      ? "/walk.svg"
       : speed < 50
-        ? "/rabbit.svg"
-        : speed < 80
-          ? "/dog.svg"
-          : "/rocket.svg";
+        ? "/ride.svg"
+        : speed < 75
+          ? "/drive.svg"
+          : speed < 100
+            ? "/fly.svg"
+            : "/rocket.svg";
   return (
     <img
       src={img_src}

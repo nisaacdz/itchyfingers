@@ -165,7 +165,7 @@ const ChallengesList = () => {
 
               <button
                 className="col-span-2 border border-muted-foreground rounded-md px-3 py-1 hover:bg-primary/10"
-                title="View challenge details"
+                title="Enter competition"
               >
                 Enter
               </button>

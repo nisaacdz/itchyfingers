@@ -53,9 +53,9 @@ const NavBar = () => {
               label="Notifications"
             />
             <NavLink
-              href="/login"
+              href="/profile"
               icon={<User className="size-6" />}
-              label="Login"
+              label="Profile"
             />
           </div>
         </div>

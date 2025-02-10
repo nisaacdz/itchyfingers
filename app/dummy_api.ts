@@ -3,6 +3,9 @@ import {
   ChallengePrivacy,
   Participant,
   User,
+  UserChallenge,
+  UserChallengeStatus,
+  UserProfile,
   ZoneData,
 } from "./types/request";
 
@@ -20,6 +23,17 @@ const user: User = {
   keyStrokes: 0,
   speed: 0,
   accuracy: 100,
+};
+
+const userProfile: UserProfile = {
+  username: "typespeedmaster",
+  email: "master@typing.io",
+  stats: {
+    accuracy: 92.4,
+    speed: 128,
+    competitions: 45,
+    keystrokes: 245892,
+  },
 };
 
 let loading = false;
@@ -258,4 +272,71 @@ export async function fetchChallenges({ pageParam = 1, pageSize = 10 }) {
     pageSize,
     totalPages: 13,
   };
+}
+
+export async function fetchUserChallenges({ pageParam = 1, pageSize = 10 }) {
+  const userChallenges = await new Promise<UserChallenge[]>((resolve) => {
+    setTimeout(() => {
+      const mockUserChallenges = Array.from({ length: pageSize }).map(
+        (_, index) => {
+          const challenge = {
+            challengeId: Math.random().toString(36).substring(7),
+            createdBy: Math.random().toString(36).substring(7),
+            scheduledTime: new Date(
+              Date.now() + 15000 + Math.floor(Math.random() * 600000),
+            ),
+            privacy: ChallengePrivacy.Invitational,
+            duration: 10 + Math.floor(Math.random() * 100),
+            activeParticipants: Array.from({
+              length: 1 + Math.random() * 10,
+            }).map((_, index) => Math.random().toString(36).substring(7)),
+          };
+
+          let status = UserChallengeStatus.Pending;
+          const random = Math.random();
+          if (random < 0.2) {
+            status = UserChallengeStatus.Accepted;
+          } else if (random < 0.4) {
+            status = UserChallengeStatus.Declined;
+          } else if (random < 0.6) {
+            status = UserChallengeStatus.Completed;
+          } else if (random < 0.8) {
+            status = UserChallengeStatus.Discarded;
+          }
+
+          let joinedAt: Date | undefined = undefined;
+          if (status === UserChallengeStatus.Accepted && Math.random() > 0.5) {
+            joinedAt = new Date(
+              Date.now() - 15000 - Math.floor(Math.random() * 600000),
+            );
+          }
+
+          let completedAt: Date | undefined = undefined;
+
+          if (joinedAt && Math.random() > 0.5) {
+            completedAt = new Date(
+              joinedAt.getTime() + 15000 + Math.floor(Math.random() * 600000),
+            );
+          }
+          return { challenge, joinedAt, completedAt, status };
+        },
+      );
+      resolve(mockUserChallenges);
+    }, 1000);
+  });
+
+  return {
+    userChallenges,
+    page: pageParam,
+    pageSize,
+    totalPages: 13,
+  };
+}
+
+export async function getCurrentUser() {
+  return await new Promise<UserProfile>((resolve) => {
+    setTimeout(() => {
+      resolve(userProfile);
+    }, 1000);
+  });
 }
