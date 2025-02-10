@@ -1,15 +1,15 @@
-import { Keyboard, Info, Crown, Settings } from "lucide-react";
+import { Keyboard, Crown, Settings, Flame } from "lucide-react";
 
 export const NavMenuItems = [
   {
-    href: "/zone",
+    href: "/practice",
     icon: <Keyboard className="size-6" />,
-    label: "Challenge",
+    label: "Practice",
   },
   {
-    href: "/info",
-    icon: <Info className="size-6" />,
-    label: "Info",
+    href: "/challenges",
+    icon: <Flame className="size-6" />,
+    label: "Challenges",
   },
   {
     href: "/leaderboard",

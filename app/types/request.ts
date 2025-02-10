@@ -23,3 +23,17 @@ export type ZoneData = {
   challengeId: string;
   sessionId: string;
 };
+
+export enum ChallengePrivacy {
+  Invitational = "Invitational",
+  Open = "Open",
+}
+
+export type Challenge = {
+  privacy: ChallengePrivacy;
+  challengeId: string;
+  createdBy: string;
+  scheduledTime: Date;
+  duration: number;
+  activeParticipants: string[];
+};
