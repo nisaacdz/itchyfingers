@@ -1,17 +1,17 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Participant, UserTyping } from "../../types/request";
-import StatsBoard from "../../components/StatsBoard";
-import ProgressBoard from "../../components/ProgressBoard";
-import TypingArea from "../../components/TypingArea";
-import ParticipantsRanking from "../../components/ParticipantsRanking";
+import React, { useEffect, useState } from "react";
+import { DefaultUserTyping, Participant, UserTyping } from "../../../types/request";
+import StatsBoard from "../../../components/StatsBoard";
+import ProgressBoard from "../../../components/ProgressBoard";
+import TypingArea from "../../../components/TypingArea";
+import ParticipantsRanking from "../../../components/ParticipantsRanking";
 import { useParams } from "next/navigation";
-import { websocketAPI } from "@/app/api";
+import { getTypingText, websocketAPI } from "../../../api";
 
 export default function Page() {
   const { challengeId } = useParams<{ challengeId: string }>();
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [user, setUser] = useState<UserTyping | null>(null);
+  const [user, setUser] = useState<UserTyping>(DefaultUserTyping);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [typingText, setTypingText] = useState("");
@@ -36,7 +36,8 @@ export default function Page() {
         setError(true);
       },
     });
-
+    getTypingText(challengeId).then(setTypingText);
+  
     websocketAPI.enterChallenge(challengeId);
   }, []);
 
@@ -46,10 +47,6 @@ export default function Page() {
 
   if (error) {
     return <div>Error</div>;
-  }
-
-  if (!participants || !user) {
-    return <div>Zone not found</div>;
   }
 
   return (

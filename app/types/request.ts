@@ -1,4 +1,4 @@
-export type User = {
+export type UserTyping = {
   userId: string;
   correctPos: number;
   currentPos: number;
@@ -7,6 +7,16 @@ export type User = {
   accuracy: number;
   startTime?: Date;
   endTime?: Date;
+};
+
+
+export const DefaultUserTyping: UserTyping = {
+  userId: "",
+  correctPos: 0,
+  currentPos: 0,
+  keyStrokes: 0,
+  speed: 0,
+  accuracy: 0,
 };
 
 export type UserProfile = {
@@ -29,7 +39,7 @@ export type Participant = {
 };
 
 export type ZoneData = {
-  user: User;
+  user: UserTyping;
   participants: Participant[];
   challengeId: string;
   sessionId: string;
@@ -54,7 +64,7 @@ export type Challenge = {
   createdBy: string;
   scheduledTime: Date;
   duration: number;
-  activeParticipants: string[];
+  participants: number;
 };
 
 export type UserChallenge = {

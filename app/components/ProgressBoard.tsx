@@ -1,4 +1,4 @@
-import { Participant, User } from "../types/request";
+import { Participant } from "../types/request";
 import ProgressMeter from "./ProgressMeter";
 
 type ProgressBoardProps = {

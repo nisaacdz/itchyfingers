@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { ChallengePrivacy } from "../types/request";
-import { fetchChallenges } from "../dummy_api";
+import { fetchChallenges } from "../api";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const formatDuration = (seconds: number) => {
@@ -48,6 +48,10 @@ const ChallengesList = () => {
   const handlePrevious = () => setPage((p) => Math.max(1, p - 1));
   const handleNext = () =>
     setPage((p) => Math.min(data?.totalPages || p, p + 1));
+
+  const enterCompetion = (challengeId: string) => {
+    window.location.href = `/challenges/${challengeId}`;
+  }
 
   if (isError) {
     return (
@@ -155,17 +159,18 @@ const ChallengesList = () => {
 
               <div
                 className="col-span-2 flex items-center gap-2"
-                title={`${challenge.activeParticipants.length} participants`}
+                title={`${challenge.participants} participants`}
               >
                 <Users size={16} className="text-muted-foreground" />
                 <span className="text-sm text-foreground">
-                  {challenge.activeParticipants.length}
+                  {challenge.participants}
                 </span>
               </div>
 
               <button
                 className="col-span-2 border border-muted-foreground rounded-md px-3 py-1 hover:bg-primary/10"
                 title="Enter competition"
+                onClick={() => enterCompetion(challenge.challengeId)}
               >
                 Enter
               </button>

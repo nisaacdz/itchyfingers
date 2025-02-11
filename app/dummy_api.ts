@@ -2,7 +2,7 @@ import {
   Challenge,
   ChallengePrivacy,
   Participant,
-  User,
+  UserTyping,
   UserChallenge,
   UserChallengeStatus,
   UserProfile,
@@ -16,7 +16,7 @@ const text =
   "In the land of myth and a time of magic, the destiny of a great kingdom rests on the shoulders of a young boy. His name, Merlin.";
 
 let updateStates: () => void;
-const user: User = {
+const user: UserTyping = {
   userId: "newt",
   correctPos: 0,
   currentPos: 0,

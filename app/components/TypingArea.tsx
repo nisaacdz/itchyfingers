@@ -1,13 +1,13 @@
 import { useEffect, useRef } from "react";
 import { Caret, WhiteSpaceErrorHighlight } from "./Elems";
-import { handleTypedCharacters } from "../dummy_api";
-import { Participant, User } from "../types/request";
+import { Participant, UserTyping } from "../types/request";
 import useParagraphStyles from "../hooks/useParagraphStyles";
+import { websocketAPI } from "../api";
 
 type TypingAreaProps = {
   text: string;
   participants: Participant[];
-  user: User;
+  user: UserTyping;
 };
 
 const TypingArea = ({ text, participants, user }: TypingAreaProps) => {
@@ -19,9 +19,9 @@ const TypingArea = ({ text, participants, user }: TypingAreaProps) => {
       e.preventDefault();
       e.stopPropagation();
       if (e.key === "Backspace") {
-        handleTypedCharacters("\b");
+        websocketAPI.sendTypingInput("\b")
       } else if (e.key.length === 1) {
-        handleTypedCharacters(e.key);
+        websocketAPI.sendTypingInput(e.key);
       }
     };
     window.addEventListener("keydown", onKeyPress);

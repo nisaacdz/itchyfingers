@@ -200,11 +200,11 @@ const UserChallengesList = () => {
 
                 <div
                   className="col-span-2 flex items-center gap-2"
-                  title={`${userChallenge.challenge.activeParticipants.length} participants`}
+                  title={`${userChallenge.challenge.participants} participants`}
                 >
                   <Users size={16} className="text-muted-foreground" />
                   <span className="text-sm text-foreground">
-                    {userChallenge.challenge.activeParticipants.length}
+                    {userChallenge.challenge.participants}
                   </span>
                 </div>
 

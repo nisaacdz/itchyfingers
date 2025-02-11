@@ -1,11 +1,11 @@
-import { User } from "../types/request";
+import { UserTyping } from "../types/request";
 import { SpeedVortexMeter, SpeedVortexWaiting } from "./SpeedVortexMeter";
 import { AccuracyMeter, AccuracyMeterActive } from "./AccuracyMeter";
 import { LogOut, RotateCcw } from "lucide-react";
 import { handleExitZone, handleRestartZone } from "../dummy_api";
 
 type StatsBoardProps = {
-  user: User;
+  user: UserTyping;
   text: string;
 };
 

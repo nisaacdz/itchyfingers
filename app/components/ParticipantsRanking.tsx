@@ -1,8 +1,8 @@
-import { Participant, User } from "../types/request";
+import { Participant, UserTyping } from "../types/request";
 import { Crown } from "lucide-react";
 
 type ParticipantsRankingProps = {
-  user: User;
+  user: UserTyping;
   participants: Participant[];
 };
 

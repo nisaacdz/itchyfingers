@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import useElementSize from "../hooks/useElementSize";
-import { Participant, User } from "../types/request";
+import { Participant } from "../types/request";
 import SpeedIcon from "./SpeedIcon";
 
 type ProgressMeterProps = {
