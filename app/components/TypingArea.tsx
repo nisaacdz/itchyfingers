@@ -1,16 +1,21 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Caret, WhiteSpaceErrorHighlight } from "./Elems";
 import { Participant, UserTyping } from "../types/request";
 import useParagraphStyles from "../hooks/useParagraphStyles";
-import { websocketAPI } from "../api";
 
 type TypingAreaProps = {
   text: string;
   participants: Participant[];
   user: UserTyping;
+  handleCharacterInput: (char: string) => void;
 };
 
-const TypingArea = ({ text, participants, user }: TypingAreaProps) => {
+export const TypingArea = ({
+  text,
+  participants,
+  user,
+  handleCharacterInput,
+}: TypingAreaProps) => {
   const paragraphRef = useRef<HTMLParagraphElement>(null);
   const { fontSize } = useParagraphStyles(paragraphRef);
 
@@ -19,9 +24,9 @@ const TypingArea = ({ text, participants, user }: TypingAreaProps) => {
       e.preventDefault();
       e.stopPropagation();
       if (e.key === "Backspace") {
-        websocketAPI.sendTypingInput("\b")
+        handleCharacterInput("\b");
       } else if (e.key.length === 1) {
-        websocketAPI.sendTypingInput(e.key);
+        handleCharacterInput(e.key);
       }
     };
     window.addEventListener("keydown", onKeyPress);
@@ -87,6 +92,60 @@ const TypingArea = ({ text, participants, user }: TypingAreaProps) => {
   );
 };
 
+export const TypingAreaCountdown = ({
+  scheduledAt,
+}: {
+  scheduledAt: Date;
+}) => {
+  const [timeLeftMs, setTimeLeftMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      return Math.max(0, scheduledAt.getTime() - now.getTime());
+    };
+
+    setTimeLeftMs(calculateTimeLeft());
+
+    const intervalId = setInterval(() => {
+      setTimeLeftMs((prev) => {
+        if (prev === null || prev <= 0) return 0;
+        return Math.max(0, prev - 1000);
+      });
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [scheduledAt]);
+
+  const formatTime = (ms: number): string => {
+    if (ms >= 48 * 60 * 60 * 1000) {
+      const days = Math.floor(ms / (24 * 60 * 60 * 1000));
+      return `${days} day${days !== 1 ? 's' : ''}`;
+    }
+
+    const hours = Math.floor(ms / (60 * 60 * 1000));
+    const minutes = Math.floor((ms % (60 * 60 * 1000)) / (60 * 1000));
+    const seconds = Math.floor((ms % (60 * 1000)) / 1000);
+
+    // Show MM:SS when under 1 hour
+    if (ms < 60 * 60 * 1000) {
+      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  if (timeLeftMs === null || timeLeftMs <= 0) return null;
+
+  return (
+    <div className="relative w-full h-full mb-8 flex justify-center items-center">
+      <p className="text-6xl text-muted-foreground font-bold">
+        {formatTime(timeLeftMs)}
+      </p>
+    </div>
+  );
+};
+
 function computeAbsolutePosition(
   paragraphRef: React.RefObject<HTMLParagraphElement | null>,
   pos: number,
@@ -147,5 +206,3 @@ function getAllTextNodes(node: Node): Text[] {
 
   return textNodes;
 }
-
-export default TypingArea;

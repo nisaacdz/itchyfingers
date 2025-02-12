@@ -1,43 +1,33 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Participant, UserTyping } from "../../types/request";
+import { ZoneData } from "../../types/request";
 import StatsBoard from "../../components/StatsBoard";
 import ProgressBoard from "../../components/ProgressBoard";
-import TypingArea from "../../components/TypingArea";
+import { TypingArea } from "../../components/TypingArea";
+import {
+  getTypingText,
+  getEverything,
+  initialize,
+  getZoneData,
+  handleTypedCharacters,
+} from "../../dummy_api";
 import ParticipantsRanking from "../../components/ParticipantsRanking";
-import { useParams } from "next/navigation";
-import { websocketAPI } from "@/app/api";
 
 export default function Page() {
-  const { challengeId } = useParams<{ challengeId: string }>();
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [user, setUser] = useState<UserTyping | null>(null);
+  const [zoneData, setZoneData] = useState<ZoneData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [typingText, setTypingText] = useState("");
 
   useEffect(() => {
-    websocketAPI.connect();
-    websocketAPI.initializeChallengeHandlers({
-      onUpdateUser: (data) => {
-        setUser(data);
-      },
-      onUpdateZone: (data) => {
-        setParticipants(data);
-      },
-      onError: (message) => {
-        setError(true);
-      },
-      onEntered: (data) => {
-        setParticipants(data);
-        setLoading(false);
-      },
-      onDisconnect: () => {
-        setError(true);
-      },
+    initialize(() => {
+      setZoneData(getZoneData());
     });
-
-    websocketAPI.enterChallenge(challengeId);
+    setTypingText(getTypingText());
+    let { zoneData, loading, error } = getEverything();
+    setLoading(loading);
+    setError(error);
+    setZoneData(zoneData);
   }, []);
 
   if (loading) {
@@ -48,7 +38,7 @@ export default function Page() {
     return <div>Error</div>;
   }
 
-  if (!participants || !user) {
+  if (!zoneData) {
     return <div>Zone not found</div>;
   }
 
@@ -56,21 +46,22 @@ export default function Page() {
     <main className="w-full h-full p-4 pt-8 bg-background dark:bg-background">
       <div className="grid md:grid-cols-5 grid-cols-1 gap-y-4 md:gap-6">
         <div className="col-span-1 w-full h-full items-center justify-center">
-          <StatsBoard user={user} text={typingText} />
+          <StatsBoard user={zoneData.user} textLength={typingText.length} />
         </div>
         <div className="flex flex-col gap-6 col-span-4 w-full h-full">
           <ProgressBoard
-            participants={participants}
-            text={typingText}
+            participants={zoneData.participants}
+            textLength={typingText.length}
           />
           <TypingArea
             text={typingText}
-            participants={participants}
-            user={user}
+            participants={zoneData.participants}
+            user={zoneData.user}
+            handleCharacterInput={handleTypedCharacters}
           />
           <ParticipantsRanking
-            participants={participants}
-            user={user}
+            participants={zoneData.participants}
+            user={zoneData.user}
           />
         </div>
       </div>

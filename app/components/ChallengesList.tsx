@@ -51,7 +51,7 @@ const ChallengesList = () => {
 
   const enterCompetion = (challengeId: string) => {
     window.location.href = `/challenges/${challengeId}`;
-  }
+  };
 
   if (isError) {
     return (
@@ -129,21 +129,21 @@ const ChallengesList = () => {
 
               <div
                 className=" col-span-3 flex items-center justify-start gap-2 min-w-[150px]"
-                title={`Creator: ${challenge.createdBy}`}
+                title={`Creator: ${challenge.createdBy.username}`}
               >
                 <User size={16} className="text-muted-foreground" />
                 <span className="text-sm text-foreground">
-                  {challenge.createdBy}
+                  {challenge.createdBy.username}
                 </span>
               </div>
 
               <div
                 className="col-span-2 flex items-center justify-start gap-2 min-w-[150px]"
-                title={`Starts in ${formatTimeRemaining(new Date(challenge.scheduledTime))}`}
+                title={`Starts in ${formatTimeRemaining(new Date(challenge.scheduledAt))}`}
               >
                 <Hourglass size={16} className="text-muted-foreground" />
                 <span className="text-sm text-foreground">
-                  {formatTimeRemaining(new Date(challenge.scheduledTime))}
+                  {formatTimeRemaining(new Date(challenge.scheduledAt))}
                 </span>
               </div>
 

@@ -6,12 +6,12 @@ import { handleExitZone, handleRestartZone } from "../dummy_api";
 
 type StatsBoardProps = {
   user: UserTyping;
-  text: string;
+  textLength: number;
 };
 
-const StatsBoard = ({ user, text }: StatsBoardProps) => {
+const StatsBoard = ({ user, textLength }: StatsBoardProps) => {
   const completionPercentage =
-    text.length !== 0 ? (user.currentPos / text.length) * 100 : 0;
+    textLength !== 0 ? (user.currentPos / textLength) * 100 : 0;
 
   const onRestart = () => {
     handleRestartZone();

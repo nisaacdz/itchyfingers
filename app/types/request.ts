@@ -1,3 +1,9 @@
+export type User = {
+  userId: string;
+  username: string;
+  email: string;
+};
+
 export type UserTyping = {
   userId: string;
   correctPos: number;
@@ -8,7 +14,6 @@ export type UserTyping = {
   startTime?: Date;
   endTime?: Date;
 };
-
 
 export const DefaultUserTyping: UserTyping = {
   userId: "",
@@ -61,8 +66,9 @@ export enum UserChallengeStatus {
 export type Challenge = {
   privacy: ChallengePrivacy;
   challengeId: string;
-  createdBy: string;
-  scheduledTime: Date;
+  createdBy: User;
+  scheduledAt: string; // iso date string
+  startedAt: string | null; // iso date string
   duration: number;
   participants: number;
 };

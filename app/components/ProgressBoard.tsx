@@ -3,11 +3,10 @@ import ProgressMeter from "./ProgressMeter";
 
 type ProgressBoardProps = {
   participants: Participant[];
-  text: string;
+  textLength: number;
 };
 
-const ProgressBoard = ({ participants, text }: ProgressBoardProps) => {
-  const textLength = text.length;
+const ProgressBoard = ({ participants, textLength }: ProgressBoardProps) => {
   return (
     <div className="flex flex-col w-full pb-6 items-start gap-2">
       {participants.map((participant, index) => (

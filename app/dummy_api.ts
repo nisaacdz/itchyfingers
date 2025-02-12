@@ -242,54 +242,21 @@ export function handleTypedCharacters(inputString: string) {
   updateStates();
 }
 
-export async function fetchChallenges({ pageParam = 1, pageSize = 10 }) {
-  const challenges = await new Promise<Challenge[]>((resolve) => {
-    setTimeout(() => {
-      const mockChallenges = Array.from({ length: pageSize }).map(
-        (_, index) => ({
-          challengeId: Math.random().toString(36).substring(7),
-          createdBy: Math.random().toString(36).substring(7),
-          scheduledTime: new Date(
-            Date.now() + 15000 + Math.floor(Math.random() * 600000),
-          ),
-          privacy:
-            Math.random() > 0.5
-              ? ChallengePrivacy.Open
-              : ChallengePrivacy.Invitational,
-          duration: 10 + Math.floor(Math.random() * 100),
-          activeParticipants: Array.from({
-            length: 1 + Math.random() * 10,
-          }).map((_, index) => Math.random().toString(36).substring(7)),
-        }),
-      );
-      resolve(mockChallenges);
-    }, 1000);
-  });
-
-  return {
-    challenges,
-    page: pageParam,
-    pageSize,
-    totalPages: 13,
-  };
-}
-
 export async function fetchUserChallenges({ pageParam = 1, pageSize = 10 }) {
   const userChallenges = await new Promise<UserChallenge[]>((resolve) => {
     setTimeout(() => {
       const mockUserChallenges = Array.from({ length: pageSize }).map(
         (_, index) => {
+          const participants = Math.floor(Math.random() * 10);
           const challenge = {
             challengeId: Math.random().toString(36).substring(7),
-            createdBy: Math.random().toString(36).substring(7),
-            scheduledTime: new Date(
+            createdBy: { userId: "newt", username: "newt", email: "newt@newt" },
+            scheduledAt: new Date(
               Date.now() + 15000 + Math.floor(Math.random() * 600000),
             ),
             privacy: ChallengePrivacy.Invitational,
             duration: 10 + Math.floor(Math.random() * 100),
-            activeParticipants: Array.from({
-              length: 1 + Math.random() * 10,
-            }).map((_, index) => Math.random().toString(36).substring(7)),
+            participants,
           };
 
           let status = UserChallengeStatus.Pending;
@@ -318,6 +285,7 @@ export async function fetchUserChallenges({ pageParam = 1, pageSize = 10 }) {
               joinedAt.getTime() + 15000 + Math.floor(Math.random() * 600000),
             );
           }
+
           return { challenge, joinedAt, completedAt, status };
         },
       );

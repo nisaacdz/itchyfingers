@@ -5,6 +5,7 @@ import { Participant, UserTyping } from "../types/request";
 type ChallengeEventCallbacks = {
   onUpdateUser: (data: UserTyping) => void;
   onUpdateZone: (data: Participant[]) => void;
+  onStartChallenge: (typingText: string) => void;
   onError: (message: string) => void;
   onEntered: (data: Participant[]) => void;
   onDisconnect: () => void;
@@ -52,13 +53,17 @@ class WebSocketAPI {
 
   public initializeChallengeHandlers(callbacks: ChallengeEventCallbacks) {
     this.challengeCallbacks = callbacks;
-    
+
     this.socket?.on("participant-update", (data: UserTyping) => {
       this.challengeCallbacks?.onUpdateUser(data);
     });
 
     this.socket?.on("zone-update", (data: Participant[]) => {
       this.challengeCallbacks?.onUpdateZone(data);
+    });
+
+    this.socket?.on("challenge-start", (text: string) => {
+      this.challengeCallbacks?.onStartChallenge(text);
     });
 
     this.socket?.on("error", (message: string) => {
@@ -71,22 +76,19 @@ class WebSocketAPI {
   }
 
   public enterChallenge(challengeId: string) {
-    if (!this.socket?.connected) {
-      throw new Error("Not connected to WebSocket server");
-    }
-    this.socket.emit("enter_challenge", challengeId);
+    this.socket?.connect();
+    this.socket?.emit("enter-challenge", challengeId);
+    console.log("emited enter-challenge", challengeId);
   }
 
   public sendTypingInput(character: string) {
-    if (!this.socket?.connected) {
-      throw new Error("Not connected to WebSocket server");
-    }
-    this.socket.emit("on_type", { character });
+    this.socket?.connect();
+    this.socket?.emit("on-type", { character });
   }
 
   public leaveChallenge() {
     if (!this.socket?.connected) return;
-    this.socket.emit("leave_challenge");
+    this.socket.emit("leave-challenge");
   }
 
   public disconnect() {
