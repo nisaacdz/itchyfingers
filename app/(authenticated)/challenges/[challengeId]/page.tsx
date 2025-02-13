@@ -15,6 +15,7 @@ import {
 import ParticipantsRanking from "../../../components/ParticipantsRanking";
 import { useParams } from "next/navigation";
 import { fetchChallenge, getTypingText, websocketAPI } from "../../../api";
+import { toast } from "@/app/util/toast";
 
 const handleCharacterInput = (char: string) => {
   websocketAPI.sendTypingInput(char);
@@ -46,8 +47,11 @@ export default function Page() {
       onError: (message) => {
         setError(message);
       },
-      onEntered: (data) => {
-        setParticipants(data);
+      onEntered: (participant) => {
+        toast("success", `${participant.username} just joined the challenge`);
+      },
+      onLeft: (participant) => {
+        toast("success", `${participant.username} just left the challenge`);
       },
       onDisconnect: () => {
         setError("Disconnected from server");

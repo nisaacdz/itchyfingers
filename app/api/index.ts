@@ -1,7 +1,7 @@
 import { Challenge } from "../types/request";
 import { Axios } from "../util/axios";
 
-export { websocketAPI } from "./websockets";
+export { websocketAPI } from "./typingzone";
 
 export async function getTypingText(challengeId: string) {
   try {

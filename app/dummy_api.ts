@@ -53,6 +53,7 @@ function generateFakeParticipants() {
     return {
       data: {
         id: Math.random().toString(36).substring(7),
+        username: Math.random().toString(36).substring(7),
         correctPos: 0,
         speed: 30 + Math.random() * 100,
         accuracy: 100,
@@ -125,6 +126,7 @@ export function getZoneData() {
   let participants = [
     {
       id: user.userId,
+      username: userProfile.username,
       correctPos: user.correctPos,
       speed: user.speed,
       endTime: user.endTime,
@@ -253,7 +255,7 @@ export async function fetchUserChallenges({ pageParam = 1, pageSize = 10 }) {
             createdBy: { userId: "newt", username: "newt", email: "newt@newt" },
             scheduledAt: new Date(
               Date.now() + 15000 + Math.floor(Math.random() * 600000),
-            ),
+            ).toISOString(),
             privacy: ChallengePrivacy.Invitational,
             duration: 10 + Math.floor(Math.random() * 100),
             participants,

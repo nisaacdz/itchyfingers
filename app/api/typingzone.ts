@@ -7,8 +7,9 @@ type ChallengeEventCallbacks = {
   onUpdateZone: (data: Participant[]) => void;
   onStartChallenge: (typingText: string) => void;
   onError: (message: string) => void;
-  onEntered: (data: Participant[]) => void;
+  onEntered: (data: Participant) => void;
   onDisconnect: () => void;
+  onLeft: (data: Participant) => void;
 };
 
 class WebSocketAPI {
@@ -21,13 +22,13 @@ class WebSocketAPI {
 
   public connect() {
     if (this.socket?.connected) return;
-
+    
     this.socket = io(process.env.REACT_APP_WS_URL || "http://localhost:4000", {
       withCredentials: true,
       autoConnect: true,
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 3000,
+      reconnectionAttempts: 3,
+      reconnectionDelay: 1500,
     });
 
     this.registerBaseHandlers();
@@ -54,7 +55,7 @@ class WebSocketAPI {
   public initializeChallengeHandlers(callbacks: ChallengeEventCallbacks) {
     this.challengeCallbacks = callbacks;
 
-    this.socket?.on("participant-update", (data: UserTyping) => {
+    this.socket?.on("user-update", (data: UserTyping) => {
       this.challengeCallbacks?.onUpdateUser(data);
     });
 
@@ -62,7 +63,7 @@ class WebSocketAPI {
       this.challengeCallbacks?.onUpdateZone(data);
     });
 
-    this.socket?.on("challenge-start", (text: string) => {
+    this.socket?.on("start-challenge", (text: string) => {
       this.challengeCallbacks?.onStartChallenge(text);
     });
 
@@ -70,15 +71,18 @@ class WebSocketAPI {
       this.challengeCallbacks?.onError(message);
     });
 
-    this.socket?.on("entered", (data: Participant[]) => {
+    this.socket?.on("entered", (data: Participant) => {
       this.challengeCallbacks?.onEntered(data);
+    });
+
+    this.socket?.on("left", (data: Participant) => {
+      this.challengeCallbacks?.onLeft(data);
     });
   }
 
   public enterChallenge(challengeId: string) {
     this.socket?.connect();
     this.socket?.emit("enter-challenge", challengeId);
-    console.log("emited enter-challenge", challengeId);
   }
 
   public sendTypingInput(character: string) {

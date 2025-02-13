@@ -37,6 +37,7 @@ export type UserProfile = {
 
 export type Participant = {
   id: string;
+  username: string;
   correctPos: number;
   speed: number;
   endTime?: Date;
@@ -67,8 +68,8 @@ export type Challenge = {
   privacy: ChallengePrivacy;
   challengeId: string;
   createdBy: User;
-  scheduledAt: string; // iso date string
-  startedAt: string | null; // iso date string
+  scheduledAt: string;
+  startedAt?: string | null;
   duration: number;
   participants: number;
 };
