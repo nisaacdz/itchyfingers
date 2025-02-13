@@ -92,11 +92,7 @@ export const TypingArea = ({
   );
 };
 
-export const TypingAreaCountdown = ({
-  scheduledAt,
-}: {
-  scheduledAt: Date;
-}) => {
+export const TypingAreaCountdown = ({ scheduledAt }: { scheduledAt: Date }) => {
   const [timeLeftMs, setTimeLeftMs] = useState<number | null>(null);
 
   useEffect(() => {
@@ -120,7 +116,7 @@ export const TypingAreaCountdown = ({
   const formatTime = (ms: number): string => {
     if (ms >= 48 * 60 * 60 * 1000) {
       const days = Math.floor(ms / (24 * 60 * 60 * 1000));
-      return `${days} day${days !== 1 ? 's' : ''}`;
+      return `${days} day${days !== 1 ? "s" : ""}`;
     }
 
     const hours = Math.floor(ms / (60 * 60 * 1000));
@@ -129,10 +125,10 @@ export const TypingAreaCountdown = ({
 
     // Show MM:SS when under 1 hour
     if (ms < 60 * 60 * 1000) {
-      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     }
 
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   };
 
   if (timeLeftMs === null || timeLeftMs <= 0) return null;

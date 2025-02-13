@@ -22,16 +22,22 @@ class WebSocketAPI {
 
   public connect() {
     if (this.socket?.connected) return;
-    
-    this.socket = io(process.env.REACT_APP_WS_URL || "http://localhost:4000", {
-      withCredentials: true,
-      autoConnect: true,
-      reconnection: true,
-      reconnectionAttempts: 3,
-      reconnectionDelay: 1500,
-    });
 
-    this.registerBaseHandlers();
+    if (!this.socket) {
+      this.socket = io(
+        process.env.REACT_APP_WS_URL || "http://localhost:4000",
+        {
+          withCredentials: true,
+          autoConnect: true,
+          reconnection: true,
+          reconnectionAttempts: 3,
+          reconnectionDelay: 1500,
+        },
+      );
+      this.registerBaseHandlers();
+    } else {
+      this.socket.connect();
+    }
   }
 
   private registerBaseHandlers() {
@@ -40,19 +46,24 @@ class WebSocketAPI {
     });
 
     this.socket?.on("connect_error", (err) => {
-      console.error("Connection error:", err.message);
       if (err.message === "Authentication error") {
         window.location.href = "/login";
       }
     });
 
     this.socket?.on("disconnect", (reason) => {
-      console.log("Disconnected:", reason);
       this.challengeCallbacks?.onDisconnect();
     });
   }
 
   public initializeChallengeHandlers(callbacks: ChallengeEventCallbacks) {
+    this.socket?.off("user-update");
+    this.socket?.off("zone-update");
+    this.socket?.off("start-challenge");
+    this.socket?.off("entered");
+    this.socket?.off("left");
+    this.socket?.off("error");
+
     this.challengeCallbacks = callbacks;
 
     this.socket?.on("user-update", (data: UserTyping) => {
@@ -67,16 +78,16 @@ class WebSocketAPI {
       this.challengeCallbacks?.onStartChallenge(text);
     });
 
-    this.socket?.on("error", (message: string) => {
-      this.challengeCallbacks?.onError(message);
-    });
-
     this.socket?.on("entered", (data: Participant) => {
       this.challengeCallbacks?.onEntered(data);
     });
 
     this.socket?.on("left", (data: Participant) => {
       this.challengeCallbacks?.onLeft(data);
+    });
+
+    this.socket?.on("error", (message: string) => {
+      this.challengeCallbacks?.onError(message);
     });
   }
 

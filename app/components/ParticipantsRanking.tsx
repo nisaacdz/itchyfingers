@@ -48,7 +48,8 @@ const ParticipantsRanking = ({
                 <p
                   className={`text-lg font-medium font-courier-prime ${participant.id === user.userId ? "text-foreground" : "text-muted-foreground"}`}
                 >
-                  {participant.username} {participant.id === user.userId && "(You)"}
+                  {participant.username}{" "}
+                  {participant.id === user.userId && "(You)"}
                 </p>
               </div>
               <p

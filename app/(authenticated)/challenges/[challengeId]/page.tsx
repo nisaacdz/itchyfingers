@@ -36,6 +36,7 @@ export default function Page() {
   const retry = async () => {
     websocketAPI.initializeChallengeHandlers({
       onUpdateUser: (data) => {
+        console.log("user-update received", data);
         setUser(data);
       },
       onUpdateZone: (data) => {
@@ -54,19 +55,23 @@ export default function Page() {
         toast("success", `${participant.username} just left the challenge`);
       },
       onDisconnect: () => {
-        setError("Disconnected from server");
+        //setError("Disconnected from server");
       },
     });
     websocketAPI.connect();
     websocketAPI.enterChallenge(challengeId);
 
-    fetchChallenge(challengeId).then((challenge) => {
-      setChallenge(challenge);
-      console.log(challenge.startedAt);
-      if (challenge.startedAt) {
-        getTypingText(challengeId).then(setTypingText).catch(error => setError(error.message));
-      }
-    }).catch(error => setError(error.message));
+    fetchChallenge(challengeId)
+      .then((challenge) => {
+        setChallenge(challenge);
+        console.log(challenge.startedAt);
+        if (challenge.startedAt) {
+          getTypingText(challengeId)
+            .then(setTypingText)
+            .catch((error) => setError(error.message));
+        }
+      })
+      .catch((error) => setError(error.message));
   };
 
   const loading = !challenge;
