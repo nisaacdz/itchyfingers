@@ -1,7 +1,7 @@
-import { Challenge } from "../types/request";
+import { Challenge, Participant, User, UserTyping } from "../types/request";
 import { Axios } from "../util/axios";
 
-export { websocketAPI } from "./typingzone";
+export { typingSocketAPI } from "./typingzone";
 
 export async function getTypingText(challengeId: string) {
   try {
@@ -36,6 +36,20 @@ export async function fetchChallenges({ pageParam = 1, pageSize = 10 }) {
   }
 }
 
+export async function fetchUserSession(challengeId: string, userId: string) {
+  try {
+    const req = await Axios.get(`/typingsessions/${challengeId}/${userId}`);
+
+    if (req.status !== 200) {
+      throw new Error("Failed to fetch typing session");
+    }
+
+    return req.data as UserTyping;
+  } catch (e: any) {
+    throw new Error(e.message);
+  }
+}
+
 export async function fetchChallenge(challengeId: string) {
   try {
     const req = await Axios.get(`/challenges/${challengeId}`);
@@ -45,7 +59,74 @@ export async function fetchChallenge(challengeId: string) {
     }
 
     return req.data as Challenge;
-  } catch (e) {
-    throw new Error("Failed to fetch challenge");
+  } catch (e: any) {
+    throw new Error(e.message);
+  }
+}
+
+export async function enterChallenge(challengeId: string) {
+  try {
+    const req = await Axios.patch(`/challenges/${challengeId}/enter`);
+
+    if (req.status !== 200) {
+      throw new Error("Failed to enter challenge");
+    }
+
+    return req.data as Challenge;
+  } catch (e: any) {
+    throw new Error(e.message);
+  }
+}
+
+export async function getCurrentUser() {
+  try {
+    const req = await Axios.get(`/user`);
+
+    if (req.status !== 200) {
+      throw new Error("Failed to retrieve user session");
+    }
+    return req.data as User | null;
+  } catch (_) {
+    return null;
+  }
+}
+
+export async function loginUser() {
+  try {
+    const req = await Axios.patch(`/login`);
+    // server should redirect (yes server should redirect the client to login page)
+    // after login it should go back to where the page was
+
+    if (req.status !== 200) {
+      throw new Error("Failed to retrieve user session");
+    }
+    return req.data as User | null;
+  } catch (e: any) {
+    return null;
+  }
+}
+
+export async function logoutUser() {
+  try {
+    const req = await Axios.patch(`/logout`);
+
+    if (req.status !== 200) {
+      throw new Error("Failed to retrieve user session");
+    }
+  } finally {
+    return null;
+  }
+}
+
+export async function getSessionParticipants(challengeId: string) {
+  try {
+    const req = await Axios.get(`/challenges/${challengeId}/participants`);
+
+    if (req.status !== 200) {
+      throw new Error("Failed to fetch participants");
+    }
+    return req.data as Participant[];
+  } catch (e: any) {
+    throw new Error(e.message);
   }
 }

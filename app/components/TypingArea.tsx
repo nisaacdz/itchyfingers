@@ -40,7 +40,9 @@ export const TypingArea = ({
       return null;
     }
     const caretPos =
-      participant.id == user.userId ? user.currentPos : participant.correctPos;
+      participant.id == user.userId
+        ? user.currentPosition
+        : participant.correctPosition;
     const absPos = computeAbsolutePosition(paragraphRef, caretPos);
     return (
       <Caret
@@ -58,8 +60,8 @@ export const TypingArea = ({
 
   const whiteSpaceErrorHighlights = paragraphRef.current
     ? Array.from(
-        { length: user.currentPos - user.correctPos },
-        (_, i) => user.correctPos + i,
+        { length: user.currentPosition - user.correctPosition },
+        (_, i) => user.correctPosition + i,
       )
         .filter((pos) => text[pos] === " ")
         .map((pos) => (
@@ -81,12 +83,12 @@ export const TypingArea = ({
         ref={paragraphRef}
       >
         <span className="text-yellow-600">
-          {text.slice(0, user.correctPos)}
+          {text.slice(0, user.correctPosition)}
         </span>
         <span className="text-red-600">
-          {text.slice(user.correctPos, user.currentPos)}
+          {text.slice(user.correctPosition, user.currentPosition)}
         </span>
-        {text.slice(user.currentPos)}
+        {text.slice(user.currentPosition)}
       </p>
     </div>
   );

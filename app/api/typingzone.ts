@@ -6,13 +6,13 @@ type ChallengeEventCallbacks = {
   onUpdateUser: (data: UserTyping) => void;
   onUpdateZone: (data: Participant[]) => void;
   onStartChallenge: (typingText: string) => void;
-  onError: (message: string) => void;
+  onError: (error: Error) => void;
   onEntered: (data: Participant) => void;
   onDisconnect: () => void;
   onLeft: (data: Participant) => void;
 };
 
-class WebSocketAPI {
+class TypingSocketAPI {
   private socket: Socket | null = null;
   private challengeCallbacks: ChallengeEventCallbacks | null = null;
 
@@ -67,14 +67,17 @@ class WebSocketAPI {
     this.challengeCallbacks = callbacks;
 
     this.socket?.on("user-update", (data: UserTyping) => {
+      console.log("received user-update");
       this.challengeCallbacks?.onUpdateUser(data);
     });
 
     this.socket?.on("zone-update", (data: Participant[]) => {
+      console.log("received zone-update");
       this.challengeCallbacks?.onUpdateZone(data);
     });
 
     this.socket?.on("start-challenge", (text: string) => {
+      console.log("received start-challenge event");
       this.challengeCallbacks?.onStartChallenge(text);
     });
 
@@ -87,7 +90,7 @@ class WebSocketAPI {
     });
 
     this.socket?.on("error", (message: string) => {
-      this.challengeCallbacks?.onError(message);
+      this.challengeCallbacks?.onError(new Error(message));
     });
   }
 
@@ -118,4 +121,4 @@ class WebSocketAPI {
   }
 }
 
-export const websocketAPI = new WebSocketAPI();
+export const typingSocketAPI = new TypingSocketAPI();

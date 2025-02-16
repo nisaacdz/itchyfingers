@@ -11,7 +11,7 @@ type StatsBoardProps = {
 
 const StatsBoard = ({ user, textLength }: StatsBoardProps) => {
   const completionPercentage =
-    textLength !== 0 ? (user.currentPos / textLength) * 100 : 0;
+    textLength !== 0 ? (user.currentPosition / textLength) * 100 : 0;
 
   const onRestart = () => {
     handleRestartZone();
@@ -24,7 +24,9 @@ const StatsBoard = ({ user, textLength }: StatsBoardProps) => {
   };
 
   const speedMeterInitializing =
-    !user.startTime || new Date().getTime() - user.startTime.getTime() < 3000;
+    !user ||
+    !user.startTime ||
+    new Date().getTime() - new Date(user.startTime).getTime() < 3000;
 
   const accuracyMeterActive = !user.endTime;
 
@@ -62,9 +64,9 @@ const StatsBoard = ({ user, textLength }: StatsBoardProps) => {
       <div className="grid grid-cols-1 gap-6">
         <div className="flex justify-center">
           {speedMeterInitializing ? (
-            <SpeedVortexWaiting speed={user.speed} />
+            <SpeedVortexWaiting speed={user.wpm} />
           ) : (
-            <SpeedVortexMeter speed={user.speed} />
+            <SpeedVortexMeter speed={user.wpm} />
           )}
         </div>
         <div className="flex justify-center">

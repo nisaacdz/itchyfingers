@@ -6,21 +6,21 @@ export type User = {
 
 export type UserTyping = {
   userId: string;
-  correctPos: number;
-  currentPos: number;
-  keyStrokes: number;
-  speed: number;
+  correctPosition: number;
+  currentPosition: number;
+  totalKeystrokes: number;
+  wpm: number;
   accuracy: number;
-  startTime?: Date;
-  endTime?: Date;
+  startTime?: string;
+  endTime?: string;
 };
 
 export const DefaultUserTyping: UserTyping = {
   userId: "",
-  correctPos: 0,
-  currentPos: 0,
-  keyStrokes: 0,
-  speed: 0,
+  correctPosition: 0,
+  currentPosition: 0,
+  totalKeystrokes: 0,
+  wpm: 0,
   accuracy: 0,
 };
 
@@ -38,9 +38,9 @@ export type UserProfile = {
 export type Participant = {
   id: string;
   username: string;
-  correctPos: number;
-  speed: number;
-  endTime?: Date;
+  correctPosition: number;
+  wpm: number;
+  endTime?: string;
   accuracy: number;
 };
 

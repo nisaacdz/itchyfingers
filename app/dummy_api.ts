@@ -18,10 +18,10 @@ const text =
 let updateStates: () => void;
 const user: UserTyping = {
   userId: "newt",
-  correctPos: 0,
-  currentPos: 0,
-  keyStrokes: 0,
-  speed: 0,
+  correctPosition: 0,
+  currentPosition: 0,
+  totalKeystrokes: 0,
+  wpm: 0,
   accuracy: 100,
 };
 
@@ -54,8 +54,8 @@ function generateFakeParticipants() {
       data: {
         id: Math.random().toString(36).substring(7),
         username: Math.random().toString(36).substring(7),
-        correctPos: 0,
-        speed: 30 + Math.random() * 100,
+        correctPosition: 0,
+        wpm: 30 + Math.random() * 100,
         accuracy: 100,
       },
     };
@@ -75,10 +75,10 @@ function startRace() {
 
       const continueTyping = () => {
         const len = text.length;
-        if (participant.correctPos >= len) {
+        if (participant.correctPosition >= len) {
           const fakeParticipantEndTime = new Date();
-          fakeParticipant.data.endTime = fakeParticipantEndTime;
-          fakeParticipant.data.speed = Math.round(
+          fakeParticipant.data.endTime = fakeParticipantEndTime.toISOString();
+          fakeParticipant.data.wpm = Math.round(
             (len /
               5 /
               (fakeParticipantEndTime.getTime() - startTime!.getTime())) *
@@ -90,18 +90,18 @@ function startRace() {
           return;
         }
 
-        const remainingChars = len - participant.correctPos;
+        const remainingChars = len - participant.correctPosition;
         const proximityFactor = remainingChars / len;
 
         const baseSpeedChange = proximityFactor * baseSpeedChangeRate;
 
         const speedDelta = (Math.random() * 2 - 1) * baseSpeedChange;
-        participant.speed = Math.max(0, participant.speed + speedDelta);
+        participant.wpm = Math.max(0, participant.wpm + speedDelta);
 
-        participant.correctPos = Math.min(
+        participant.correctPosition = Math.min(
           len,
-          participant.correctPos +
-            Math.ceil(waitTime * ((participant.speed * 5) / 60000)),
+          participant.correctPosition +
+            Math.ceil(waitTime * ((participant.wpm * 5) / 60000)),
         );
 
         updateStates();
@@ -127,8 +127,8 @@ export function getZoneData() {
     {
       id: user.userId,
       username: userProfile.username,
-      correctPos: user.correctPos,
-      speed: user.speed,
+      correctPosition: user.correctPosition,
+      wpm: user.wpm,
       endTime: user.endTime,
       accuracy: user.accuracy,
     },
@@ -156,10 +156,10 @@ export function handleRestartZone() {
 
   if (!user.endTime && !confirm("Are you sure you want to restart?")) return;
 
-  user.correctPos = 0;
-  user.currentPos = 0;
-  user.keyStrokes = 0;
-  user.speed = 0;
+  user.correctPosition = 0;
+  user.currentPosition = 0;
+  user.totalKeystrokes = 0;
+  user.wpm = 0;
   user.accuracy = 100;
   user.endTime = undefined;
   user.startTime = undefined;
@@ -171,10 +171,10 @@ export function handleRestartZone() {
 }
 
 export function handleExitZone() {
-  user.correctPos = 0;
-  user.currentPos = 0;
-  user.keyStrokes = 0;
-  user.speed = 0;
+  user.correctPosition = 0;
+  user.currentPosition = 0;
+  user.totalKeystrokes = 0;
+  user.wpm = 0;
   user.accuracy = 100;
   user.startTime = undefined;
   user.endTime = undefined;
@@ -191,55 +191,60 @@ export function handleTypedCharacters(inputString: string) {
   if (user.endTime) return;
   if (!startTime) {
     startRace();
-    user.startTime = startTime!;
+    user.startTime = startTime!.toISOString();
   }
   const now = Date.now();
   const elapsedTime = startTime ? now - startTime.getTime() : 0;
 
   for (
     let inputIndex = 0;
-    inputIndex < inputString.length && user.correctPos < text.length;
+    inputIndex < inputString.length && user.correctPosition < text.length;
     inputIndex++
   ) {
     const currentChar = inputString[inputIndex];
     if (currentChar === "\b") {
-      if (user.currentPos > user.correctPos) {
-        user.currentPos--;
-      } else if (user.currentPos === user.correctPos) {
-        if (user.currentPos > 0 && text[user.currentPos - 1] !== " ") {
-          user.currentPos--;
-          user.correctPos--;
+      if (user.currentPosition > user.correctPosition) {
+        user.currentPosition--;
+      } else if (user.currentPosition === user.correctPosition) {
+        if (
+          user.currentPosition > 0 &&
+          text[user.currentPosition - 1] !== " "
+        ) {
+          user.currentPosition--;
+          user.correctPosition--;
         }
       }
     } else {
-      user.keyStrokes++;
+      user.totalKeystrokes++;
 
-      if (user.currentPos >= text.length) continue;
+      if (user.currentPosition >= text.length) continue;
 
       if (
-        user.correctPos === user.currentPos &&
-        currentChar === text[user.currentPos]
+        user.correctPosition === user.currentPosition &&
+        currentChar === text[user.currentPosition]
       ) {
-        user.correctPos++;
-        user.currentPos++;
+        user.correctPosition++;
+        user.currentPosition++;
       } else {
-        user.currentPos++;
+        user.currentPosition++;
       }
     }
   }
 
-  if (user.correctPos >= text.length) {
-    user.endTime = new Date();
+  if (user.correctPosition >= text.length) {
+    user.endTime = new Date().toISOString();
   }
 
   const minutesElapsed = elapsedTime / 60000;
-  user.speed =
-    minutesElapsed > 0 ? Math.round(user.correctPos / 5 / minutesElapsed) : 0;
+  user.wpm =
+    minutesElapsed > 0
+      ? Math.round(user.correctPosition / 5 / minutesElapsed)
+      : 0;
 
   user.accuracy =
-    user.keyStrokes === 0
+    user.totalKeystrokes === 0
       ? 100
-      : Math.round((user.correctPos / user.keyStrokes) * 100);
+      : Math.round((user.correctPosition / user.totalKeystrokes) * 100);
 
   updateStates();
 }

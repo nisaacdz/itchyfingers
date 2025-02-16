@@ -13,8 +13,10 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { ChallengePrivacy } from "../types/request";
-import { fetchChallenges } from "../api";
+import { enterChallenge, fetchChallenges } from "../api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 const formatDuration = (seconds: number) => {
   const hours = Math.floor(seconds / 3600);
@@ -39,6 +41,7 @@ const formatTimeRemaining = (date: Date) => {
 const ChallengesList = () => {
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(15);
+  const router = useRouter();
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["challenges", page, pageSize],
@@ -50,7 +53,11 @@ const ChallengesList = () => {
     setPage((p) => Math.min(data?.totalPages || p, p + 1));
 
   const enterCompetion = (challengeId: string) => {
-    window.location.href = `/challenges/${challengeId}`;
+    enterChallenge(challengeId)
+      .then((challenge) => {
+        router.push(`/challenges/${challenge.challengeId}`);
+      })
+      .catch((e) => toast.error(e.message));
   };
 
   if (isError) {
