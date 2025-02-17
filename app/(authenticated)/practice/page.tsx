@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { ZoneData } from "../../types/request";
-import StatsBoard from "../../components/StatsBoard";
+import { StatsBoard } from "../../components/StatsBoard";
 import ProgressBoard from "../../components/ProgressBoard";
 import { TypingArea } from "../../components/TypingArea";
 import {
@@ -12,6 +12,7 @@ import {
   handleTypedCharacters,
 } from "../../dummy_api";
 import ParticipantsRanking from "../../components/ParticipantsRanking";
+import { handleExitZone, handleRestartZone } from "../../dummy_api";
 
 export default function Page() {
   const [zoneData, setZoneData] = useState<ZoneData | null>(null);
@@ -46,7 +47,12 @@ export default function Page() {
     <main className="w-full h-full p-4 pt-8 bg-background dark:bg-background">
       <div className="grid md:grid-cols-5 grid-cols-1 gap-y-4 md:gap-6">
         <div className="col-span-1 w-full h-full items-center justify-center">
-          <StatsBoard user={zoneData.user} textLength={typingText.length} />
+          <StatsBoard
+            userTyping={zoneData.userTyping}
+            textLength={typingText.length}
+            onLeave={handleExitZone}
+            onRestart={handleRestartZone}
+          />
         </div>
         <div className="flex flex-col gap-6 col-span-4 w-full h-full">
           <ProgressBoard
@@ -56,12 +62,12 @@ export default function Page() {
           <TypingArea
             text={typingText}
             participants={zoneData.participants}
-            user={zoneData.user}
+            userTyping={zoneData.userTyping}
             handleCharacterInput={handleTypedCharacters}
           />
           <ParticipantsRanking
             participants={zoneData.participants}
-            user={zoneData.user}
+            userTyping={zoneData.userTyping}
           />
         </div>
       </div>

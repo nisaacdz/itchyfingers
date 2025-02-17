@@ -28,31 +28,37 @@ export const useSocket = (
   user: User | null,
   setTypingText: (_: string) => void,
   setParticipants: (_: Participant[]) => void,
+  userTyping: UserTyping | null,
+  setUserTyping: (_: UserTyping | null) => void,
   startedAt?: string,
 ) => {
-  const [userTyping, setUserTyping] = useState<UserTyping | null>(null);
   const [socketError, setSocketError] = useState<Error | null>(null);
   const [socketLoading, setSocketLoading] = useState(true);
+
+  const handleStartChallenge = (newTypingText: string) => {
+    setTypingText(newTypingText);
+    // there'll be user but putting this check here
+    if (!userTyping && user) {
+      fetchUserSession(challengeId, user.userId).then(setUserTyping);
+    }
+  };
 
   useEffect(() => {
     if (!user || !challengeId) return;
 
     const handlers = {
-      onStartChallenge: setTypingText,
+      onStartChallenge: handleStartChallenge,
       onUpdateUser: setUserTyping,
       onUpdateZone: setParticipants,
       onError: setSocketError,
-      onEntered: (p: Participant) => toast.success(`${p.username} joined`),
+      onEntered: (p: Participant) => toast.success(`${p.username} entered`),
       onLeft: (p: Participant) => toast.success(`${p.username} left`),
-      onDisconnect: () => toast.error("Connection interrupted"),
+      onDisconnect: (message: string) => toast.error(message),
     };
 
     typingSocketAPI.connect();
     typingSocketAPI.initializeChallengeHandlers(handlers);
-
-    fetchUserSession(challengeId, user.userId)
-      .then(setUserTyping)
-      .finally(() => setSocketLoading(false));
+    setSocketLoading(false);
 
     return () => {
       typingSocketAPI.disconnect();
@@ -60,13 +66,18 @@ export const useSocket = (
   }, [challengeId, user, startedAt]);
 
   const handleCharacterInput = (char: string) => {
+    if (userTyping?.endTime) return;
     typingSocketAPI.sendTypingInput(char);
   };
 
+  const handleExitCompetition = () => {
+    typingSocketAPI.leaveChallenge();
+  };
+
   return {
-    userTyping,
     socketError,
     handleCharacterInput,
+    handleExitCompetition,
     socketLoading,
   };
 };
@@ -85,7 +96,7 @@ export const useTypingText = (
       try {
         const text = await getTypingText(challengeId);
         setTypingText(text);
-        setTypingTextError(null);
+        if (typingTextError) setTypingTextError(null);
       } catch (err) {
         setTypingTextError(err as Error);
       }
@@ -113,7 +124,7 @@ export const useParticipants = (
       try {
         const participants = await getSessionParticipants(challengeId);
         setParticipants(participants);
-        setParticipantsError(null);
+        if (participantsError) setParticipantsError(null);
       } catch (err) {
         setParticipantsError(err as Error);
       }
@@ -123,4 +134,34 @@ export const useParticipants = (
   }, [challenge?.startedAt, challengeId]);
 
   return { participants, participantsError, setParticipants };
+};
+
+export const useUserTyping = (
+  challenge: Challenge | null,
+  challengeId: string,
+  user: User | null,
+) => {
+  const [userTyping, setUserTyping] = useState<UserTyping | null>(null);
+  const [userTypingError, setUserTypingError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (!challenge?.startedAt || !user) return;
+
+    const loadUserTyping = async () => {
+      try {
+        const newUserTyping = await fetchUserSession(challengeId, user.userId);
+        if (!newUserTyping) {
+          throw new Error("failed to get user session");
+        }
+        setUserTyping(newUserTyping);
+        if (userTypingError) setUserTypingError(null);
+      } catch (err) {
+        setUserTypingError(err as Error);
+      }
+    };
+
+    loadUserTyping();
+  }, [challenge?.startedAt, user, challengeId]);
+
+  return { userTyping, userTypingError, setUserTyping };
 };

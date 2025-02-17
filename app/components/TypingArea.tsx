@@ -6,14 +6,14 @@ import useParagraphStyles from "../hooks/useParagraphStyles";
 type TypingAreaProps = {
   text: string;
   participants: Participant[];
-  user: UserTyping;
+  userTyping: UserTyping;
   handleCharacterInput: (char: string) => void;
 };
 
 export const TypingArea = ({
   text,
   participants,
-  user,
+  userTyping,
   handleCharacterInput,
 }: TypingAreaProps) => {
   const paragraphRef = useRef<HTMLParagraphElement>(null);
@@ -40,8 +40,8 @@ export const TypingArea = ({
       return null;
     }
     const caretPos =
-      participant.userId == user.userId
-        ? user.currentPosition
+      participant.userId == userTyping.userId
+        ? userTyping.currentPosition
         : participant.correctPosition;
     const absPos = computeAbsolutePosition(paragraphRef, caretPos);
     return (
@@ -52,7 +52,7 @@ export const TypingArea = ({
           position: "absolute",
           zIndex: 10,
           height: fontSize,
-          opacity: participant.userId == user.userId ? 1 : 0.25,
+          opacity: participant.userId == userTyping.userId ? 1 : 0.25,
         }}
       />
     );
@@ -60,8 +60,8 @@ export const TypingArea = ({
 
   const whiteSpaceErrorHighlights = paragraphRef.current
     ? Array.from(
-        { length: user.currentPosition - user.correctPosition },
-        (_, i) => user.correctPosition + i,
+        { length: userTyping.currentPosition - userTyping.correctPosition },
+        (_, i) => userTyping.correctPosition + i,
       )
         .filter((pos) => text[pos] === " ")
         .map((pos) => (
@@ -83,12 +83,12 @@ export const TypingArea = ({
         ref={paragraphRef}
       >
         <span className="text-yellow-600">
-          {text.slice(0, user.correctPosition)}
+          {text.slice(0, userTyping.correctPosition)}
         </span>
         <span className="text-red-600">
-          {text.slice(user.correctPosition, user.currentPosition)}
+          {text.slice(userTyping.correctPosition, userTyping.currentPosition)}
         </span>
-        {text.slice(user.currentPosition)}
+        {text.slice(userTyping.currentPosition)}
       </p>
     </div>
   );
@@ -125,7 +125,6 @@ export const TypingAreaCountdown = ({ scheduledAt }: { scheduledAt: Date }) => {
     const minutes = Math.floor((ms % (60 * 60 * 1000)) / (60 * 1000));
     const seconds = Math.floor((ms % (60 * 1000)) / 1000);
 
-    // Show MM:SS when under 1 hour
     if (ms < 60 * 60 * 1000) {
       return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     }
@@ -133,12 +132,10 @@ export const TypingAreaCountdown = ({ scheduledAt }: { scheduledAt: Date }) => {
     return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  if (timeLeftMs === null || timeLeftMs <= 0) return null;
-
   return (
     <div className="relative w-full h-full mb-8 flex justify-center items-center">
       <p className="text-6xl text-muted-foreground font-bold">
-        {formatTime(timeLeftMs)}
+        {formatTime(timeLeftMs ? Math.max(0, timeLeftMs) : 0)}
       </p>
     </div>
   );

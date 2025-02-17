@@ -1,7 +1,7 @@
 import React from "react";
 
-export const SpeedVortexMeter = ({ speed }: { speed: number }) => {
-  const normalizedSpeed = Math.min(Math.max(speed, 15), 90);
+export const SpeedVortexMeter = ({ wpm }: { wpm: number }) => {
+  const normalizedSpeed = Math.min(Math.max(wpm, 15), 90);
   const progress = ((normalizedSpeed - 15) / (90 - 15)) * 100;
   const hue = ((normalizedSpeed - 15) / (90 - 15)) * 120; // 0 (red) to 120 (green)
 
@@ -42,9 +42,7 @@ export const SpeedVortexMeter = ({ speed }: { speed: number }) => {
         </div>
         {/* Speed Text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="text-4xl font-bold text-white text-shadow">
-            {speed}
-          </div>
+          <div className="text-4xl font-bold text-white text-shadow">{wpm}</div>
           <span className="text-base tracking-widest text-white uppercase">
             wpm
           </span>
@@ -56,8 +54,8 @@ export const SpeedVortexMeter = ({ speed }: { speed: number }) => {
   );
 };
 
-export const SpeedVortexWaiting = ({ speed }: { speed: number }) => {
-  const normalizedSpeed = Math.min(Math.max(speed, 15), 90);
+export const SpeedVortexWaiting = ({ wpm }: { wpm: number }) => {
+  const normalizedSpeed = Math.min(Math.max(wpm, 15), 90);
   const progress = ((normalizedSpeed - 15) / (90 - 15)) * 100;
   const hue = ((normalizedSpeed - 15) / (90 - 15)) * 120; // 0 (red) to 120 (green)
 

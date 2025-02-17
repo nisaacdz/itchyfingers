@@ -9,14 +9,14 @@ type ProgressMeterProps = {
 };
 
 const ProgressMeter = ({
-  participant: { correctPos, speed },
+  participant: { correctPosition, wpm },
   length,
 }: ProgressMeterProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const iconRef = useRef<HTMLImageElement>(null);
   const { width: iconWidth, height: iconHeight } = useElementSize(iconRef);
   const { width } = useElementSize(containerRef);
-  const progress = length === 0 ? 0 : (correctPos / length) * width;
+  const progress = length === 0 ? 0 : (correctPosition / length) * width;
 
   return (
     <div className="w-full bg-muted py-1">
@@ -26,7 +26,7 @@ const ProgressMeter = ({
         style={{ width: `calc(100% - ${iconWidth}px)`, height: iconHeight }}
       >
         <SpeedIcon
-          speed={speed}
+          wpm={wpm}
           styles={{ transform: `translateX(${progress}px)` }}
           ref={iconRef}
         />

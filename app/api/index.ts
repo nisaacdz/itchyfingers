@@ -44,7 +44,7 @@ export async function fetchUserSession(challengeId: string, userId: string) {
       throw new Error("Failed to fetch typing session");
     }
 
-    return req.data as UserTyping;
+    return req.data as UserTyping | null;
   } catch (e: any) {
     throw new Error(e.message);
   }

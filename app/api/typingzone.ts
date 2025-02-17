@@ -1,4 +1,3 @@
-// src/api/websocket.ts
 import { io, Socket } from "socket.io-client";
 import { Participant, UserTyping } from "../types/request";
 
@@ -8,7 +7,7 @@ type ChallengeEventCallbacks = {
   onStartChallenge: (typingText: string) => void;
   onError: (error: Error) => void;
   onEntered: (data: Participant) => void;
-  onDisconnect: () => void;
+  onDisconnect: (message: string) => void;
   onLeft: (data: Participant) => void;
 };
 
@@ -48,7 +47,7 @@ class TypingSocketAPI {
     });
 
     this.socket?.on("disconnect", (reason) => {
-      this.challengeCallbacks?.onDisconnect();
+      this.challengeCallbacks?.onDisconnect(reason.toString());
     });
   }
 
@@ -106,8 +105,8 @@ class TypingSocketAPI {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
-      this.challengeCallbacks = null;
     }
+    this.challengeCallbacks = null;
   }
 
   public get isConnected() {

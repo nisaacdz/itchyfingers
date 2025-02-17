@@ -15,7 +15,7 @@ const text =
   "In the land of myth and a time of magic, the destiny of a great kingdom rests on the shoulders of a young boy. His name, Merlin.";
 
 let updateStates: () => void;
-const user: UserTyping = {
+const userTyping: UserTyping = {
   userId: "newt",
   correctPosition: 0,
   currentPosition: 0,
@@ -124,17 +124,17 @@ export function getTypingText() {
 export function getZoneData() {
   let participants = [
     {
-      userId: user.userId,
+      userId: userTyping.userId,
       username: userProfile.username,
-      correctPosition: user.correctPosition,
-      wpm: user.wpm,
-      endTime: user.endTime,
-      accuracy: user.accuracy,
+      correctPosition: userTyping.correctPosition,
+      wpm: userTyping.wpm,
+      endTime: userTyping.endTime,
+      accuracy: userTyping.accuracy,
     },
     ...fakeParticipants.map((fakeParticipant) => fakeParticipant.data),
   ];
   let zoneData: ZoneData = {
-    user,
+    userTyping,
     participants,
     challengeId: "challenge1",
     sessionId: "challenge1-session1",
@@ -153,15 +153,16 @@ export function handleRestartZone() {
     );
   }
 
-  if (!user.endTime && !confirm("Are you sure you want to restart?")) return;
+  if (!userTyping.endTime && !confirm("Are you sure you want to restart?"))
+    return;
 
-  user.correctPosition = 0;
-  user.currentPosition = 0;
-  user.totalKeystrokes = 0;
-  user.wpm = 0;
-  user.accuracy = 100;
-  user.endTime = undefined;
-  user.startTime = undefined;
+  userTyping.correctPosition = 0;
+  userTyping.currentPosition = 0;
+  userTyping.totalKeystrokes = 0;
+  userTyping.wpm = 0;
+  userTyping.accuracy = 100;
+  userTyping.endTime = undefined;
+  userTyping.startTime = undefined;
   startTime = null;
 
   fakeParticipants = generateFakeParticipants();
@@ -170,13 +171,13 @@ export function handleRestartZone() {
 }
 
 export function handleExitZone() {
-  user.correctPosition = 0;
-  user.currentPosition = 0;
-  user.totalKeystrokes = 0;
-  user.wpm = 0;
-  user.accuracy = 100;
-  user.startTime = undefined;
-  user.endTime = undefined;
+  userTyping.correctPosition = 0;
+  userTyping.currentPosition = 0;
+  userTyping.totalKeystrokes = 0;
+  userTyping.wpm = 0;
+  userTyping.accuracy = 100;
+  userTyping.startTime = undefined;
+  userTyping.endTime = undefined;
 
   fakeParticipants.forEach((fakeParticipant) => {
     clearInterval(fakeParticipant.intervalId!);
@@ -187,63 +188,65 @@ export function handleExitZone() {
 }
 
 export function handleTypedCharacters(inputString: string) {
-  if (user.endTime) return;
+  if (userTyping.endTime) return;
   if (!startTime) {
     startRace();
-    user.startTime = startTime!.toISOString();
+    userTyping.startTime = startTime!.toISOString();
   }
   const now = Date.now();
   const elapsedTime = startTime ? now - startTime.getTime() : 0;
 
   for (
     let inputIndex = 0;
-    inputIndex < inputString.length && user.correctPosition < text.length;
+    inputIndex < inputString.length && userTyping.correctPosition < text.length;
     inputIndex++
   ) {
     const currentChar = inputString[inputIndex];
     if (currentChar === "\b") {
-      if (user.currentPosition > user.correctPosition) {
-        user.currentPosition--;
-      } else if (user.currentPosition === user.correctPosition) {
+      if (userTyping.currentPosition > userTyping.correctPosition) {
+        userTyping.currentPosition--;
+      } else if (userTyping.currentPosition === userTyping.correctPosition) {
         if (
-          user.currentPosition > 0 &&
-          text[user.currentPosition - 1] !== " "
+          userTyping.currentPosition > 0 &&
+          text[userTyping.currentPosition - 1] !== " "
         ) {
-          user.currentPosition--;
-          user.correctPosition--;
+          userTyping.currentPosition--;
+          userTyping.correctPosition--;
         }
       }
     } else {
-      user.totalKeystrokes++;
+      userTyping.totalKeystrokes++;
 
-      if (user.currentPosition >= text.length) continue;
+      if (userTyping.currentPosition >= text.length) continue;
 
       if (
-        user.correctPosition === user.currentPosition &&
-        currentChar === text[user.currentPosition]
+        userTyping.correctPosition === userTyping.currentPosition &&
+        currentChar === text[userTyping.currentPosition]
       ) {
-        user.correctPosition++;
-        user.currentPosition++;
+        userTyping.correctPosition++;
+        userTyping.currentPosition++;
       } else {
-        user.currentPosition++;
+        userTyping.currentPosition++;
       }
     }
   }
 
-  if (user.correctPosition >= text.length) {
-    user.endTime = new Date().toISOString();
+  if (userTyping.correctPosition >= text.length) {
+    userTyping.endTime = new Date().toISOString();
   }
 
   const minutesElapsed = elapsedTime / 60000;
-  user.wpm =
+  userTyping.wpm =
     minutesElapsed > 0
-      ? Math.round(user.correctPosition / 5 / minutesElapsed)
+      ? Math.round(userTyping.correctPosition / 5 / minutesElapsed)
       : 0;
 
-  user.accuracy =
-    user.totalKeystrokes === 0
+  userTyping.accuracy =
+    userTyping.totalKeystrokes === 0
       ? 100
-      : Math.round((user.correctPosition / user.totalKeystrokes) * 100);
+      : Math.round(
+          (userTyping.correctPosition / userTyping.totalKeystrokes) * 100,
+        );
 
   updateStates();
 }

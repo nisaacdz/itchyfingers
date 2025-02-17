@@ -46,7 +46,7 @@ export type Participant = {
 };
 
 export type ZoneData = {
-  user: UserTyping;
+  userTyping: UserTyping;
   participants: Participant[];
   challengeId: string;
   sessionId: string;

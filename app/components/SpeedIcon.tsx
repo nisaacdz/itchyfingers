@@ -1,21 +1,21 @@
 import { CSSProperties } from "react";
 
 type SpeedIconProps = {
-  speed: number;
+  wpm: number;
   styles?: CSSProperties;
   ref?: React.RefObject<HTMLImageElement | null>;
 };
 
-const SpeedIcon = ({ speed, styles, ref }: SpeedIconProps) => {
+const SpeedIcon = ({ wpm, styles, ref }: SpeedIconProps) => {
   // draw different icons based on speed
   const img_src =
-    speed < 25
+    wpm < 25
       ? "/walk.svg"
-      : speed < 50
+      : wpm < 50
         ? "/ride.svg"
-        : speed < 75
+        : wpm < 75
           ? "/drive.svg"
-          : speed < 100
+          : wpm < 100
             ? "/fly.svg"
             : "/rocket.svg";
   return (
