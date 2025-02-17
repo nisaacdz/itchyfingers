@@ -16,10 +16,6 @@ class TypingSocketAPI {
   private socket: Socket | null = null;
   private challengeCallbacks: ChallengeEventCallbacks | null = null;
 
-  constructor() {
-    this.connect();
-  }
-
   public connect() {
     if (this.socket?.connected) return;
 
@@ -58,7 +54,7 @@ class TypingSocketAPI {
 
   public initializeChallengeHandlers(callbacks: ChallengeEventCallbacks) {
     this.socket?.off("user-update");
-    this.socket?.off("zone-update");
+    this.socket?.off("room-update");
     this.socket?.off("start-challenge");
     this.socket?.off("entered");
     this.socket?.off("left");
@@ -67,17 +63,14 @@ class TypingSocketAPI {
     this.challengeCallbacks = callbacks;
 
     this.socket?.on("user-update", (data: UserTyping) => {
-      console.log("received user-update");
       this.challengeCallbacks?.onUpdateUser(data);
     });
 
-    this.socket?.on("zone-update", (data: Participant[]) => {
-      console.log("received zone-update");
+    this.socket?.on("room-update", (data: Participant[]) => {
       this.challengeCallbacks?.onUpdateZone(data);
     });
 
     this.socket?.on("start-challenge", (text: string) => {
-      console.log("received start-challenge event");
       this.challengeCallbacks?.onStartChallenge(text);
     });
 
@@ -113,6 +106,7 @@ class TypingSocketAPI {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
+      this.challengeCallbacks = null;
     }
   }
 

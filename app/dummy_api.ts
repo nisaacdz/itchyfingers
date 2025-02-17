@@ -1,5 +1,4 @@
 import {
-  Challenge,
   ChallengePrivacy,
   Participant,
   UserTyping,
@@ -52,7 +51,7 @@ function generateFakeParticipants() {
   return Array.from({ length: numParticipants }, () => {
     return {
       data: {
-        id: Math.random().toString(36).substring(7),
+        userId: Math.random().toString(36).substring(7),
         username: Math.random().toString(36).substring(7),
         correctPosition: 0,
         wpm: 30 + Math.random() * 100,
@@ -125,7 +124,7 @@ export function getTypingText() {
 export function getZoneData() {
   let participants = [
     {
-      id: user.userId,
+      userId: user.userId,
       username: userProfile.username,
       correctPosition: user.correctPosition,
       wpm: user.wpm,

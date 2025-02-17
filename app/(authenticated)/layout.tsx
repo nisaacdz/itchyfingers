@@ -1,6 +1,7 @@
 "use client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthContextProvider } from "../context/AuthContext";
+import { ToastContainer } from "react-toastify";
 
 export default function RootLayout({
   children,
@@ -9,10 +10,11 @@ export default function RootLayout({
 }>) {
   const queryClient = new QueryClient();
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthContextProvider>
+    <AuthContextProvider>
+      <QueryClientProvider client={queryClient}>
+        <ToastContainer />
         <main>{children}</main>
-      </AuthContextProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </AuthContextProvider>
   );
 }

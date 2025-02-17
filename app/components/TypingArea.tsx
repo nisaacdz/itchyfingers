@@ -40,7 +40,7 @@ export const TypingArea = ({
       return null;
     }
     const caretPos =
-      participant.id == user.userId
+      participant.userId == user.userId
         ? user.currentPosition
         : participant.correctPosition;
     const absPos = computeAbsolutePosition(paragraphRef, caretPos);
@@ -52,7 +52,7 @@ export const TypingArea = ({
           position: "absolute",
           zIndex: 10,
           height: fontSize,
-          opacity: participant.id == user.userId ? 1 : 0.4,
+          opacity: participant.userId == user.userId ? 1 : 0.25,
         }}
       />
     );

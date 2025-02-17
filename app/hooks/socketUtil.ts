@@ -47,8 +47,8 @@ export const useSocket = (
       onDisconnect: () => toast.error("Connection interrupted"),
     };
 
-    typingSocketAPI.initializeChallengeHandlers(handlers);
     typingSocketAPI.connect();
+    typingSocketAPI.initializeChallengeHandlers(handlers);
 
     fetchUserSession(challengeId, user.userId)
       .then(setUserTyping)

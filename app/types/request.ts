@@ -36,11 +36,12 @@ export type UserProfile = {
 };
 
 export type Participant = {
-  id: string;
+  userId: string;
   username: string;
   correctPosition: number;
   wpm: number;
   endTime?: string;
+  startTime?: string;
   accuracy: number;
 };
 
