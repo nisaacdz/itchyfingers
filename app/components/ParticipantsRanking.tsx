@@ -60,7 +60,9 @@ const ParticipantsRanking = ({
             <div
               key={participant.userId}
               className={`grid grid-cols-7 w-full p-2 ${
-                participant.userId === userParticipant.userId ? "bg-secondary" : ""
+                participant.userId === userParticipant.userId
+                  ? "bg-secondary"
+                  : ""
               } border-t border-muted-foreground`}
             >
               <span className="text-lg font-medium text-muted-foreground font-courier-prime">

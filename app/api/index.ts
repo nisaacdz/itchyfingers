@@ -13,7 +13,7 @@ export async function getTypingText(challengeId: string) {
 
     return (req.data.text || "") as string;
   } catch (e) {
-    throw new Error("Failed to fetch typing text");
+    throw e as Error;
   }
 }
 
@@ -32,7 +32,7 @@ export async function fetchChallenges({ pageParam = 1, pageSize = 10 }) {
 
     return req.data as { challenges: Challenge[]; totalPages: number };
   } catch (e) {
-    throw new Error("Failed to fetch challenges");
+    throw e as Error;
   }
 }
 
@@ -45,8 +45,8 @@ export async function fetchUserSession(challengeId: string, userId: string) {
     }
 
     return req.data as Participant | null;
-  } catch (e: any) {
-    throw new Error(e.message);
+  } catch (e) {
+    throw e as Error;
   }
 }
 
@@ -59,8 +59,8 @@ export async function fetchChallenge(challengeId: string) {
     }
 
     return req.data as Challenge;
-  } catch (e: any) {
-    throw new Error(e.message);
+  } catch (e) {
+    throw e as Error;
   }
 }
 
@@ -73,8 +73,8 @@ export async function enterChallenge(challengeId: string) {
     }
 
     return req.data as Challenge;
-  } catch (e: any) {
-    throw new Error(e.message);
+  } catch (e) {
+    throw e as Error;
   }
 }
 
@@ -86,7 +86,8 @@ export async function getCurrentUser() {
       throw new Error("Failed to retrieve user session");
     }
     return req.data as User | null;
-  } catch (_) {
+  } catch (e) {
+    console.error(e);
     return null;
   }
 }
@@ -101,7 +102,8 @@ export async function loginUser() {
       throw new Error("Failed to retrieve user session");
     }
     return req.data as User | null;
-  } catch (e: any) {
+  } catch (e) {
+    console.error(e);
     return null;
   }
 }
@@ -126,7 +128,7 @@ export async function fetchSessionParticipants(challengeId: string) {
       throw new Error("Failed to fetch participants");
     }
     return req.data as Participant[];
-  } catch (e: any) {
-    throw new Error(e.message);
+  } catch (e) {
+    throw e as Error;
   }
 }

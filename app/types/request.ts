@@ -43,7 +43,6 @@ export type StartChallenge = {
   typingText: string;
 };
 
-
 export type ZoneData = {
   userId: string;
   participants: Record<string, Participant>;

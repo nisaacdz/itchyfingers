@@ -25,7 +25,7 @@ export default function Page() {
       setZoneData(getZoneData());
     });
     setTypingText(getTypingText());
-    let { zoneData, loading, error } = getEverything();
+    const { zoneData, loading, error } = getEverything();
     setLoading(loading);
     setError(error);
     setZoneData(zoneData);

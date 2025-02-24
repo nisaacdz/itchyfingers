@@ -42,12 +42,9 @@ const ChallengePage = () => {
   );
 
   const loading = challengeLoading || socketLoading || authLoading;
-  const error =
-    challengeError ||
-    socketError ||
-    typingTextError;
+  const error = challengeError || socketError || typingTextError;
 
-  const userParticipant= user ? participants[user.userId]: undefined;
+  const userParticipant = user ? participants[user.userId] : undefined;
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-500 p-4">{error.message}</div>;
@@ -120,27 +117,27 @@ const MainContent = ({
   userId: string | null;
   handleCharacterInput: (char: string) => void;
 }) => {
-  
   return (
-  <div className="flex flex-col gap-6 col-span-4 w-full h-full">
-    <ProgressBoard
-      participants={participants}
-      textLength={typingText?.length || 0}
-    />
-    {typingText && userId ? (
-      <TypingArea
-        text={typingText}
+    <div className="flex flex-col gap-6 col-span-4 w-full h-full">
+      <ProgressBoard
         participants={participants}
-        userId={userId}
-        handleCharacterInput={handleCharacterInput}
+        textLength={typingText?.length || 0}
       />
-    ) : challenge ? (
-      <TypingAreaCountdown scheduledAt={new Date(challenge.scheduledAt)} />
-    ) : (
-      <></>
-    )}
-    <ParticipantsRanking participants={participants} userId={userId} />
-  </div>)
-  };
+      {typingText && userId ? (
+        <TypingArea
+          text={typingText}
+          participants={participants}
+          userId={userId}
+          handleCharacterInput={handleCharacterInput}
+        />
+      ) : challenge ? (
+        <TypingAreaCountdown scheduledAt={new Date(challenge.scheduledAt)} />
+      ) : (
+        <></>
+      )}
+      <ParticipantsRanking participants={participants} userId={userId} />
+    </div>
+  );
+};
 
 export default ChallengePage;
