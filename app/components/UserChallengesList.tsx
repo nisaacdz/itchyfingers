@@ -168,22 +168,22 @@ const UserChallengesList = () => {
 
                 <div
                   className=" col-span-3 flex items-center justify-start gap-2 min-w-[150px]"
-                  title={`Creator: ${userChallenge.challenge.createdBy}`}
+                  title={`Creator: ${userChallenge.challenge.createdBy.username}`}
                 >
                   <User size={16} className="text-muted-foreground" />
                   <span className="text-sm text-foreground">
-                    {userChallenge.challenge.createdBy}
+                    {userChallenge.challenge.createdBy.username}
                   </span>
                 </div>
 
                 <div
                   className="col-span-2 flex items-center justify-start gap-2 min-w-[150px]"
-                  title={`Starts in ${formatTimeRemaining(new Date(userChallenge.challenge.scheduledTime))}`}
+                  title={`Starts in ${formatTimeRemaining(new Date(userChallenge.challenge.scheduledAt))}`}
                 >
                   <Hourglass size={16} className="text-muted-foreground" />
                   <span className="text-sm text-foreground">
                     {formatTimeRemaining(
-                      new Date(userChallenge.challenge.scheduledTime),
+                      new Date(userChallenge.challenge.scheduledAt),
                     )}
                   </span>
                 </div>
@@ -200,11 +200,11 @@ const UserChallengesList = () => {
 
                 <div
                   className="col-span-2 flex items-center gap-2"
-                  title={`${userChallenge.challenge.activeParticipants.length} participants`}
+                  title={`${userChallenge.challenge.participants} participants`}
                 >
                   <Users size={16} className="text-muted-foreground" />
                   <span className="text-sm text-foreground">
-                    {userChallenge.challenge.activeParticipants.length}
+                    {userChallenge.challenge.participants}
                   </span>
                 </div>
 

@@ -13,8 +13,11 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { ChallengePrivacy } from "../types/request";
-import { fetchChallenges } from "../dummy_api";
+import { enterChallenge, fetchChallenges } from "../api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { useQueryState, parseAsInteger } from "nuqs";
 
 const formatDuration = (seconds: number) => {
   const hours = Math.floor(seconds / 3600);
@@ -37,8 +40,9 @@ const formatTimeRemaining = (date: Date) => {
 };
 
 const ChallengesList = () => {
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(15);
+  const [page, setPage] = useQueryState<number>('page', parseAsInteger.withDefault(1))
+  const [pageSize, setPageSize] = useQueryState<number>('pageSize', parseAsInteger.withDefault(15))
+  const router = useRouter();
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["challenges", page, pageSize],
@@ -48,6 +52,14 @@ const ChallengesList = () => {
   const handlePrevious = () => setPage((p) => Math.max(1, p - 1));
   const handleNext = () =>
     setPage((p) => Math.min(data?.totalPages || p, p + 1));
+
+  const enterCompetion = (challengeId: string) => {
+    enterChallenge(challengeId)
+      .then((challenge) => {
+        router.push(`/challenges/${challenge.challengeId}`);
+      })
+      .catch((e) => toast.error(e.message));
+  };
 
   if (isError) {
     return (
@@ -125,21 +137,21 @@ const ChallengesList = () => {
 
               <div
                 className=" col-span-3 flex items-center justify-start gap-2 min-w-[150px]"
-                title={`Creator: ${challenge.createdBy}`}
+                title={`Creator: ${challenge.createdBy.username}`}
               >
                 <User size={16} className="text-muted-foreground" />
                 <span className="text-sm text-foreground">
-                  {challenge.createdBy}
+                  {challenge.createdBy.username}
                 </span>
               </div>
 
               <div
                 className="col-span-2 flex items-center justify-start gap-2 min-w-[150px]"
-                title={`Starts in ${formatTimeRemaining(new Date(challenge.scheduledTime))}`}
+                title={`Starts in ${formatTimeRemaining(new Date(challenge.scheduledAt))}`}
               >
                 <Hourglass size={16} className="text-muted-foreground" />
                 <span className="text-sm text-foreground">
-                  {formatTimeRemaining(new Date(challenge.scheduledTime))}
+                  {formatTimeRemaining(new Date(challenge.scheduledAt))}
                 </span>
               </div>
 
@@ -155,17 +167,18 @@ const ChallengesList = () => {
 
               <div
                 className="col-span-2 flex items-center gap-2"
-                title={`${challenge.activeParticipants.length} participants`}
+                title={`${challenge.participants} participants`}
               >
                 <Users size={16} className="text-muted-foreground" />
                 <span className="text-sm text-foreground">
-                  {challenge.activeParticipants.length}
+                  {challenge.participants}
                 </span>
               </div>
 
               <button
                 className="col-span-2 border border-muted-foreground rounded-md px-3 py-1 hover:bg-primary/10"
                 title="Enter competition"
+                onClick={() => enterCompetion(challenge.challengeId)}
               >
                 Enter
               </button>

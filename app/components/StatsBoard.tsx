@@ -1,38 +1,37 @@
-import { User } from "../types/request";
+import { Participant } from "../types/request";
 import { SpeedVortexMeter, SpeedVortexWaiting } from "./SpeedVortexMeter";
 import { AccuracyMeter, AccuracyMeterActive } from "./AccuracyMeter";
 import { LogOut, RotateCcw } from "lucide-react";
-import { handleExitZone, handleRestartZone } from "../dummy_api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type StatsBoardProps = {
-  user: User;
-  text: string;
+  userParticipant: Participant;
+  textLength: number;
+  onLeave: () => void;
+  onRestart: () => void;
 };
 
-const StatsBoard = ({ user, text }: StatsBoardProps) => {
+export const StatsBoard = ({
+  userParticipant,
+  textLength,
+  onLeave,
+  onRestart,
+}: StatsBoardProps) => {
   const completionPercentage =
-    text.length !== 0 ? (user.currentPos / text.length) * 100 : 0;
-
-  const onRestart = () => {
-    handleRestartZone();
-  };
-
-  const onExit = () => {
-    if (confirm("Are you sure you want to exit the zone?")) {
-      handleExitZone();
-    }
-  };
+    textLength !== 0 ? (userParticipant.currentPosition / textLength) * 100 : 0;
 
   const speedMeterInitializing =
-    !user.startTime || new Date().getTime() - user.startTime.getTime() < 3000;
+    !userParticipant ||
+    !userParticipant.startTime ||
+    new Date().getTime() - new Date(userParticipant.startTime).getTime() < 3000;
 
-  const accuracyMeterActive = !user.endTime;
+  const accuracyMeterActive = !userParticipant.endTime;
 
   return (
     <div className="flex flex-col w-full h-full gap-4 p-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-muted-foreground">Your Stats</h1>
-        {user.endTime ? (
+        {userParticipant.endTime ? (
           <button
             onClick={onRestart}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors duration-200"
@@ -42,7 +41,7 @@ const StatsBoard = ({ user, text }: StatsBoardProps) => {
           </button>
         ) : (
           <button
-            onClick={onExit}
+            onClick={onLeave}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors duration-200"
             title="Exit Zone"
           >
@@ -62,16 +61,16 @@ const StatsBoard = ({ user, text }: StatsBoardProps) => {
       <div className="grid grid-cols-1 gap-6">
         <div className="flex justify-center">
           {speedMeterInitializing ? (
-            <SpeedVortexWaiting speed={user.speed} />
+            <SpeedVortexWaiting wpm={userParticipant.wpm} />
           ) : (
-            <SpeedVortexMeter speed={user.speed} />
+            <SpeedVortexMeter wpm={userParticipant.wpm} />
           )}
         </div>
         <div className="flex justify-center">
           {accuracyMeterActive ? (
-            <AccuracyMeterActive accuracy={user.accuracy} />
+            <AccuracyMeterActive accuracy={userParticipant.accuracy} />
           ) : (
-            <AccuracyMeter accuracy={user.accuracy} />
+            <AccuracyMeter accuracy={userParticipant.accuracy} />
           )}
         </div>
       </div>
@@ -79,4 +78,25 @@ const StatsBoard = ({ user, text }: StatsBoardProps) => {
   );
 };
 
-export default StatsBoard;
+export const StatsBoardLoading = () => {
+  return (
+    <div className="flex flex-col w-full h-full gap-4 p-4">
+      <div className="flex justify-between items-center">
+        <Skeleton className="h-7 w-32 rounded-md" />
+        <Skeleton className="h-8 w-8 rounded-full" />
+      </div>
+
+      {/* Progress Bar Skeleton */}
+      <Skeleton className="w-full h-3 rounded-full" />
+
+      <div className="grid grid-cols-1 gap-6">
+        <div className="flex justify-center">
+          <Skeleton className="w-24 h-24 rounded-full" />
+        </div>
+        <div className="flex justify-center">
+          <Skeleton className="w-24 h-24 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+};

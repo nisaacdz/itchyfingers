@@ -1,12 +1,17 @@
 export type User = {
   userId: string;
-  correctPos: number;
-  currentPos: number;
-  keyStrokes: number;
-  speed: number;
-  accuracy: number;
-  startTime?: Date;
-  endTime?: Date;
+  username: string;
+  email: string;
+};
+
+export const DefaultUserTyping: Participant = {
+  username: "newt",
+  userId: "",
+  correctPosition: 0,
+  currentPosition: 0,
+  totalKeystrokes: 0,
+  wpm: 0,
+  accuracy: 0,
 };
 
 export type UserProfile = {
@@ -21,16 +26,27 @@ export type UserProfile = {
 };
 
 export type Participant = {
-  id: string;
-  correctPos: number;
-  speed: number;
-  endTime?: Date;
+  userId: string;
+  username: string;
+  correctPosition: number;
+  currentPosition: number;
+  totalKeystrokes: number;
+  wpm: number;
   accuracy: number;
+  startTime?: string;
+  endTime?: string;
 };
 
-export type ZoneData = {
-  user: User;
+export type StartChallenge = {
+  challengeId: string;
   participants: Participant[];
+  typingText: string;
+};
+
+
+export type ZoneData = {
+  userId: string;
+  participants: Record<string, Participant>;
   challengeId: string;
   sessionId: string;
 };
@@ -51,10 +67,11 @@ export enum UserChallengeStatus {
 export type Challenge = {
   privacy: ChallengePrivacy;
   challengeId: string;
-  createdBy: string;
-  scheduledTime: Date;
+  createdBy: User;
+  scheduledAt: string;
+  startedAt?: string | null;
   duration: number;
-  activeParticipants: string[];
+  participants: number;
 };
 
 export type UserChallenge = {

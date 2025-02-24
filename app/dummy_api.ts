@@ -1,8 +1,6 @@
 import {
-  Challenge,
   ChallengePrivacy,
   Participant,
-  User,
   UserChallenge,
   UserChallengeStatus,
   UserProfile,
@@ -16,12 +14,13 @@ const text =
   "In the land of myth and a time of magic, the destiny of a great kingdom rests on the shoulders of a young boy. His name, Merlin.";
 
 let updateStates: () => void;
-const user: User = {
+const userParticipant: Participant = {
   userId: "newt",
-  correctPos: 0,
-  currentPos: 0,
-  keyStrokes: 0,
-  speed: 0,
+  username: "newt",
+  correctPosition: 0,
+  currentPosition: 0,
+  totalKeystrokes: 0,
+  wpm: 0,
   accuracy: 100,
 };
 
@@ -52,10 +51,13 @@ function generateFakeParticipants() {
   return Array.from({ length: numParticipants }, () => {
     return {
       data: {
-        id: Math.random().toString(36).substring(7),
-        correctPos: 0,
-        speed: 30 + Math.random() * 100,
+        userId: Math.random().toString(36).substring(7),
+        username: Math.random().toString(36).substring(7),
+        correctPosition: 0,
+        wpm: 30 + Math.random() * 100,
         accuracy: 100,
+        totalKeystrokes: 0,
+        currentPosition: 0,
       },
     };
   });
@@ -74,10 +76,10 @@ function startRace() {
 
       const continueTyping = () => {
         const len = text.length;
-        if (participant.correctPos >= len) {
+        if (participant.correctPosition >= len) {
           const fakeParticipantEndTime = new Date();
-          fakeParticipant.data.endTime = fakeParticipantEndTime;
-          fakeParticipant.data.speed = Math.round(
+          fakeParticipant.data.endTime = fakeParticipantEndTime.toISOString();
+          fakeParticipant.data.wpm = Math.round(
             (len /
               5 /
               (fakeParticipantEndTime.getTime() - startTime!.getTime())) *
@@ -89,18 +91,18 @@ function startRace() {
           return;
         }
 
-        const remainingChars = len - participant.correctPos;
+        const remainingChars = len - participant.correctPosition;
         const proximityFactor = remainingChars / len;
 
         const baseSpeedChange = proximityFactor * baseSpeedChangeRate;
 
         const speedDelta = (Math.random() * 2 - 1) * baseSpeedChange;
-        participant.speed = Math.max(0, participant.speed + speedDelta);
+        participant.wpm = Math.max(0, participant.wpm + speedDelta);
 
-        participant.correctPos = Math.min(
+        participant.correctPosition = Math.min(
           len,
-          participant.correctPos +
-            Math.ceil(waitTime * ((participant.speed * 5) / 60000)),
+          participant.correctPosition +
+            Math.ceil(waitTime * ((participant.wpm * 5) / 60000)),
         );
 
         updateStates();
@@ -122,18 +124,24 @@ export function getTypingText() {
 }
 
 export function getZoneData() {
-  let participants = [
-    {
-      id: user.userId,
-      correctPos: user.correctPos,
-      speed: user.speed,
-      endTime: user.endTime,
-      accuracy: user.accuracy,
+  let participants = {
+    [userParticipant.userId]: {
+      userId: userParticipant.userId,
+      username: userProfile.username,
+      correctPosition: userParticipant.correctPosition,
+      wpm: userParticipant.wpm,
+      endTime: userParticipant.endTime,
+      accuracy: userParticipant.accuracy,
+      totalKeystrokes: userParticipant.totalKeystrokes,
+      currentPosition: userParticipant.currentPosition,
     },
-    ...fakeParticipants.map((fakeParticipant) => fakeParticipant.data),
-  ];
+    ...fakeParticipants.reduce((acc, fakeParticipant) => {
+      acc[fakeParticipant.data.userId] = fakeParticipant.data;
+      return acc;
+    }, {} as Record<string, Participant>),
+  };
   let zoneData: ZoneData = {
-    user,
+    userId: userParticipant.userId,
     participants,
     challengeId: "challenge1",
     sessionId: "challenge1-session1",
@@ -152,15 +160,16 @@ export function handleRestartZone() {
     );
   }
 
-  if (!user.endTime && !confirm("Are you sure you want to restart?")) return;
+  if (!userParticipant.endTime && !confirm("Are you sure you want to restart?"))
+    return;
 
-  user.correctPos = 0;
-  user.currentPos = 0;
-  user.keyStrokes = 0;
-  user.speed = 0;
-  user.accuracy = 100;
-  user.endTime = undefined;
-  user.startTime = undefined;
+  userParticipant.correctPosition = 0;
+  userParticipant.currentPosition = 0;
+  userParticipant.totalKeystrokes = 0;
+  userParticipant.wpm = 0;
+  userParticipant.accuracy = 100;
+  userParticipant.endTime = undefined;
+  userParticipant.startTime = undefined;
   startTime = null;
 
   fakeParticipants = generateFakeParticipants();
@@ -169,13 +178,13 @@ export function handleRestartZone() {
 }
 
 export function handleExitZone() {
-  user.correctPos = 0;
-  user.currentPos = 0;
-  user.keyStrokes = 0;
-  user.speed = 0;
-  user.accuracy = 100;
-  user.startTime = undefined;
-  user.endTime = undefined;
+  userParticipant.correctPosition = 0;
+  userParticipant.currentPosition = 0;
+  userParticipant.totalKeystrokes = 0;
+  userParticipant.wpm = 0;
+  userParticipant.accuracy = 100;
+  userParticipant.startTime = undefined;
+  userParticipant.endTime = undefined;
 
   fakeParticipants.forEach((fakeParticipant) => {
     clearInterval(fakeParticipant.intervalId!);
@@ -186,92 +195,67 @@ export function handleExitZone() {
 }
 
 export function handleTypedCharacters(inputString: string) {
-  if (user.endTime) return;
+  if (userParticipant.endTime) return;
   if (!startTime) {
     startRace();
-    user.startTime = startTime!;
+    userParticipant.startTime = startTime!.toISOString();
   }
   const now = Date.now();
   const elapsedTime = startTime ? now - startTime.getTime() : 0;
 
   for (
     let inputIndex = 0;
-    inputIndex < inputString.length && user.correctPos < text.length;
+    inputIndex < inputString.length && userParticipant.correctPosition < text.length;
     inputIndex++
   ) {
     const currentChar = inputString[inputIndex];
     if (currentChar === "\b") {
-      if (user.currentPos > user.correctPos) {
-        user.currentPos--;
-      } else if (user.currentPos === user.correctPos) {
-        if (user.currentPos > 0 && text[user.currentPos - 1] !== " ") {
-          user.currentPos--;
-          user.correctPos--;
+      if (userParticipant.currentPosition > userParticipant.correctPosition) {
+        userParticipant.currentPosition--;
+      } else if (userParticipant.currentPosition === userParticipant.correctPosition) {
+        if (
+          userParticipant.currentPosition > 0 &&
+          text[userParticipant.currentPosition - 1] !== " "
+        ) {
+          userParticipant.currentPosition--;
+          userParticipant.correctPosition--;
         }
       }
     } else {
-      user.keyStrokes++;
+      userParticipant.totalKeystrokes++;
 
-      if (user.currentPos >= text.length) continue;
+      if (userParticipant.currentPosition >= text.length) continue;
 
       if (
-        user.correctPos === user.currentPos &&
-        currentChar === text[user.currentPos]
+        userParticipant.correctPosition === userParticipant.currentPosition &&
+        currentChar === text[userParticipant.currentPosition]
       ) {
-        user.correctPos++;
-        user.currentPos++;
+        userParticipant.correctPosition++;
+        userParticipant.currentPosition++;
       } else {
-        user.currentPos++;
+        userParticipant.currentPosition++;
       }
     }
   }
 
-  if (user.correctPos >= text.length) {
-    user.endTime = new Date();
+  if (userParticipant.correctPosition >= text.length) {
+    userParticipant.endTime = new Date().toISOString();
   }
 
   const minutesElapsed = elapsedTime / 60000;
-  user.speed =
-    minutesElapsed > 0 ? Math.round(user.correctPos / 5 / minutesElapsed) : 0;
+  userParticipant.wpm =
+    minutesElapsed > 0
+      ? Math.round(userParticipant.correctPosition / 5 / minutesElapsed)
+      : 0;
 
-  user.accuracy =
-    user.keyStrokes === 0
+  userParticipant.accuracy =
+    userParticipant.totalKeystrokes === 0
       ? 100
-      : Math.round((user.correctPos / user.keyStrokes) * 100);
+      : Math.round(
+          (userParticipant.correctPosition / userParticipant.totalKeystrokes) * 100,
+        );
 
   updateStates();
-}
-
-export async function fetchChallenges({ pageParam = 1, pageSize = 10 }) {
-  const challenges = await new Promise<Challenge[]>((resolve) => {
-    setTimeout(() => {
-      const mockChallenges = Array.from({ length: pageSize }).map(
-        (_, index) => ({
-          challengeId: Math.random().toString(36).substring(7),
-          createdBy: Math.random().toString(36).substring(7),
-          scheduledTime: new Date(
-            Date.now() + 15000 + Math.floor(Math.random() * 600000),
-          ),
-          privacy:
-            Math.random() > 0.5
-              ? ChallengePrivacy.Open
-              : ChallengePrivacy.Invitational,
-          duration: 10 + Math.floor(Math.random() * 100),
-          activeParticipants: Array.from({
-            length: 1 + Math.random() * 10,
-          }).map((_, index) => Math.random().toString(36).substring(7)),
-        }),
-      );
-      resolve(mockChallenges);
-    }, 1000);
-  });
-
-  return {
-    challenges,
-    page: pageParam,
-    pageSize,
-    totalPages: 13,
-  };
 }
 
 export async function fetchUserChallenges({ pageParam = 1, pageSize = 10 }) {
@@ -279,17 +263,16 @@ export async function fetchUserChallenges({ pageParam = 1, pageSize = 10 }) {
     setTimeout(() => {
       const mockUserChallenges = Array.from({ length: pageSize }).map(
         (_, index) => {
+          const participants = Math.floor(Math.random() * 10);
           const challenge = {
             challengeId: Math.random().toString(36).substring(7),
-            createdBy: Math.random().toString(36).substring(7),
-            scheduledTime: new Date(
+            createdBy: { userId: "newt", username: "newt", email: "newt@newt" },
+            scheduledAt: new Date(
               Date.now() + 15000 + Math.floor(Math.random() * 600000),
-            ),
+            ).toISOString(),
             privacy: ChallengePrivacy.Invitational,
             duration: 10 + Math.floor(Math.random() * 100),
-            activeParticipants: Array.from({
-              length: 1 + Math.random() * 10,
-            }).map((_, index) => Math.random().toString(36).substring(7)),
+            participants,
           };
 
           let status = UserChallengeStatus.Pending;
@@ -318,6 +301,7 @@ export async function fetchUserChallenges({ pageParam = 1, pageSize = 10 }) {
               joinedAt.getTime() + 15000 + Math.floor(Math.random() * 600000),
             );
           }
+
           return { challenge, joinedAt, completedAt, status };
         },
       );
