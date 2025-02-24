@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Challenge, Participant, User, UserTyping } from "../types/request";
+import { Challenge, Participant, StartChallenge, User } from "../types/request";
 import {
-  fetchUserSession,
-  getSessionParticipants,
+  fetchSessionParticipants,
   typingSocketAPI,
 } from "../api";
 import { fetchChallenge, getTypingText } from "../api";
@@ -25,48 +24,76 @@ export const useChallenge = (challengeId: string) => {
 
 export const useSocket = (
   challengeId: string,
-  user: User | null,
+  userId: string | null,
   setTypingText: (_: string) => void,
-  setParticipants: (_: Participant[]) => void,
-  userTyping: UserTyping | null,
-  setUserTyping: (_: UserTyping | null) => void,
-  startedAt?: string,
+  challengeStartedAt?: string,
 ) => {
   const [socketError, setSocketError] = useState<Error | null>(null);
   const [socketLoading, setSocketLoading] = useState(true);
+  const [participants, setParticipants] = useState<Record<string, Participant>>({});
 
-  const handleStartChallenge = (newTypingText: string) => {
-    setTypingText(newTypingText);
-    // there'll be user but putting this check here
-    if (!userTyping && user) {
-      fetchUserSession(challengeId, user.userId).then(setUserTyping);
-    }
+  const handleStartChallenge = (data: StartChallenge) => {
+    setTypingText(data.typingText);
+    setParticipants(data.participants.reduce((acc: Record<string, Participant>, p) => {
+      acc[p.userId] = p;
+      return acc;
+    }, {}));
   };
 
+  const handleEnteredChallenge = (p: Participant) => {
+    toast.success(`${p.username} entered`);
+    handleUpdateParticipant(p);
+  };
+
+  const handleLeftChallenge = (p: Participant) => {
+    toast.success(`${p.username} left`);
+    setParticipants(participants => {
+      delete participants[p.userId];
+      return participants;
+    })
+  }
+
+  const handleUpdateParticipant = (p: Participant) => {
+    setParticipants(prev => {
+      return { ...prev, [p.userId]: p }
+    });
+  }
+
   useEffect(() => {
-    if (!user || !challengeId) return;
+    if (!userId) return;
 
     const handlers = {
       onStartChallenge: handleStartChallenge,
-      onUpdateUser: setUserTyping,
-      onUpdateZone: setParticipants,
+      onUpdateParticipant: handleUpdateParticipant,
       onError: setSocketError,
-      onEntered: (p: Participant) => toast.success(`${p.username} entered`),
-      onLeft: (p: Participant) => toast.success(`${p.username} left`),
+      onEntered: handleEnteredChallenge,
+      onLeft: handleLeftChallenge,
       onDisconnect: (message: string) => toast.error(message),
     };
 
-    typingSocketAPI.connect();
-    typingSocketAPI.initializeChallengeHandlers(handlers);
+    typingSocketAPI.initialize(challengeId, handlers);
+
+    if (challengeStartedAt && new Date() > new Date(challengeStartedAt)) {
+      fetchSessionParticipants(challengeId).then((pss) => {
+        const data = pss.reduce((acc: Record<string, Participant>, p) => {
+          acc[p.userId] = p;
+          return acc },
+        {});
+        setParticipants(data);
+      });
+    }
+
     setSocketLoading(false);
 
     return () => {
       typingSocketAPI.disconnect();
     };
-  }, [challengeId, user, startedAt]);
+  }, [challengeId, userId, challengeStartedAt]);
 
   const handleCharacterInput = (char: string) => {
-    if (userTyping?.endTime) return;
+    if (!userId) return;
+    const userParticipant = participants[userId];
+    if (userParticipant?.endTime) return;
     typingSocketAPI.sendTypingInput(char);
   };
 
@@ -78,6 +105,7 @@ export const useSocket = (
     socketError,
     handleCharacterInput,
     handleExitCompetition,
+    participants,
     socketLoading,
   };
 };
@@ -106,62 +134,4 @@ export const useTypingText = (
   }, [challenge?.startedAt, challengeId]);
 
   return { typingText, typingTextError, setTypingText };
-};
-
-export const useParticipants = (
-  challenge: Challenge | null,
-  challengeId: string,
-) => {
-  const [participants, setParticipants] = useState<Participant[] | null>(null);
-  const [participantsError, setParticipantsError] = useState<Error | null>(
-    null,
-  );
-
-  useEffect(() => {
-    if (participants || !challenge?.startedAt) return;
-
-    const loadParticipants = async () => {
-      try {
-        const participants = await getSessionParticipants(challengeId);
-        setParticipants(participants);
-        if (participantsError) setParticipantsError(null);
-      } catch (err) {
-        setParticipantsError(err as Error);
-      }
-    };
-
-    loadParticipants();
-  }, [challenge?.startedAt, challengeId]);
-
-  return { participants, participantsError, setParticipants };
-};
-
-export const useUserTyping = (
-  challenge: Challenge | null,
-  challengeId: string,
-  user: User | null,
-) => {
-  const [userTyping, setUserTyping] = useState<UserTyping | null>(null);
-  const [userTypingError, setUserTypingError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    if (!challenge?.startedAt || !user) return;
-
-    const loadUserTyping = async () => {
-      try {
-        const newUserTyping = await fetchUserSession(challengeId, user.userId);
-        if (!newUserTyping) {
-          throw new Error("failed to get user session");
-        }
-        setUserTyping(newUserTyping);
-        if (userTypingError) setUserTypingError(null);
-      } catch (err) {
-        setUserTypingError(err as Error);
-      }
-    };
-
-    loadUserTyping();
-  }, [challenge?.startedAt, user, challengeId]);
-
-  return { userTyping, userTypingError, setUserTyping };
 };

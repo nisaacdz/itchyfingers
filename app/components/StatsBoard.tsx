@@ -1,37 +1,37 @@
-import { UserTyping } from "../types/request";
+import { Participant } from "../types/request";
 import { SpeedVortexMeter, SpeedVortexWaiting } from "./SpeedVortexMeter";
 import { AccuracyMeter, AccuracyMeterActive } from "./AccuracyMeter";
 import { LogOut, RotateCcw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type StatsBoardProps = {
-  userTyping: UserTyping;
+  userParticipant: Participant;
   textLength: number;
   onLeave: () => void;
   onRestart: () => void;
 };
 
 export const StatsBoard = ({
-  userTyping,
+  userParticipant,
   textLength,
   onLeave,
   onRestart,
 }: StatsBoardProps) => {
   const completionPercentage =
-    textLength !== 0 ? (userTyping.currentPosition / textLength) * 100 : 0;
+    textLength !== 0 ? (userParticipant.currentPosition / textLength) * 100 : 0;
 
   const speedMeterInitializing =
-    !userTyping ||
-    !userTyping.startTime ||
-    new Date().getTime() - new Date(userTyping.startTime).getTime() < 3000;
+    !userParticipant ||
+    !userParticipant.startTime ||
+    new Date().getTime() - new Date(userParticipant.startTime).getTime() < 3000;
 
-  const accuracyMeterActive = !userTyping.endTime;
+  const accuracyMeterActive = !userParticipant.endTime;
 
   return (
     <div className="flex flex-col w-full h-full gap-4 p-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-muted-foreground">Your Stats</h1>
-        {userTyping.endTime ? (
+        {userParticipant.endTime ? (
           <button
             onClick={onRestart}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors duration-200"
@@ -61,16 +61,16 @@ export const StatsBoard = ({
       <div className="grid grid-cols-1 gap-6">
         <div className="flex justify-center">
           {speedMeterInitializing ? (
-            <SpeedVortexWaiting wpm={userTyping.wpm} />
+            <SpeedVortexWaiting wpm={userParticipant.wpm} />
           ) : (
-            <SpeedVortexMeter wpm={userTyping.wpm} />
+            <SpeedVortexMeter wpm={userParticipant.wpm} />
           )}
         </div>
         <div className="flex justify-center">
           {accuracyMeterActive ? (
-            <AccuracyMeterActive accuracy={userTyping.accuracy} />
+            <AccuracyMeterActive accuracy={userParticipant.accuracy} />
           ) : (
-            <AccuracyMeter accuracy={userTyping.accuracy} />
+            <AccuracyMeter accuracy={userParticipant.accuracy} />
           )}
         </div>
       </div>

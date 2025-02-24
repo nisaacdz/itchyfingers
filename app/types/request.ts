@@ -4,18 +4,8 @@ export type User = {
   email: string;
 };
 
-export type UserTyping = {
-  userId: string;
-  correctPosition: number;
-  currentPosition: number;
-  totalKeystrokes: number;
-  wpm: number;
-  accuracy: number;
-  startTime?: string;
-  endTime?: string;
-};
-
-export const DefaultUserTyping: UserTyping = {
+export const DefaultUserTyping: Participant = {
+  username: "newt",
   userId: "",
   correctPosition: 0,
   currentPosition: 0,
@@ -39,15 +29,24 @@ export type Participant = {
   userId: string;
   username: string;
   correctPosition: number;
+  currentPosition: number;
+  totalKeystrokes: number;
   wpm: number;
-  endTime?: string;
-  startTime?: string;
   accuracy: number;
+  startTime?: string;
+  endTime?: string;
 };
 
-export type ZoneData = {
-  userTyping: UserTyping;
+export type StartChallenge = {
+  challengeId: string;
   participants: Participant[];
+  typingText: string;
+};
+
+
+export type ZoneData = {
+  userId: string;
+  participants: Record<string, Participant>;
   challengeId: string;
   sessionId: string;
 };

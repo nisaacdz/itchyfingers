@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { Caret, WhiteSpaceErrorHighlight } from "./Elems";
-import { Participant, UserTyping } from "../types/request";
+import { Participant } from "../types/request";
 import useParagraphStyles from "../hooks/useParagraphStyles";
 
 type TypingAreaProps = {
   text: string;
-  participants: Participant[];
-  userTyping: UserTyping;
+  participants: Record<string, Participant>;
+  userId: string;
   handleCharacterInput: (char: string) => void;
 };
 
 export const TypingArea = ({
   text,
   participants,
-  userTyping,
+  userId,
   handleCharacterInput,
 }: TypingAreaProps) => {
   const paragraphRef = useRef<HTMLParagraphElement>(null);
@@ -35,14 +35,17 @@ export const TypingArea = ({
     };
   }, []);
 
-  const caretElements = participants.map((participant, index) => {
+  const userParticipant = participants[userId];
+
+  if (!userParticipant) {
+    return null;
+  }
+
+  const caretElements = Object.values(participants).map((participant, index) => {
     if (!paragraphRef.current) {
       return null;
     }
-    const caretPos =
-      participant.userId == userTyping.userId
-        ? userTyping.currentPosition
-        : participant.correctPosition;
+    const caretPos = participant.currentPosition;
     const absPos = computeAbsolutePosition(paragraphRef, caretPos);
     return (
       <Caret
@@ -52,7 +55,7 @@ export const TypingArea = ({
           position: "absolute",
           zIndex: 10,
           height: fontSize,
-          opacity: participant.userId == userTyping.userId ? 1 : 0.25,
+          opacity: participant.userId == userParticipant.userId ? 1 : 0.25,
         }}
       />
     );
@@ -60,8 +63,8 @@ export const TypingArea = ({
 
   const whiteSpaceErrorHighlights = paragraphRef.current
     ? Array.from(
-        { length: userTyping.currentPosition - userTyping.correctPosition },
-        (_, i) => userTyping.correctPosition + i,
+        { length: userParticipant.currentPosition - userParticipant.correctPosition },
+        (_, i) => userParticipant.correctPosition + i,
       )
         .filter((pos) => text[pos] === " ")
         .map((pos) => (
@@ -83,12 +86,12 @@ export const TypingArea = ({
         ref={paragraphRef}
       >
         <span className="text-yellow-600">
-          {text.slice(0, userTyping.correctPosition)}
+          {text.slice(0, userParticipant.correctPosition)}
         </span>
         <span className="text-red-600">
-          {text.slice(userTyping.correctPosition, userTyping.currentPosition)}
+          {text.slice(userParticipant.correctPosition, userParticipant.currentPosition)}
         </span>
-        {text.slice(userTyping.currentPosition)}
+        {text.slice(userParticipant.currentPosition)}
       </p>
     </div>
   );

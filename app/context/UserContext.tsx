@@ -16,8 +16,8 @@ import {
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
-  userTyping: UserTyping | null;
-  setUserTyping: (userTyping: UserTyping | null) => void;
+  userParticipant: UserTyping | null;
+  setUserTyping: (userParticipant: UserTyping | null) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -26,14 +26,14 @@ export const UserContextProvider: React.FC<PropsWithChildren> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userTyping, setUserTyping] = useState<UserTyping | null>(
+  const [userParticipant, setUserTyping] = useState<UserTyping | null>(
     DefaultUserTyping,
   );
 
   const value: UserContextType = {
     user,
     setUser,
-    userTyping,
+    userParticipant,
     setUserTyping,
   };
 

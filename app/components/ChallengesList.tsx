@@ -17,6 +17,7 @@ import { enterChallenge, fetchChallenges } from "../api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { useQueryState, parseAsInteger } from "nuqs";
 
 const formatDuration = (seconds: number) => {
   const hours = Math.floor(seconds / 3600);
@@ -39,8 +40,8 @@ const formatTimeRemaining = (date: Date) => {
 };
 
 const ChallengesList = () => {
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(15);
+  const [page, setPage] = useQueryState<number>('page', parseAsInteger.withDefault(1))
+  const [pageSize, setPageSize] = useQueryState<number>('pageSize', parseAsInteger.withDefault(15))
   const router = useRouter();
 
   const { data, isLoading, isError, error, refetch } = useQuery({

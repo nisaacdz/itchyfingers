@@ -1,7 +1,7 @@
-import { Challenge, Participant, User, UserTyping } from "../types/request";
+import { Challenge, Participant, User } from "../types/request";
 import { Axios } from "../util/axios";
 
-export { typingSocketAPI } from "./typingzone";
+export { typingSocketAPI } from "./socket";
 
 export async function getTypingText(challengeId: string) {
   try {
@@ -44,7 +44,7 @@ export async function fetchUserSession(challengeId: string, userId: string) {
       throw new Error("Failed to fetch typing session");
     }
 
-    return req.data as UserTyping | null;
+    return req.data as Participant | null;
   } catch (e: any) {
     throw new Error(e.message);
   }
@@ -118,7 +118,7 @@ export async function logoutUser() {
   }
 }
 
-export async function getSessionParticipants(challengeId: string) {
+export async function fetchSessionParticipants(challengeId: string) {
   try {
     const req = await Axios.get(`/challenges/${challengeId}/participants`);
 

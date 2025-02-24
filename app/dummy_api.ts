@@ -1,7 +1,6 @@
 import {
   ChallengePrivacy,
   Participant,
-  UserTyping,
   UserChallenge,
   UserChallengeStatus,
   UserProfile,
@@ -15,8 +14,9 @@ const text =
   "In the land of myth and a time of magic, the destiny of a great kingdom rests on the shoulders of a young boy. His name, Merlin.";
 
 let updateStates: () => void;
-const userTyping: UserTyping = {
+const userParticipant: Participant = {
   userId: "newt",
+  username: "newt",
   correctPosition: 0,
   currentPosition: 0,
   totalKeystrokes: 0,
@@ -56,6 +56,8 @@ function generateFakeParticipants() {
         correctPosition: 0,
         wpm: 30 + Math.random() * 100,
         accuracy: 100,
+        totalKeystrokes: 0,
+        currentPosition: 0,
       },
     };
   });
@@ -122,19 +124,24 @@ export function getTypingText() {
 }
 
 export function getZoneData() {
-  let participants = [
-    {
-      userId: userTyping.userId,
+  let participants = {
+    [userParticipant.userId]: {
+      userId: userParticipant.userId,
       username: userProfile.username,
-      correctPosition: userTyping.correctPosition,
-      wpm: userTyping.wpm,
-      endTime: userTyping.endTime,
-      accuracy: userTyping.accuracy,
+      correctPosition: userParticipant.correctPosition,
+      wpm: userParticipant.wpm,
+      endTime: userParticipant.endTime,
+      accuracy: userParticipant.accuracy,
+      totalKeystrokes: userParticipant.totalKeystrokes,
+      currentPosition: userParticipant.currentPosition,
     },
-    ...fakeParticipants.map((fakeParticipant) => fakeParticipant.data),
-  ];
+    ...fakeParticipants.reduce((acc, fakeParticipant) => {
+      acc[fakeParticipant.data.userId] = fakeParticipant.data;
+      return acc;
+    }, {} as Record<string, Participant>),
+  };
   let zoneData: ZoneData = {
-    userTyping,
+    userId: userParticipant.userId,
     participants,
     challengeId: "challenge1",
     sessionId: "challenge1-session1",
@@ -153,16 +160,16 @@ export function handleRestartZone() {
     );
   }
 
-  if (!userTyping.endTime && !confirm("Are you sure you want to restart?"))
+  if (!userParticipant.endTime && !confirm("Are you sure you want to restart?"))
     return;
 
-  userTyping.correctPosition = 0;
-  userTyping.currentPosition = 0;
-  userTyping.totalKeystrokes = 0;
-  userTyping.wpm = 0;
-  userTyping.accuracy = 100;
-  userTyping.endTime = undefined;
-  userTyping.startTime = undefined;
+  userParticipant.correctPosition = 0;
+  userParticipant.currentPosition = 0;
+  userParticipant.totalKeystrokes = 0;
+  userParticipant.wpm = 0;
+  userParticipant.accuracy = 100;
+  userParticipant.endTime = undefined;
+  userParticipant.startTime = undefined;
   startTime = null;
 
   fakeParticipants = generateFakeParticipants();
@@ -171,13 +178,13 @@ export function handleRestartZone() {
 }
 
 export function handleExitZone() {
-  userTyping.correctPosition = 0;
-  userTyping.currentPosition = 0;
-  userTyping.totalKeystrokes = 0;
-  userTyping.wpm = 0;
-  userTyping.accuracy = 100;
-  userTyping.startTime = undefined;
-  userTyping.endTime = undefined;
+  userParticipant.correctPosition = 0;
+  userParticipant.currentPosition = 0;
+  userParticipant.totalKeystrokes = 0;
+  userParticipant.wpm = 0;
+  userParticipant.accuracy = 100;
+  userParticipant.startTime = undefined;
+  userParticipant.endTime = undefined;
 
   fakeParticipants.forEach((fakeParticipant) => {
     clearInterval(fakeParticipant.intervalId!);
@@ -188,64 +195,64 @@ export function handleExitZone() {
 }
 
 export function handleTypedCharacters(inputString: string) {
-  if (userTyping.endTime) return;
+  if (userParticipant.endTime) return;
   if (!startTime) {
     startRace();
-    userTyping.startTime = startTime!.toISOString();
+    userParticipant.startTime = startTime!.toISOString();
   }
   const now = Date.now();
   const elapsedTime = startTime ? now - startTime.getTime() : 0;
 
   for (
     let inputIndex = 0;
-    inputIndex < inputString.length && userTyping.correctPosition < text.length;
+    inputIndex < inputString.length && userParticipant.correctPosition < text.length;
     inputIndex++
   ) {
     const currentChar = inputString[inputIndex];
     if (currentChar === "\b") {
-      if (userTyping.currentPosition > userTyping.correctPosition) {
-        userTyping.currentPosition--;
-      } else if (userTyping.currentPosition === userTyping.correctPosition) {
+      if (userParticipant.currentPosition > userParticipant.correctPosition) {
+        userParticipant.currentPosition--;
+      } else if (userParticipant.currentPosition === userParticipant.correctPosition) {
         if (
-          userTyping.currentPosition > 0 &&
-          text[userTyping.currentPosition - 1] !== " "
+          userParticipant.currentPosition > 0 &&
+          text[userParticipant.currentPosition - 1] !== " "
         ) {
-          userTyping.currentPosition--;
-          userTyping.correctPosition--;
+          userParticipant.currentPosition--;
+          userParticipant.correctPosition--;
         }
       }
     } else {
-      userTyping.totalKeystrokes++;
+      userParticipant.totalKeystrokes++;
 
-      if (userTyping.currentPosition >= text.length) continue;
+      if (userParticipant.currentPosition >= text.length) continue;
 
       if (
-        userTyping.correctPosition === userTyping.currentPosition &&
-        currentChar === text[userTyping.currentPosition]
+        userParticipant.correctPosition === userParticipant.currentPosition &&
+        currentChar === text[userParticipant.currentPosition]
       ) {
-        userTyping.correctPosition++;
-        userTyping.currentPosition++;
+        userParticipant.correctPosition++;
+        userParticipant.currentPosition++;
       } else {
-        userTyping.currentPosition++;
+        userParticipant.currentPosition++;
       }
     }
   }
 
-  if (userTyping.correctPosition >= text.length) {
-    userTyping.endTime = new Date().toISOString();
+  if (userParticipant.correctPosition >= text.length) {
+    userParticipant.endTime = new Date().toISOString();
   }
 
   const minutesElapsed = elapsedTime / 60000;
-  userTyping.wpm =
+  userParticipant.wpm =
     minutesElapsed > 0
-      ? Math.round(userTyping.correctPosition / 5 / minutesElapsed)
+      ? Math.round(userParticipant.correctPosition / 5 / minutesElapsed)
       : 0;
 
-  userTyping.accuracy =
-    userTyping.totalKeystrokes === 0
+  userParticipant.accuracy =
+    userParticipant.totalKeystrokes === 0
       ? 100
       : Math.round(
-          (userTyping.correctPosition / userTyping.totalKeystrokes) * 100,
+          (userParticipant.correctPosition / userParticipant.totalKeystrokes) * 100,
         );
 
   updateStates();

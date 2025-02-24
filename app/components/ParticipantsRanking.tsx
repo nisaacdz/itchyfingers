@@ -1,9 +1,9 @@
-import { Participant, UserTyping } from "../types/request";
+import { Participant } from "../types/request";
 import { Crown } from "lucide-react";
 
 type ParticipantsRankingProps = {
-  userTyping: UserTyping | null;
-  participants: Participant[] | null;
+  userId: string | null;
+  participants: Record<string, Participant>;
 };
 
 type TransformedParticipant = {
@@ -17,13 +17,13 @@ type TransformedParticipant = {
 };
 
 const ParticipantsRanking = ({
-  userTyping,
+  userId,
   participants,
 }: ParticipantsRankingProps) => {
-  if (!userTyping || !participants || participants.length < 1) {
+  if (!userId) {
     return <></>;
   }
-  const rankings = participants
+  const rankings = Object.values(participants)
     .filter((participant) => participant.endTime && participant.endTime)
     .map((p) => ({
       ...p,
@@ -35,6 +35,8 @@ const ParticipantsRanking = ({
   if (rankings.length === 0) {
     return <></>;
   }
+
+  const userParticipant = participants[userId];
 
   const formatTime = (p: TransformedParticipant): string => {
     // console.log("started at", p.startTime.toTimeString());
@@ -58,7 +60,7 @@ const ParticipantsRanking = ({
             <div
               key={participant.userId}
               className={`grid grid-cols-7 w-full p-2 ${
-                participant.userId === userTyping.userId ? "bg-secondary" : ""
+                participant.userId === userParticipant.userId ? "bg-secondary" : ""
               } border-t border-muted-foreground`}
             >
               <span className="text-lg font-medium text-muted-foreground font-courier-prime">
@@ -68,18 +70,18 @@ const ParticipantsRanking = ({
                 {index === 0 && <Crown className="size-4 text-chart-3" />}{" "}
                 <p
                   className={`text-lg font-medium font-courier-prime ${
-                    participant.userId === userTyping.userId
+                    participant.userId === userParticipant.userId
                       ? "text-foreground"
                       : "text-muted-foreground"
                   }`}
                 >
                   {participant.username}{" "}
-                  {participant.userId === userTyping.userId && "(You)"}
+                  {participant.userId === userParticipant.userId && "(You)"}
                 </p>
               </div>
               <p
                 className={`text-lg font-medium font-courier-prime ${
-                  participant.userId === userTyping.userId
+                  participant.userId === userParticipant.userId
                     ? "text-foreground"
                     : "text-muted-foreground"
                 }`}
@@ -88,7 +90,7 @@ const ParticipantsRanking = ({
               </p>
               <p
                 className={`text-lg text-right mr-8 font-medium font-courier-prime ${
-                  participant.userId === userTyping.userId
+                  participant.userId === userParticipant.userId
                     ? "text-foreground"
                     : "text-muted-foreground"
                 }`}
@@ -97,7 +99,7 @@ const ParticipantsRanking = ({
               </p>
               <p
                 className={`text-lg text-right mr-2 font-medium font-courier-prime ${
-                  participant.userId === userTyping.userId
+                  participant.userId === userParticipant.userId
                     ? "text-foreground"
                     : "text-muted-foreground"
                 }`}

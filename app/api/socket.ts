@@ -1,10 +1,9 @@
 import { io, Socket } from "socket.io-client";
-import { Participant, UserTyping } from "../types/request";
+import { Participant, StartChallenge } from "../types/request";
 
 type ChallengeEventCallbacks = {
-  onUpdateUser: (data: UserTyping) => void;
-  onUpdateZone: (data: Participant[]) => void;
-  onStartChallenge: (typingText: string) => void;
+  onUpdateParticipant: (data: Participant) => void;
+  onStartChallenge: (startData: StartChallenge) => void;
   onError: (error: Error) => void;
   onEntered: (data: Participant) => void;
   onDisconnect: (message: string) => void;
@@ -15,7 +14,7 @@ class TypingSocketAPI {
   private socket: Socket | null = null;
   private challengeCallbacks: ChallengeEventCallbacks | null = null;
 
-  public connect() {
+  connect() {
     if (this.socket?.connected) return;
 
     if (!this.socket) {
@@ -51,9 +50,9 @@ class TypingSocketAPI {
     });
   }
 
-  public initializeChallengeHandlers(callbacks: ChallengeEventCallbacks) {
+  public initialize(challengeId: string, callbacks: ChallengeEventCallbacks) {
+    this.connect();
     this.socket?.off("user-update");
-    this.socket?.off("room-update");
     this.socket?.off("start-challenge");
     this.socket?.off("entered");
     this.socket?.off("left");
@@ -61,16 +60,12 @@ class TypingSocketAPI {
 
     this.challengeCallbacks = callbacks;
 
-    this.socket?.on("user-update", (data: UserTyping) => {
-      this.challengeCallbacks?.onUpdateUser(data);
+    this.socket?.on("user-update", (data: Participant) => {
+      this.challengeCallbacks?.onUpdateParticipant(data);
     });
 
-    this.socket?.on("room-update", (data: Participant[]) => {
-      this.challengeCallbacks?.onUpdateZone(data);
-    });
-
-    this.socket?.on("start-challenge", (text: string) => {
-      this.challengeCallbacks?.onStartChallenge(text);
+    this.socket?.on("start-challenge", (data: StartChallenge) => {
+      this.challengeCallbacks?.onStartChallenge(data);
     });
 
     this.socket?.on("entered", (data: Participant) => {
@@ -84,21 +79,16 @@ class TypingSocketAPI {
     this.socket?.on("error", (message: string) => {
       this.challengeCallbacks?.onError(new Error(message));
     });
-  }
 
-  public enterChallenge(challengeId: string) {
-    this.socket?.connect();
-    this.socket?.emit("enter-challenge", challengeId);
+    this.socket?.emit("enter-challenge", { challengeId });
   }
 
   public sendTypingInput(character: string) {
-    this.socket?.connect();
     this.socket?.emit("on-type", { character });
   }
 
   public leaveChallenge() {
-    if (!this.socket?.connected) return;
-    this.socket.emit("leave-challenge");
+    this.socket?.emit("leave-challenge");
   }
 
   public disconnect() {
