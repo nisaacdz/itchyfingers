@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format:check": "npx prettier --check .",
+    "format": "npx prettier --write ."
   },
   "dependencies": {
     "@ant-design/icons": "^5.6.1",

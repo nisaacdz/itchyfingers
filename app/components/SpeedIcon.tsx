@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { CSSProperties } from "react";
 
 type SpeedIconProps = {
@@ -19,11 +20,14 @@ const SpeedIcon = ({ wpm, styles, ref }: SpeedIconProps) => {
             ? "/fly.svg"
             : "/rocket.svg";
   return (
-    <img
+    <Image
       src={img_src}
       className="size-8 2xl:size-10"
+      width={32}
+      height={32}
       style={styles}
       ref={ref}
+      alt={`Speed Icon for ${wpm} WPM`}
     />
   );
 };

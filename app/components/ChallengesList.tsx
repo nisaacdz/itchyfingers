@@ -40,8 +40,14 @@ const formatTimeRemaining = (date: Date) => {
 };
 
 const ChallengesList = () => {
-  const [page, setPage] = useQueryState<number>('page', parseAsInteger.withDefault(1))
-  const [pageSize, setPageSize] = useQueryState<number>('pageSize', parseAsInteger.withDefault(15))
+  const [page, setPage] = useQueryState<number>(
+    "page",
+    parseAsInteger.withDefault(1),
+  );
+  const [pageSize, setPageSize] = useQueryState<number>(
+    "pageSize",
+    parseAsInteger.withDefault(15),
+  );
   const router = useRouter();
 
   const { data, isLoading, isError, error, refetch } = useQuery({

@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Challenge, Participant, StartChallenge, User } from "../types/request";
-import {
-  fetchSessionParticipants,
-  typingSocketAPI,
-} from "../api";
+import { Challenge, Participant, StartChallenge } from "../types/request";
+import { fetchSessionParticipants, typingSocketAPI } from "../api";
 import { fetchChallenge, getTypingText } from "../api";
 import { toast } from "react-toastify";
 
@@ -30,37 +27,41 @@ export const useSocket = (
 ) => {
   const [socketError, setSocketError] = useState<Error | null>(null);
   const [socketLoading, setSocketLoading] = useState(true);
-  const [participants, setParticipants] = useState<Record<string, Participant>>({});
-
-  const handleStartChallenge = (data: StartChallenge) => {
-    setTypingText(data.typingText);
-    setParticipants(data.participants.reduce((acc: Record<string, Participant>, p) => {
-      acc[p.userId] = p;
-      return acc;
-    }, {}));
-  };
-
-  const handleEnteredChallenge = (p: Participant) => {
-    toast.success(`${p.username} entered`);
-    handleUpdateParticipant(p);
-  };
+  const [participants, setParticipants] = useState<Record<string, Participant>>(
+    {},
+  );
 
   const handleLeftChallenge = (p: Participant) => {
     toast.success(`${p.username} left`);
-    setParticipants(participants => {
+    setParticipants((participants) => {
       delete participants[p.userId];
       return participants;
-    })
-  }
-
-  const handleUpdateParticipant = (p: Participant) => {
-    setParticipants(prev => {
-      return { ...prev, [p.userId]: p }
     });
-  }
+  };
 
   useEffect(() => {
     if (!userId) return;
+
+    const handleStartChallenge = (data: StartChallenge) => {
+      setTypingText(data.typingText);
+      setParticipants(
+        data.participants.reduce((acc: Record<string, Participant>, p) => {
+          acc[p.userId] = p;
+          return acc;
+        }, {}),
+      );
+    };
+
+    const handleUpdateParticipant = (p: Participant) => {
+      setParticipants((prev) => {
+        return { ...prev, [p.userId]: p };
+      });
+    };
+
+    const handleEnteredChallenge = (p: Participant) => {
+      toast.success(`${p.username} entered`);
+      handleUpdateParticipant(p);
+    };
 
     const handlers = {
       onStartChallenge: handleStartChallenge,
@@ -77,8 +78,8 @@ export const useSocket = (
       fetchSessionParticipants(challengeId).then((pss) => {
         const data = pss.reduce((acc: Record<string, Participant>, p) => {
           acc[p.userId] = p;
-          return acc },
-        {});
+          return acc;
+        }, {});
         setParticipants(data);
       });
     }
@@ -88,7 +89,7 @@ export const useSocket = (
     return () => {
       typingSocketAPI.disconnect();
     };
-  }, [challengeId, userId, challengeStartedAt]);
+  }, [challengeId, userId, challengeStartedAt, setTypingText, setParticipants]);
 
   const handleCharacterInput = (char: string) => {
     if (!userId) return;
@@ -131,7 +132,7 @@ export const useTypingText = (
     };
 
     loadText();
-  }, [challenge?.startedAt, challengeId]);
+  }, [challenge?.startedAt, challengeId, typingTextError]);
 
   return { typingText, typingTextError, setTypingText };
 };

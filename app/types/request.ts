@@ -43,12 +43,12 @@ export type StartChallenge = {
   typingText: string;
 };
 
-
 export type ZoneData = {
   userId: string;
   participants: Record<string, Participant>;
   challengeId: string;
   sessionId: string;
+  startTime?: string;
 };
 
 export enum ChallengePrivacy {

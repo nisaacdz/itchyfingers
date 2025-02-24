@@ -28,16 +28,7 @@ Axios.interceptors.response.use(
   },
 );
 
-export function resolveAxiosError(request: any, defaultMsg?: string) {
-  return (
-    request?.response?.data?.error ??
-    request?.error?.msg ??
-    defaultMsg ??
-    "An error occurred"
-  );
-}
-
 export function getQueryStringFromUrl(url: string) {
-  const [_, query] = url.split("?");
-  return query ?? null;
+  const query = url.split("?");
+  return query[1] ?? null;
 }

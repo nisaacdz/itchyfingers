@@ -33,7 +33,7 @@ export const TypingArea = ({
     return () => {
       window.removeEventListener("keydown", onKeyPress);
     };
-  }, []);
+  }, [handleCharacterInput]);
 
   const userParticipant = participants[userId];
 
@@ -41,29 +41,34 @@ export const TypingArea = ({
     return null;
   }
 
-  const caretElements = Object.values(participants).map((participant, index) => {
-    if (!paragraphRef.current) {
-      return null;
-    }
-    const caretPos = participant.currentPosition;
-    const absPos = computeAbsolutePosition(paragraphRef, caretPos);
-    return (
-      <Caret
-        key={index}
-        styles={{
-          ...absPos,
-          position: "absolute",
-          zIndex: 10,
-          height: fontSize,
-          opacity: participant.userId == userParticipant.userId ? 1 : 0.25,
-        }}
-      />
-    );
-  });
+  const caretElements = Object.values(participants).map(
+    (participant, index) => {
+      if (!paragraphRef.current) {
+        return null;
+      }
+      const caretPos = participant.currentPosition;
+      const absPos = computeAbsolutePosition(paragraphRef, caretPos);
+      return (
+        <Caret
+          key={index}
+          styles={{
+            ...absPos,
+            position: "absolute",
+            zIndex: 10,
+            height: fontSize,
+            opacity: participant.userId == userParticipant.userId ? 1 : 0.25,
+          }}
+        />
+      );
+    },
+  );
 
   const whiteSpaceErrorHighlights = paragraphRef.current
     ? Array.from(
-        { length: userParticipant.currentPosition - userParticipant.correctPosition },
+        {
+          length:
+            userParticipant.currentPosition - userParticipant.correctPosition,
+        },
         (_, i) => userParticipant.correctPosition + i,
       )
         .filter((pos) => text[pos] === " ")
@@ -89,7 +94,10 @@ export const TypingArea = ({
           {text.slice(0, userParticipant.correctPosition)}
         </span>
         <span className="text-red-600">
-          {text.slice(userParticipant.correctPosition, userParticipant.currentPosition)}
+          {text.slice(
+            userParticipant.correctPosition,
+            userParticipant.currentPosition,
+          )}
         </span>
         {text.slice(userParticipant.currentPosition)}
       </p>
@@ -109,10 +117,7 @@ export const TypingAreaCountdown = ({ scheduledAt }: { scheduledAt: Date }) => {
     setTimeLeftMs(calculateTimeLeft());
 
     const intervalId = setInterval(() => {
-      setTimeLeftMs((prev) => {
-        if (prev === null || prev <= 0) return 0;
-        return Math.max(0, prev - 1000);
-      });
+      setTimeLeftMs(scheduledAt.getTime() - Date.now());
     }, 1000);
 
     return () => clearInterval(intervalId);

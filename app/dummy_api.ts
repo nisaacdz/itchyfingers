@@ -7,8 +7,8 @@ import {
   ZoneData,
 } from "./types/request";
 
-const text2 =
-  "Ipsum dolor sit amet, consectetur adipiscing elit. Sed ac purus sit amet nisl tincidunt tincidunt";
+// const text2 =
+//   "Ipsum dolor sit amet, consectetur adipiscing elit. Sed ac purus sit amet nisl tincidunt tincidunt";
 
 const text =
   "In the land of myth and a time of magic, the destiny of a great kingdom rests on the shoulders of a young boy. His name, Merlin.";
@@ -35,8 +35,8 @@ const userProfile: UserProfile = {
   },
 };
 
-let loading = false;
-let error = false;
+const loading = false;
+const error = false;
 let startTime: Date | undefined | null;
 
 type FakeParticipant = {
@@ -124,7 +124,7 @@ export function getTypingText() {
 }
 
 export function getZoneData() {
-  let participants = {
+  const participants = {
     [userParticipant.userId]: {
       userId: userParticipant.userId,
       username: userProfile.username,
@@ -135,16 +135,20 @@ export function getZoneData() {
       totalKeystrokes: userParticipant.totalKeystrokes,
       currentPosition: userParticipant.currentPosition,
     },
-    ...fakeParticipants.reduce((acc, fakeParticipant) => {
-      acc[fakeParticipant.data.userId] = fakeParticipant.data;
-      return acc;
-    }, {} as Record<string, Participant>),
+    ...fakeParticipants.reduce(
+      (acc, fakeParticipant) => {
+        acc[fakeParticipant.data.userId] = fakeParticipant.data;
+        return acc;
+      },
+      {} as Record<string, Participant>,
+    ),
   };
-  let zoneData: ZoneData = {
+  const zoneData: ZoneData = {
     userId: userParticipant.userId,
     participants,
     challengeId: "challenge1",
     sessionId: "challenge1-session1",
+    startTime: startTime?.toISOString(),
   };
   return zoneData;
 }
@@ -205,14 +209,17 @@ export function handleTypedCharacters(inputString: string) {
 
   for (
     let inputIndex = 0;
-    inputIndex < inputString.length && userParticipant.correctPosition < text.length;
+    inputIndex < inputString.length &&
+    userParticipant.correctPosition < text.length;
     inputIndex++
   ) {
     const currentChar = inputString[inputIndex];
     if (currentChar === "\b") {
       if (userParticipant.currentPosition > userParticipant.correctPosition) {
         userParticipant.currentPosition--;
-      } else if (userParticipant.currentPosition === userParticipant.correctPosition) {
+      } else if (
+        userParticipant.currentPosition === userParticipant.correctPosition
+      ) {
         if (
           userParticipant.currentPosition > 0 &&
           text[userParticipant.currentPosition - 1] !== " "
@@ -252,7 +259,8 @@ export function handleTypedCharacters(inputString: string) {
     userParticipant.totalKeystrokes === 0
       ? 100
       : Math.round(
-          (userParticipant.correctPosition / userParticipant.totalKeystrokes) * 100,
+          (userParticipant.correctPosition / userParticipant.totalKeystrokes) *
+            100,
         );
 
   updateStates();
@@ -261,50 +269,48 @@ export function handleTypedCharacters(inputString: string) {
 export async function fetchUserChallenges({ pageParam = 1, pageSize = 10 }) {
   const userChallenges = await new Promise<UserChallenge[]>((resolve) => {
     setTimeout(() => {
-      const mockUserChallenges = Array.from({ length: pageSize }).map(
-        (_, index) => {
-          const participants = Math.floor(Math.random() * 10);
-          const challenge = {
-            challengeId: Math.random().toString(36).substring(7),
-            createdBy: { userId: "newt", username: "newt", email: "newt@newt" },
-            scheduledAt: new Date(
-              Date.now() + 15000 + Math.floor(Math.random() * 600000),
-            ).toISOString(),
-            privacy: ChallengePrivacy.Invitational,
-            duration: 10 + Math.floor(Math.random() * 100),
-            participants,
-          };
+      const mockUserChallenges = Array.from({ length: pageSize }).map(() => {
+        const participants = Math.floor(Math.random() * 10);
+        const challenge = {
+          challengeId: Math.random().toString(36).substring(7),
+          createdBy: { userId: "newt", username: "newt", email: "newt@newt" },
+          scheduledAt: new Date(
+            Date.now() + 15000 + Math.floor(Math.random() * 600000),
+          ).toISOString(),
+          privacy: ChallengePrivacy.Invitational,
+          duration: 10 + Math.floor(Math.random() * 100),
+          participants,
+        };
 
-          let status = UserChallengeStatus.Pending;
-          const random = Math.random();
-          if (random < 0.2) {
-            status = UserChallengeStatus.Accepted;
-          } else if (random < 0.4) {
-            status = UserChallengeStatus.Declined;
-          } else if (random < 0.6) {
-            status = UserChallengeStatus.Completed;
-          } else if (random < 0.8) {
-            status = UserChallengeStatus.Discarded;
-          }
+        let status = UserChallengeStatus.Pending;
+        const random = Math.random();
+        if (random < 0.2) {
+          status = UserChallengeStatus.Accepted;
+        } else if (random < 0.4) {
+          status = UserChallengeStatus.Declined;
+        } else if (random < 0.6) {
+          status = UserChallengeStatus.Completed;
+        } else if (random < 0.8) {
+          status = UserChallengeStatus.Discarded;
+        }
 
-          let joinedAt: Date | undefined = undefined;
-          if (status === UserChallengeStatus.Accepted && Math.random() > 0.5) {
-            joinedAt = new Date(
-              Date.now() - 15000 - Math.floor(Math.random() * 600000),
-            );
-          }
+        let joinedAt: Date | undefined = undefined;
+        if (status === UserChallengeStatus.Accepted && Math.random() > 0.5) {
+          joinedAt = new Date(
+            Date.now() - 15000 - Math.floor(Math.random() * 600000),
+          );
+        }
 
-          let completedAt: Date | undefined = undefined;
+        let completedAt: Date | undefined = undefined;
 
-          if (joinedAt && Math.random() > 0.5) {
-            completedAt = new Date(
-              joinedAt.getTime() + 15000 + Math.floor(Math.random() * 600000),
-            );
-          }
+        if (joinedAt && Math.random() > 0.5) {
+          completedAt = new Date(
+            joinedAt.getTime() + 15000 + Math.floor(Math.random() * 600000),
+          );
+        }
 
-          return { challenge, joinedAt, completedAt, status };
-        },
-      );
+        return { challenge, joinedAt, completedAt, status };
+      });
       resolve(mockUserChallenges);
     }, 1000);
   });

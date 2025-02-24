@@ -25,7 +25,7 @@ export default function Page() {
       setZoneData(getZoneData());
     });
     setTypingText(getTypingText());
-    let { zoneData, loading, error } = getEverything();
+    const { zoneData, loading, error } = getEverything();
     setLoading(loading);
     setError(error);
     setZoneData(zoneData);
@@ -68,6 +68,7 @@ export default function Page() {
           <ParticipantsRanking
             participants={zoneData.participants}
             userId={zoneData.userId}
+            challengeStartTime={zoneData.startTime}
           />
         </div>
       </div>
