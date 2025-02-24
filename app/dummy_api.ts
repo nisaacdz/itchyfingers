@@ -148,6 +148,7 @@ export function getZoneData() {
     participants,
     challengeId: "challenge1",
     sessionId: "challenge1-session1",
+    startTime: startTime?.toISOString(),
   };
   return zoneData;
 }

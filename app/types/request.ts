@@ -48,6 +48,7 @@ export type ZoneData = {
   participants: Record<string, Participant>;
   challengeId: string;
   sessionId: string;
+  startTime?: string;
 };
 
 export enum ChallengePrivacy {

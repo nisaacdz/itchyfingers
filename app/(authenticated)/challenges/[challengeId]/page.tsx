@@ -135,7 +135,11 @@ const MainContent = ({
       ) : (
         <></>
       )}
-      <ParticipantsRanking participants={participants} userId={userId} />
+      <ParticipantsRanking
+        participants={participants}
+        userId={userId}
+        challengeStartTime={challenge?.startedAt || undefined}
+      />
     </div>
   );
 };

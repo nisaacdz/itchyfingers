@@ -117,10 +117,7 @@ export const TypingAreaCountdown = ({ scheduledAt }: { scheduledAt: Date }) => {
     setTimeLeftMs(calculateTimeLeft());
 
     const intervalId = setInterval(() => {
-      setTimeLeftMs((prev) => {
-        if (prev === null || prev <= 0) return 0;
-        return Math.max(0, prev - 1000);
-      });
+      setTimeLeftMs(scheduledAt.getTime() - Date.now());
     }, 1000);
 
     return () => clearInterval(intervalId);
