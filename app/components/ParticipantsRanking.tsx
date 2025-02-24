@@ -1,16 +1,11 @@
 import { Participant } from "../types/request";
 import { Crown } from "lucide-react";
-import { cn } from "@/lib/utils"; // Assuming you have utility classes
+import { cn } from "@/lib/utils";
 
 type ParticipantsRankingProps = {
   userId: string | null;
   participants: Record<string, Participant>;
   challengeStartTime?: string;
-};
-
-type TransformedParticipant = Participant & {
-  startTime: Date;
-  endTime: Date;
 };
 
 const ParticipantsRanking = ({
