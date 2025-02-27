@@ -10,6 +10,7 @@ import Link from "next/link";
 import { registerUser } from "@/api/requests";
 import { toast } from "react-toastify";
 
+// Random commment by nisaacdz
 export default function SignupPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
