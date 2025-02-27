@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { UserChallenge, UserChallengeStatus } from "../../types/request";
-import { fetchUserChallenges } from "../../api/dummy_api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getUserChallenges } from "@/api/requests";
 
 const getActionData = (userChallenge: UserChallenge) => {
   if (userChallenge.status === UserChallengeStatus.Pending) {
@@ -86,32 +86,24 @@ const formatTimeRemaining = (date: Date) => {
   return `${Math.floor(diffInSeconds / 86400)}d`;
 };
 
-const UserChallengesList = () => {
+const UserChallengesList = ({ userId }: { userId: string }) => {
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(15);
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const {
+    data: userChallengeResponse,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["userChallenges", page, pageSize],
-    queryFn: () => fetchUserChallenges({ pageParam: page, pageSize }),
+    queryFn: () => getUserChallenges(userId, page, pageSize),
   });
 
   const handlePrevious = () => setPage((p) => Math.max(1, p - 1));
   const handleNext = () =>
-    setPage((p) => Math.min(data?.totalPages || p, p + 1));
-
-  if (isError) {
-    return (
-      <div className="p-4 bg-destructive/10 border border-destructive rounded-lg text-destructive-foreground max-w-4xl mx-auto">
-        <p>Error: {(error as Error)?.message || "Failed to load challenges"}</p>
-        <button
-          className="mt-2 px-4 py-2 bg-accent/10 hover:bg-accent/20 rounded-md text-foreground"
-          onClick={() => refetch()}
-        >
-          Retry
-        </button>
-      </div>
+    setPage((p) =>
+      Math.min(userChallengeResponse?.result?.totalPages || p, p + 1),
     );
-  }
 
   if (isLoading) {
     return (
@@ -145,15 +137,38 @@ const UserChallengesList = () => {
     );
   }
 
+  if (
+    !userChallengeResponse ||
+    userChallengeResponse.error ||
+    !userChallengeResponse.result
+  ) {
+    const error = new Error(
+      userChallengeResponse?.error || "Failed to load challenges",
+    );
+    return (
+      <div className="p-4 bg-destructive/10 border border-destructive rounded-lg text-destructive-foreground max-w-4xl mx-auto">
+        <p>Error: {error?.message || "Failed to load challenges"}</p>
+        <button
+          className="mt-2 px-4 py-2 bg-accent/10 hover:bg-accent/20 rounded-md text-foreground"
+          onClick={() => refetch()}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  const result = userChallengeResponse.result;
+
   return (
     <div className="p-4 space-y-6 max-w-4xl mx-auto">
       <div className="space-y-2">
-        {data?.userChallenges?.length === 0 ? (
+        {result.totalItems === 0 ? (
           <div className="p-4 text-center text-muted-foreground">
             No challenges available
           </div>
         ) : (
-          data?.userChallenges?.map((userChallenge, index) => {
+          result.data.map((userChallenge, index) => {
             return (
               <div
                 key={`${index}-${userChallenge.challenge.challengeId}`}
@@ -178,7 +193,9 @@ const UserChallengesList = () => {
 
                 <div
                   className="col-span-2 flex items-center justify-start gap-2 min-w-[150px]"
-                  title={`Starts in ${formatTimeRemaining(new Date(userChallenge.challenge.scheduledAt))}`}
+                  title={`Starts in ${formatTimeRemaining(
+                    new Date(userChallenge.challenge.scheduledAt),
+                  )}`}
                 >
                   <Hourglass size={16} className="text-muted-foreground" />
                   <span className="text-sm text-foreground">
@@ -261,12 +278,12 @@ const UserChallengesList = () => {
           </button>
 
           <span className="text-sm text-foreground">
-            Page {page} of {data?.totalPages || 1}
+            Page {page} of {result.totalPages || 1}
           </span>
 
           <button
             onClick={handleNext}
-            disabled={page === (data?.totalPages || 1)}
+            disabled={page === (result.totalPages || 1)}
             className="p-2 border border-border rounded-md hover:bg-accent/10 disabled:opacity-50 disabled:hover:bg-transparent"
           >
             <ChevronRight className="text-foreground" />

@@ -25,13 +25,17 @@ const userParticipant: Participant = {
 };
 
 const userProfile: UserProfile = {
-  username: "typespeedmaster",
-  email: "master@typing.io",
+  user: {
+    userId: "typespeedmaster",
+    username: "typespeedmaster",
+    email: "master@typing.io",
+  },
   stats: {
     accuracy: 92.4,
-    speed: 128,
+    wpm: 128,
     competitions: 45,
     keystrokes: 245892,
+    lastActive: new Date().toISOString(),
   },
 };
 
@@ -127,7 +131,7 @@ export function getZoneData() {
   const participants = {
     [userParticipant.userId]: {
       userId: userParticipant.userId,
-      username: userProfile.username,
+      username: userProfile.user.username,
       correctPosition: userParticipant.correctPosition,
       wpm: userParticipant.wpm,
       endTime: userParticipant.endTime,

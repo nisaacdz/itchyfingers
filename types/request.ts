@@ -15,14 +15,8 @@ export const DefaultUserTyping: Participant = {
 };
 
 export type UserProfile = {
-  username: string;
-  email: string;
-  stats: {
-    accuracy: number;
-    speed: number;
-    competitions: number;
-    keystrokes: number;
-  };
+  user: User;
+  stats: UserStats;
 };
 
 export type Participant = {
@@ -56,6 +50,12 @@ export enum ChallengePrivacy {
   Open = "Open",
 }
 
+export enum ChallengePrivacyFilter {
+  Invitational = "Invitational",
+  Open = "Open",
+  All = "All",
+}
+
 export enum UserChallengeStatus {
   Pending = "Pending",
   Accepted = "Accepted",
@@ -81,6 +81,14 @@ export type UserChallenge = {
   completedAt?: Date;
 };
 
+export type UserStats = {
+  accuracy: number;
+  wpm: number;
+  competitions: number;
+  keystrokes: number;
+  lastActive: string;
+};
+
 export interface ApiResponse<T> {
   result: T | null;
   error: string | null;
@@ -89,4 +97,23 @@ export interface ApiResponse<T> {
 export type ChallengesData = {
   challenges: Challenge[];
   totalPages: number;
+};
+
+export type PaginatedData<T> = {
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  totalItems: number;
+  data: T[];
+};
+
+export type ChallengeFilter = {
+  privacy?: ChallengePrivacy;
+  search?: string;
+};
+
+export type UserChallengeFilter = {
+  status?: UserChallengeStatus;
+  privacy?: ChallengePrivacy;
+  search?: string;
 };

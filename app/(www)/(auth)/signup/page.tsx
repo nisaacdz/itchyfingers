@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,15 +9,23 @@ import { User, EyeClosed, Eye, Lock, Loader } from "lucide-react";
 import Link from "next/link";
 import { registerUser } from "@/api/requests";
 import { toast } from "react-toastify";
+import { useAuth } from "@/context/AuthContext";
 
 // Random commment by nisaacdz
 export default function SignupPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, update } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+  });
+
+  useEffect(() => {
+    if (user) {
+      router.push("/username");
+    }
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +40,7 @@ export default function SignupPage() {
       toast.error(response.error || "Could not sign up");
     } else {
       toast.success("Account created successfully");
-      router.push("/username");
+      update(response.result);
     }
     setIsSubmitting(false);
   };

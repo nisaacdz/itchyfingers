@@ -3,9 +3,15 @@ import { CreateChallenge } from "../types/forms";
 import {
   ApiResponse,
   Challenge,
+  ChallengeFilter,
   ChallengesData,
+  PaginatedData,
   Participant,
   User,
+  UserChallenge,
+  UserChallengeFilter,
+  UserProfile,
+  UserStats,
 } from "../types/request";
 import { Axios } from "../util/axios";
 
@@ -25,17 +31,15 @@ export async function getTypingText(challengeId: string) {
   }
 }
 
-export async function fetchChallenges({
-  page = 1,
-  pageSize = 10,
-  search = "",
-  filter = "",
-}) {
-  return await Api.get<ChallengesData>("/challenges", {
+export async function fetchChallenges(
+  page: number,
+  pageSize: number,
+  filter?: ChallengeFilter,
+) {
+  return await Api.get<PaginatedData<Challenge>>(`/challenges`, {
     params: {
       page,
       pageSize,
-      search: search || undefined,
       filter: filter || undefined,
     },
   });
@@ -65,8 +69,30 @@ export async function enterChallenge(challengeId: string) {
 }
 
 export async function getCurrentUser() {
-  const user = await Api.get<User>("/current");
+  const user = await Api.get<User>("/auth/current");
   return user.result;
+}
+
+export async function getUserProfile(username: string) {
+  return await Api.get<UserProfile>(`/users/${username}/`);
+}
+
+export async function getUserChallenges(
+  userId: string,
+  page: number,
+  pageSize: number,
+  filter?: UserChallengeFilter,
+) {
+  return await Api.get<PaginatedData<UserChallenge>>(
+    `/users/${userId}/challenges`,
+    {
+      params: {
+        page,
+        pageSize,
+        filter: filter || undefined,
+      },
+    },
+  );
 }
 
 export async function loginUser(logins: {
@@ -123,4 +149,22 @@ export async function createChallenge(
     console.error(e);
     return null;
   }
+}
+
+export async function fetchUserChallenges(
+  userId: string,
+  page: number,
+  pageSize: number,
+  filter?: UserChallengeFilter,
+) {
+  return await Api.get<PaginatedData<UserChallenge>>(
+    `/users/${userId}/challenges`,
+    {
+      params: {
+        page,
+        pageSize,
+        filter: filter || undefined,
+      },
+    },
+  );
 }
