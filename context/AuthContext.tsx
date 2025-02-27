@@ -19,7 +19,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-
 export const AuthContextProvider: React.FC<PropsWithChildren> = ({
   children,
 }) => {

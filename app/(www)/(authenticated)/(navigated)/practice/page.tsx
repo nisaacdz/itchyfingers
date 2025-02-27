@@ -12,7 +12,10 @@ import {
   handleTypedCharacters,
 } from "../../../../../api/dummy_api";
 import ParticipantsRanking from "../../../../../components/custom/ParticipantsRanking";
-import { handleExitZone, handleRestartZone } from "../../../../../api/dummy_api";
+import {
+  handleExitZone,
+  handleRestartZone,
+} from "../../../../../api/dummy_api";
 
 export default function Page() {
   const [zoneData, setZoneData] = useState<ZoneData | null>(null);

@@ -9,9 +9,7 @@ export default function RootLayout({
 }>) {
   return (
     <AuthContextProvider>
-      <NuqsAdapter>
-        {children}
-      </NuqsAdapter>
+      <NuqsAdapter>{children}</NuqsAdapter>
     </AuthContextProvider>
   );
 }

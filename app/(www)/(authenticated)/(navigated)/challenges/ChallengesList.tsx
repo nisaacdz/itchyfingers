@@ -73,21 +73,21 @@ const ChallengesList = ({
 }) => {
   const [page, setPage] = useQueryState<number>(
     "page",
-    parseAsInteger.withDefault(1)
+    parseAsInteger.withDefault(1),
   );
   const [pageSize, setPageSize] = useQueryState<number>(
     "pageSize",
-    parseAsInteger.withDefault(15)
+    parseAsInteger.withDefault(15),
   );
 
   const [filter, setFilter] = useQueryState<string>(
     "filter",
-    parseAsString.withDefault("all")
+    parseAsString.withDefault("all"),
   );
 
   const [search, setSearch] = useQueryState<string>(
     "search",
-    parseAsString.withDefault("")
+    parseAsString.withDefault(""),
   );
 
   const router = useRouter();
@@ -108,8 +108,8 @@ const ChallengesList = ({
 
   const enterCompetion = (challengeId: string) => {
     enterChallenge(challengeId)
-      .then((challenge) => {
-        router.push(`/challenges/${challenge.challengeId}`);
+      .then(() => {
+        router.push(`/challenges/${challengeId}`);
       })
       .catch((e) => toast.error(e.message));
   };
@@ -223,7 +223,7 @@ const ChallengesList = ({
                     <div
                       className="flex items-center gap-2"
                       title={`Starts in ${formatTimeRemaining(
-                        new Date(challenge.scheduledAt)
+                        new Date(challenge.scheduledAt),
                       )}`}
                     >
                       <Hourglass size={16} className="text-muted-foreground" />
@@ -303,7 +303,7 @@ const ControlsSection = ({
   // Handle click on Enter while searching
 
   const handleSubmitByEnterDown: KeyboardEventHandler<HTMLInputElement> = (
-    e
+    e,
   ) => {
     if (e.key === "Enter") {
       handleSearchSubmit();

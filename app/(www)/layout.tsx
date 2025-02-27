@@ -13,9 +13,7 @@ export default function AuthLayout({
     <QueryClientProvider client={queryClient}>
       <ToastContainer />
       <Suspense>
-        <main>
-            {children}
-        </main>
+        <main>{children}</main>
       </Suspense>
     </QueryClientProvider>
   );

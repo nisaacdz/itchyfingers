@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { CreateChallenge } from "@/types/forms";
 import { createChallenge } from "@/api/requests";
-import { Loader, Loader2 } from "lucide-react";
+import { Loader } from "lucide-react";
 
 type CreateChallengeModalProps = {
   isOpen: boolean;
@@ -107,7 +107,7 @@ const CreateChallengeModal = ({
                   .plus({ minutes: 1 })
                   .toFormat("yyyy-MM-dd'T'HH:mm")}
                 value={DateTime.fromISO(formData.startTime).toFormat(
-                  "yyyy-MM-dd'T'HH:mm"
+                  "yyyy-MM-dd'T'HH:mm",
                 )}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -179,8 +179,16 @@ const CreateChallengeModal = ({
             <Button type="button" variant="outline" onClick={onRequestClose}>
               Cancel
             </Button>
-            <Button type="submit" className="flex items-center w-36" disabled={creatingChallenge}>
-              {creatingChallenge ? <Loader className="animate-spin" /> : <>Create Challenge</>}
+            <Button
+              type="submit"
+              className="flex items-center w-36"
+              disabled={creatingChallenge}
+            >
+              {creatingChallenge ? (
+                <Loader className="animate-spin" />
+              ) : (
+                <>Create Challenge</>
+              )}
             </Button>
           </div>
         </form>

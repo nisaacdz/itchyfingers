@@ -22,13 +22,13 @@ class ApiClient {
           window.location.href = "/login";
         }
         return Promise.reject(error);
-      }
+      },
     );
   }
 
   async get<T = unknown>(
     url: string,
-    query?: Record<string, unknown>
+    query?: Record<string, unknown>,
   ): Promise<ApiResponse<T>> {
     try {
       const response: AxiosResponse<T> = await this.instance.get(url, {
@@ -36,7 +36,7 @@ class ApiClient {
       });
       if (response.status < 200 || response.status >= 300) {
         throw new Error(
-          response.data ? (response.data as string) : "An error occurred"
+          response.data ? (response.data as string) : "An error occurred",
         );
       }
       return { result: response.data, error: null };
@@ -47,13 +47,13 @@ class ApiClient {
 
   async post<T = unknown, D = unknown>(
     url: string,
-    data: D
+    data: D,
   ): Promise<ApiResponse<T>> {
     try {
       const response: AxiosResponse<T> = await this.instance.post(url, data);
       if (response.status < 200 || response.status >= 300) {
         throw new Error(
-          response.data ? (response.data as string) : "An error occurred"
+          response.data ? (response.data as string) : "An error occurred",
         );
       }
       return { result: response.data, error: null };
@@ -64,13 +64,13 @@ class ApiClient {
 
   async patch<T = unknown, D = unknown>(
     url: string,
-    data: D
+    data: D,
   ): Promise<ApiResponse<T>> {
     try {
       const response: AxiosResponse<T> = await this.instance.patch(url, data);
       if (response.status < 200 || response.status >= 300) {
         throw new Error(
-          response.data ? (response.data as string) : "An error occurred"
+          response.data ? (response.data as string) : "An error occurred",
         );
       }
       return { result: response.data, error: null };
@@ -81,13 +81,13 @@ class ApiClient {
 
   async put<T = unknown, D = unknown>(
     url: string,
-    data: D
+    data: D,
   ): Promise<ApiResponse<T>> {
     try {
       const response: AxiosResponse<T> = await this.instance.put(url, data);
       if (response.status < 200 || response.status >= 300) {
         throw new Error(
-          response.data ? (response.data as string) : "An error occurred"
+          response.data ? (response.data as string) : "An error occurred",
         );
       }
       return { result: response.data, error: null };

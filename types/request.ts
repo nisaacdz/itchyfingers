@@ -89,4 +89,4 @@ export interface ApiResponse<T> {
 export type ChallengesData = {
   challenges: Challenge[];
   totalPages: number;
-}
+};

@@ -9,7 +9,10 @@ import {
 } from "../../../../../../hooks/socketUtil";
 import { StatsBoard, StatsBoardLoading } from "@/components/custom/StatsBoard";
 import ProgressBoard from "@/components/custom/ProgressBoard";
-import { TypingArea, TypingAreaCountdown } from "@/components/custom/TypingArea";
+import {
+  TypingArea,
+  TypingAreaCountdown,
+} from "@/components/custom/TypingArea";
 import ParticipantsRanking from "@/components/custom/ParticipantsRanking";
 import { useRouter } from "next/navigation";
 

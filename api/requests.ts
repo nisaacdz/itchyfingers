@@ -106,7 +106,7 @@ export async function fetchSessionParticipants(challengeId: string) {
 
 export async function createChallenge(
   challenge: CreateChallenge,
-  invitedUsers: string[] = []
+  invitedUsers: string[] = [],
 ) {
   try {
     const req = await Axios.put("/challenges/create", {
