@@ -1,0 +1,160 @@
+"use client";
+
+import React from "react";
+import {
+  User,
+  Mail,
+  Zap,
+  Target,
+  Keyboard,
+  Hourglass,
+  Flame,
+  AlertCircle,
+  RefreshCw,
+} from "lucide-react";
+import UserChallengesList from "../../../../../components/custom/UserChallengesList";
+import { useQuery } from "@tanstack/react-query";
+import { getCurrentUser } from "@/api/dummy_api";
+
+const ProfileLoadingSkeleton = () => (
+  <div className="max-w-6xl mx-auto p-6 space-y-8 animate-pulse">
+    {/* Profile Header Skeleton */}
+    <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className="space-y-2 flex-1">
+        <div className="h-8 bg-muted rounded w-1/2" />
+        <div className="h-4 bg-muted rounded w-3/4" />
+      </div>
+
+      {/* Stats Grid Skeleton */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full md:w-auto">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="p-4 bg-card rounded-lg border">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-5 bg-muted rounded-full" />
+              <div className="h-4 bg-muted rounded w-1/2" />
+            </div>
+            <div className="h-8 bg-muted rounded w-3/4 mt-2" />
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Challenges Section Skeleton */}
+    <div className="space-y-4">
+      <div className="h-8 bg-muted rounded w-1/4" />
+      <div className="h-64 bg-muted rounded-lg" />
+    </div>
+  </div>
+);
+
+const ProfileErrorState = ({
+  error,
+  retry,
+}: {
+  error: Error;
+  retry: () => void;
+}) => (
+  <div className="max-w-6xl mx-auto p-6">
+    <div className="p-6 bg-destructive/10 border border-destructive rounded-lg flex flex-col items-center gap-4 text-center">
+      <AlertCircle className="h-8 w-8 text-destructive" />
+      <div>
+        <h3 className="font-medium text-lg">Failed to load profile</h3>
+        <p className="text-muted-foreground text-sm">{error.message}</p>
+      </div>
+      <button
+        onClick={retry}
+        className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 rounded-md text-primary-foreground transition-colors"
+      >
+        <RefreshCw className="h-4 w-4" />
+        Try Again
+      </button>
+    </div>
+  </div>
+);
+
+export default function Page() {
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => await getCurrentUser(),
+  });
+
+  if (isLoading) return <ProfileLoadingSkeleton />;
+  if (isError) return <ProfileErrorState error={error} retry={refetch} />;
+
+  const userData = data!;
+
+  return (
+    <div className="max-w-6xl mx-auto p-6 space-y-8">
+      {/* Profile Header */}
+      <div className="flex flex-col md:flex-row gap-8 items-start">
+        <div className="space-y-2 flex-1">
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <User className="text-primary" />
+            {userData.username}
+          </h1>
+          <p className="flex items-center gap-2 text-muted-foreground">
+            <Mail className="h-4 w-4" />
+            {userData.email}
+          </p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full md:w-auto">
+          <div className="p-4 bg-card rounded-lg border">
+            <div className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-green-500" />
+              <span className="text-sm text-muted-foreground">Accuracy</span>
+            </div>
+            <div className="text-2xl font-bold mt-2">
+              {userData.stats.accuracy}%
+            </div>
+          </div>
+
+          <div className="p-4 bg-card rounded-lg border">
+            <div className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-blue-500" />
+              <span className="text-sm text-muted-foreground">Speed (WPM)</span>
+            </div>
+            <div className="text-2xl font-bold mt-2">
+              {userData.stats.speed}
+            </div>
+          </div>
+
+          <div className="p-4 bg-card rounded-lg border">
+            <div className="flex items-center gap-2">
+              <Flame className="h-5 w-5 text-yellow-500" />
+              <span className="text-sm text-muted-foreground">
+                Competitions
+              </span>
+            </div>
+            <div className="text-2xl font-bold mt-2">
+              {userData.stats.competitions}
+            </div>
+          </div>
+
+          <div className="p-4 bg-card rounded-lg border">
+            <div className="flex items-center gap-2">
+              <Keyboard className="h-5 w-5 text-purple-500" />
+              <span className="text-sm text-muted-foreground">Keystrokes</span>
+            </div>
+            <div className="text-2xl font-bold mt-2">
+              {userData.stats.keystrokes.toLocaleString()}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Challenges Table */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <Hourglass className="text-primary" />
+          Challenges
+        </h2>
+
+        <div className="w-full h-full max-h-full overflow-auto">
+          <UserChallengesList />
+        </div>
+      </div>
+    </div>
+  );
+}
