@@ -13,12 +13,17 @@ import {
 } from "lucide-react";
 
 import { useQuery } from "@tanstack/react-query";
-import { ChallengePrivacy } from "@/types/request";
+import { ChallengePrivacy, ChallengePrivacyFilter } from "@/types/request";
 import { enterChallenge, fetchChallenges } from "@/api/requests";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
+import {
+  useQueryState,
+  parseAsInteger,
+  parseAsString,
+  parseAsStringEnum,
+} from "nuqs";
 import {
   Table,
   TableBody,
@@ -45,6 +50,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { parseChallengePrivacyFilter } from "@/util";
 
 const formatDuration = (seconds: number) => {
   const hours = Math.floor(seconds / 3600);
@@ -80,9 +86,11 @@ const ChallengesList = ({
     parseAsInteger.withDefault(15),
   );
 
-  const [filter, setFilter] = useQueryState<string>(
-    "filter",
-    parseAsString.withDefault("all"),
+  const [privacyFilter, setPrivacyFilter] = useQueryState(
+    "privacy",
+    parseAsStringEnum<ChallengePrivacyFilter>(
+      Object.values(ChallengePrivacyFilter),
+    ).withDefault(ChallengePrivacyFilter.All),
   );
 
   const [search, setSearch] = useQueryState<string>(
@@ -98,7 +106,11 @@ const ChallengesList = ({
     refetch,
   } = useQuery({
     queryKey: ["challenges", page, pageSize],
-    queryFn: () => fetchChallenges({ page, pageSize, filter, search }),
+    queryFn: () =>
+      fetchChallenges(page, pageSize, {
+        search,
+        privacy: parseChallengePrivacyFilter(privacyFilter),
+      }),
     retry: false,
   });
 
@@ -129,8 +141,8 @@ const ChallengesList = ({
     <div className="p-4 space-y-6 mx-auto">
       <ControlsSection
         onSearch={setSearch}
-        filterValue={filter}
-        onFilter={setFilter}
+        challengePrivacy={privacyFilter}
+        onChangeChallengePrivacy={setPrivacyFilter}
         createChallenge={createChallenge}
       />
       <div className="">
@@ -178,14 +190,14 @@ const ChallengesList = ({
                   </TableCell>
                 </TableRow>
               ))
-            ) : response?.result?.challenges?.length === 0 ? (
+            ) : response?.result?.data?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
                   No challenges available
                 </TableCell>
               </TableRow>
             ) : (
-              response?.result?.challenges?.map((challenge) => (
+              response?.result?.data?.map((challenge) => (
                 <TableRow
                   key={challenge.challengeId}
                   className="hover:bg-muted/50"
@@ -268,8 +280,8 @@ const ChallengesList = ({
 
       {!isLoading && response?.result && response.result?.totalPages > 1 && (
         <PaginationSection
-          page={page}
-          pageSize={pageSize}
+          page={response.result.page}
+          pageSize={response.result.pageSize}
           totalPages={response.result.totalPages}
           setPage={setPage}
           setPageSize={setPageSize}
@@ -283,15 +295,15 @@ const ChallengesList = ({
 
 type ControlsSectionProps = {
   onSearch: (value: string) => void;
-  filterValue: string;
-  onFilter: (value: string) => void;
+  challengePrivacy: ChallengePrivacyFilter;
+  onChangeChallengePrivacy: (value: ChallengePrivacyFilter) => void;
   createChallenge: () => void;
 };
 
 const ControlsSection = ({
   onSearch,
-  filterValue,
-  onFilter,
+  challengePrivacy,
+  onChangeChallengePrivacy,
   createChallenge,
 }: ControlsSectionProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -299,8 +311,6 @@ const ControlsSection = ({
   const handleSearchSubmit = () => {
     onSearch(inputRef.current?.value || "");
   };
-
-  // Handle click on Enter while searching
 
   const handleSubmitByEnterDown: KeyboardEventHandler<HTMLInputElement> = (
     e,
@@ -311,8 +321,13 @@ const ControlsSection = ({
   };
 
   const handleFilterChange = (value: string) => {
-    console.log("filter is changed to", value);
-    onFilter(value);
+    if (
+      value === ChallengePrivacyFilter.All ||
+      value === ChallengePrivacyFilter.Open ||
+      value === ChallengePrivacyFilter.Invitational
+    ) {
+      onChangeChallengePrivacy(value as ChallengePrivacyFilter);
+    }
   };
 
   return (
@@ -329,7 +344,7 @@ const ControlsSection = ({
         </Button>
       </div>
       <div className="flex items-center gap-4">
-        <Select value={filterValue} onValueChange={handleFilterChange}>
+        <Select value={challengePrivacy} onValueChange={handleFilterChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>

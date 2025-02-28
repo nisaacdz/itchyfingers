@@ -1,6 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
 import config from "../config";
-import { redirect } from "next/navigation";
 import { ApiResponse } from "@/types/request";
 
 class ApiClient {

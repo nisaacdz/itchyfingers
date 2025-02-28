@@ -6,7 +6,7 @@ import { fetchChallenge, getTypingText } from "../api/requests";
 import { toast } from "react-toastify";
 
 export const useChallenge = (challengeId: string) => {
-  const { data, isLoading, error } = useQuery<Challenge>({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["challenge", challengeId],
     queryFn: () => fetchChallenge(challengeId),
     enabled: !!challengeId,

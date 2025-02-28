@@ -12,9 +12,11 @@ import {
   AlertCircle,
   RefreshCw,
 } from "lucide-react";
-import UserChallengesList from "../../../../../components/custom/UserChallengesList";
+import UserChallengesList from "../../../../components/custom/UserChallengesList";
 import { useQuery } from "@tanstack/react-query";
-import { getCurrentUser } from "@/api/dummy_api";
+import { useAuth } from "@/context/AuthContext";
+import { getUserProfile } from "@/api/requests";
+import { useParams } from "next/navigation";
 
 const ProfileLoadingSkeleton = () => (
   <div className="max-w-6xl mx-auto p-6 space-y-8 animate-pulse">
@@ -73,15 +75,32 @@ const ProfileErrorState = ({
 );
 
 export default function Page() {
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["userProfile"],
-    queryFn: async () => await getCurrentUser(),
+  const username = useParams().username as string;
+  const { user: currentUser } = useAuth();
+  const {
+    data: getProfileResponse,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["profile", username, currentUser?.userId],
+    queryFn: async () => await getUserProfile(username),
+    retry: false,
   });
 
   if (isLoading) return <ProfileLoadingSkeleton />;
-  if (isError) return <ProfileErrorState error={error} retry={refetch} />;
+  if (
+    !getProfileResponse ||
+    getProfileResponse.error ||
+    !getProfileResponse.result
+  )
+    return (
+      <ProfileErrorState
+        error={new Error(getProfileResponse?.error || "Something went wrong")}
+        retry={refetch}
+      />
+    );
 
-  const userData = data!;
+  const userProfile = getProfileResponse.result;
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
@@ -90,11 +109,11 @@ export default function Page() {
         <div className="space-y-2 flex-1">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <User className="text-primary" />
-            {userData.username}
+            {userProfile.user.username}
           </h1>
           <p className="flex items-center gap-2 text-muted-foreground">
             <Mail className="h-4 w-4" />
-            {userData.email}
+            {userProfile.user.email}
           </p>
         </div>
 
@@ -106,7 +125,7 @@ export default function Page() {
               <span className="text-sm text-muted-foreground">Accuracy</span>
             </div>
             <div className="text-2xl font-bold mt-2">
-              {userData.stats.accuracy}%
+              {userProfile.stats.accuracy}%
             </div>
           </div>
 
@@ -116,7 +135,7 @@ export default function Page() {
               <span className="text-sm text-muted-foreground">Speed (WPM)</span>
             </div>
             <div className="text-2xl font-bold mt-2">
-              {userData.stats.speed}
+              {userProfile.stats.wpm}
             </div>
           </div>
 
@@ -128,7 +147,7 @@ export default function Page() {
               </span>
             </div>
             <div className="text-2xl font-bold mt-2">
-              {userData.stats.competitions}
+              {userProfile.stats.competitions}
             </div>
           </div>
 
@@ -138,23 +157,35 @@ export default function Page() {
               <span className="text-sm text-muted-foreground">Keystrokes</span>
             </div>
             <div className="text-2xl font-bold mt-2">
-              {userData.stats.keystrokes.toLocaleString()}
+              {userProfile.stats.keystrokes.toLocaleString()}
             </div>
           </div>
         </div>
       </div>
 
       {/* Challenges Table */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Hourglass className="text-primary" />
-          Challenges
-        </h2>
+      {currentUser && currentUser.username === username ? (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <Hourglass className="text-primary" />
+            Challenges
+          </h2>
 
-        <div className="w-full h-full max-h-full overflow-auto">
-          <UserChallengesList />
+          <div className="w-full h-full max-h-full overflow-auto">
+            <UserChallengesList userId={currentUser.userId} />
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="p-6 bg-destructive/10 border border-destructive rounded-lg flex flex-col items-center gap-4 text-center">
+          <AlertCircle className="h-8 w-8 text-destructive" />
+          <div>
+            <h3 className="font-medium text-lg">Failed to load profile</h3>
+            <p className="text-muted-foreground text-sm">
+              You must be logged in to view challenge history
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

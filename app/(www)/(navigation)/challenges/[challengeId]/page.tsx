@@ -1,12 +1,12 @@
 "use client";
-import { Challenge, Participant } from "../../../../../../types/request";
+import { Challenge, Participant } from "../../../../../types/request";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
   useChallenge,
   useSocket,
   useTypingText,
-} from "../../../../../../hooks/socketUtil";
+} from "../../../../../hooks/socketUtil";
 import { StatsBoard, StatsBoardLoading } from "@/components/custom/StatsBoard";
 import ProgressBoard from "@/components/custom/ProgressBoard";
 import {

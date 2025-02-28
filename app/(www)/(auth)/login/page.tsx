@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,15 +9,28 @@ import { User, EyeClosed, Eye, Lock, Loader } from "lucide-react";
 import Link from "next/link";
 import { loginUser } from "@/api/requests";
 import { toast } from "react-toastify";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, update } = useAuth();
+
   const [formData, setFormData] = useState({
     username: "",
     password: "",
     remember: false,
+  });
+
+  useEffect(() => {
+    if (user) {
+      let returnTo = window.sessionStorage.getItem("returnTo");
+      if (!returnTo || returnTo === "/login") {
+        returnTo = "/";
+      }
+      router.push(returnTo);
+    }
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,8 +44,8 @@ export default function LoginPage() {
     if (response.error || !response.result) {
       toast.error(response.error || "Could not sign in");
     } else {
-      const returnTo = window.sessionStorage.getItem("returnTo") || "/";
-      router.push(returnTo);
+      toast.success("Signed in successfully");
+      update(response.result);
     }
     setIsSubmitting(false);
   };

@@ -1,16 +1,16 @@
 "use client";
-import React from "react";
-import ChallengesList from "./ChallengesList";
-import CreateChallengeModal from "./CreateChallengeModal";
+import { useState } from "react";
+import ChallengesList from "../../../../components/custom/ChallengesList";
+import CreateChallengeModal from "../../../../components/custom/CreateChallengeModal";
 import { useAuth } from "@/context/AuthContext";
+import { AuthLoader } from "@/components/custom/AuthLoader";
 
 export default function Page() {
-  const [createModalOpen, setCreateModalOpen] = React.useState(false);
-  const { user } = useAuth();
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const { loading } = useAuth();
 
-  if (!user) {
-    // will be redirected shortly
-    return <></>;
+  if (loading) {
+    return <AuthLoader />;
   }
 
   const startCreateChallenge = () => {
