@@ -17,11 +17,11 @@ const ParticipantsRanking = ({
 
   const challengeStart = new Date(challengeStartTime);
   const rankings = Object.values(participants)
-    .filter((p) => p.startTime && p.endTime)
+    .filter((p) => p.started_at && p.ended_at)
     .map((p) => ({
       ...p,
-      startTime: new Date(p.startTime!),
-      endTime: new Date(p.endTime!),
+      startTime: new Date(p.started_at!),
+      endTime: new Date(p.ended_at!),
     }))
     .sort((a, b) => a.endTime.getTime() - b.endTime.getTime());
 
@@ -48,13 +48,13 @@ const ParticipantsRanking = ({
     cn(
       "grid grid-cols-8 items-center w-full p-3 gap-4 transition-colors",
       "border-t border-border/50 hover:bg-accent/50",
-      userId === currentUser.userId ? "bg-secondary/80" : "",
+      userId === currentUser.user_id ? "bg-secondary/80" : "",
     );
 
   const getTextStyle = (userId: string) =>
     cn(
       "font-medium font-mono",
-      userId === currentUser.userId
+      userId === currentUser.user_id
         ? "text-foreground"
         : "text-muted-foreground",
     );
@@ -80,43 +80,43 @@ const ParticipantsRanking = ({
       <div className="rounded-lg border border-border overflow-hidden shadow-sm">
         {rankings.map((participant, index) => (
           <div
-            key={participant.userId}
-            className={getRowStyle(participant.userId)}
+            key={participant.user_id}
+            className={getRowStyle(participant.user_id)}
           >
             {/* Rank */}
-            <span className={getTextStyle(participant.userId)}>
+            <span className={getTextStyle(participant.user_id)}>
               {index + 1}.
               {index === 0 && <span className="ml-2 text-amber-400">🥇</span>}
             </span>
 
             {/* Racer Name */}
             <div className="col-span-2 flex items-center gap-2">
-              <span className={getTextStyle(participant.userId)}>
-                {participant.username}
-                {participant.userId === currentUser.userId && (
+              <span className={getTextStyle(participant.user_id)}>
+                {participant.user_name || "Anonymous"}
+                {participant.user_id === currentUser.user_id && (
                   <span className="ml-2 text-xs text-primary">(You)</span>
                 )}
               </span>
             </div>
 
             {/* Start Offset */}
-            <span className={getTextStyle(participant.userId)}>
+            <span className={getTextStyle(participant.user_id)}>
               {formatStartOffset(participant.startTime)}
             </span>
 
             {/* Duration */}
-            <span className={getTextStyle(participant.userId)}>
+            <span className={getTextStyle(participant.user_id)}>
               {formatDuration(participant.startTime, participant.endTime)}
             </span>
 
             {/* Accuracy */}
-            <span className={getTextStyle(participant.userId)}>
-              {participant.accuracy?.toFixed(1)}%
+            <span className={getTextStyle(participant.user_id)}>
+              {participant.current_accuracy?.toFixed(1)}%
             </span>
 
             {/* WPM */}
-            <span className={getTextStyle(participant.userId)}>
-              {participant.wpm?.toFixed(0)}
+            <span className={getTextStyle(participant.user_id)}>
+              {participant.current_speed?.toFixed(0)}
             </span>
           </div>
         ))}

@@ -116,7 +116,11 @@ export default function SignupPage() {
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground transition-colors" // Added styling similar to login
             disabled={isSubmitting}
           >
-            {isSubmitting ? <Loader className="animate-spin" /> : "Sign Up"}{" "}
+            {isSubmitting ? (
+              <Loader className="animate-spin" />
+            ) : (
+              "Sign Up"
+            )}{" "}
           </Button>
         </form>
 

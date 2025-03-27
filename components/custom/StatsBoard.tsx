@@ -18,20 +18,23 @@ export const StatsBoard = ({
   onRestart,
 }: StatsBoardProps) => {
   const completionPercentage =
-    textLength !== 0 ? (userParticipant.currentPosition / textLength) * 100 : 0;
+    textLength !== 0
+      ? (userParticipant.current_position / textLength) * 100
+      : 0;
 
   const speedMeterInitializing =
     !userParticipant ||
-    !userParticipant.startTime ||
-    new Date().getTime() - new Date(userParticipant.startTime).getTime() < 3000;
+    !userParticipant.started_at ||
+    new Date().getTime() - new Date(userParticipant.started_at).getTime() <
+      3000;
 
-  const accuracyMeterActive = !userParticipant.endTime;
+  const accuracyMeterActive = !userParticipant.ended_at;
 
   return (
     <div className="flex flex-col w-full h-full gap-4 p-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-muted-foreground">Your Stats</h1>
-        {userParticipant.endTime ? (
+        {userParticipant.ended_at ? (
           <button
             onClick={onRestart}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors duration-200"
@@ -61,16 +64,16 @@ export const StatsBoard = ({
       <div className="grid grid-cols-1 gap-6">
         <div className="flex justify-center">
           {speedMeterInitializing ? (
-            <SpeedVortexWaiting wpm={userParticipant.wpm} />
+            <SpeedVortexWaiting wpm={userParticipant.current_speed} />
           ) : (
-            <SpeedVortexMeter wpm={userParticipant.wpm} />
+            <SpeedVortexMeter wpm={userParticipant.current_speed} />
           )}
         </div>
         <div className="flex justify-center">
           {accuracyMeterActive ? (
-            <AccuracyMeterActive accuracy={userParticipant.accuracy} />
+            <AccuracyMeterActive accuracy={userParticipant.current_accuracy} />
           ) : (
-            <AccuracyMeter accuracy={userParticipant.accuracy} />
+            <AccuracyMeter accuracy={userParticipant.current_accuracy} />
           )}
         </div>
       </div>

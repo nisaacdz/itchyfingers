@@ -1,11 +1,12 @@
 import {
   ChallengePrivacy,
+  DefaultUserTyping,
   Participant,
   UserChallenge,
   UserChallengeStatus,
   UserProfile,
   ZoneData,
-} from "../types/request";
+} from "@/types/request";
 
 // const text2 =
 //   "Ipsum dolor sit amet, consectetur adipiscing elit. Sed ac purus sit amet nisl tincidunt tincidunt";
@@ -15,13 +16,7 @@ const text =
 
 let updateStates: () => void;
 const userParticipant: Participant = {
-  userId: "newt",
-  username: "newt",
-  correctPosition: 0,
-  currentPosition: 0,
-  totalKeystrokes: 0,
-  wpm: 0,
-  accuracy: 100,
+  ...DefaultUserTyping,
 };
 
 const userProfile: UserProfile = {
@@ -55,13 +50,16 @@ function generateFakeParticipants() {
   return Array.from({ length: numParticipants }, () => {
     return {
       data: {
-        userId: Math.random().toString(36).substring(7),
-        username: Math.random().toString(36).substring(7),
-        correctPosition: 0,
-        wpm: 30 + Math.random() * 100,
-        accuracy: 100,
-        totalKeystrokes: 0,
-        currentPosition: 0,
+        user_id: Math.random().toString(36).substring(7),
+        user_name: null,
+        tournament_id: "challenge1",
+        current_position: 0,
+        correct_position: 0,
+        current_speed: 30 + Math.random() * 100,
+        current_accuracy: 100,
+        total_keystrokes: 0,
+        started_at: null,
+        ended_at: null,
       },
     };
   });
@@ -80,10 +78,10 @@ function startRace() {
 
       const continueTyping = () => {
         const len = text.length;
-        if (participant.correctPosition >= len) {
+        if (participant.correct_position >= len) {
           const fakeParticipantEndTime = new Date();
-          fakeParticipant.data.endTime = fakeParticipantEndTime.toISOString();
-          fakeParticipant.data.wpm = Math.round(
+          fakeParticipant.data.ended_at = fakeParticipantEndTime.toISOString();
+          fakeParticipant.data.current_speed = Math.round(
             (len /
               5 /
               (fakeParticipantEndTime.getTime() - startTime!.getTime())) *
@@ -95,18 +93,21 @@ function startRace() {
           return;
         }
 
-        const remainingChars = len - participant.correctPosition;
+        const remainingChars = len - participant.correct_position;
         const proximityFactor = remainingChars / len;
 
         const baseSpeedChange = proximityFactor * baseSpeedChangeRate;
 
         const speedDelta = (Math.random() * 2 - 1) * baseSpeedChange;
-        participant.wpm = Math.max(0, participant.wpm + speedDelta);
+        participant.current_speed = Math.max(
+          0,
+          participant.current_speed + speedDelta,
+        );
 
-        participant.correctPosition = Math.min(
+        participant.correct_position = Math.min(
           len,
-          participant.correctPosition +
-            Math.ceil(waitTime * ((participant.wpm * 5) / 60000)),
+          participant.correct_position +
+            Math.ceil(waitTime * ((participant.current_speed * 5) / 60000)),
         );
 
         updateStates();
@@ -129,26 +130,19 @@ export function getTypingText() {
 
 export function getZoneData() {
   const participants = {
-    [userParticipant.userId]: {
-      userId: userParticipant.userId,
-      username: userProfile.user.username,
-      correctPosition: userParticipant.correctPosition,
-      wpm: userParticipant.wpm,
-      endTime: userParticipant.endTime,
-      accuracy: userParticipant.accuracy,
-      totalKeystrokes: userParticipant.totalKeystrokes,
-      currentPosition: userParticipant.currentPosition,
+    [userParticipant.user_id]: {
+      ...userParticipant,
     },
     ...fakeParticipants.reduce(
       (acc, fakeParticipant) => {
-        acc[fakeParticipant.data.userId] = fakeParticipant.data;
+        acc[fakeParticipant.data.user_id] = fakeParticipant.data;
         return acc;
       },
       {} as Record<string, Participant>,
     ),
   };
   const zoneData: ZoneData = {
-    userId: userParticipant.userId,
+    userId: userParticipant.user_id,
     participants,
     challengeId: "challenge1",
     sessionId: "challenge1-session1",
@@ -168,16 +162,19 @@ export function handleRestartZone() {
     );
   }
 
-  if (!userParticipant.endTime && !confirm("Are you sure you want to restart?"))
+  if (
+    !userParticipant.ended_at &&
+    !confirm("Are you sure you want to restart?")
+  )
     return;
 
-  userParticipant.correctPosition = 0;
-  userParticipant.currentPosition = 0;
-  userParticipant.totalKeystrokes = 0;
-  userParticipant.wpm = 0;
-  userParticipant.accuracy = 100;
-  userParticipant.endTime = undefined;
-  userParticipant.startTime = undefined;
+  userParticipant.correct_position = 0;
+  userParticipant.current_position = 0;
+  userParticipant.total_keystrokes = 0;
+  userParticipant.current_speed = 0;
+  userParticipant.current_accuracy = 100;
+  userParticipant.ended_at = null;
+  userParticipant.started_at = null;
   startTime = null;
 
   fakeParticipants = generateFakeParticipants();
@@ -186,13 +183,13 @@ export function handleRestartZone() {
 }
 
 export function handleExitZone() {
-  userParticipant.correctPosition = 0;
-  userParticipant.currentPosition = 0;
-  userParticipant.totalKeystrokes = 0;
-  userParticipant.wpm = 0;
-  userParticipant.accuracy = 100;
-  userParticipant.startTime = undefined;
-  userParticipant.endTime = undefined;
+  userParticipant.correct_position = 0;
+  userParticipant.current_position = 0;
+  userParticipant.total_keystrokes = 0;
+  userParticipant.current_speed = 0;
+  userParticipant.current_accuracy = 100;
+  userParticipant.started_at = null;
+  userParticipant.ended_at = null;
 
   fakeParticipants.forEach((fakeParticipant) => {
     clearInterval(fakeParticipant.intervalId!);
@@ -203,10 +200,10 @@ export function handleExitZone() {
 }
 
 export function handleTypedCharacters(inputString: string) {
-  if (userParticipant.endTime) return;
+  if (userParticipant.ended_at) return;
   if (!startTime) {
     startRace();
-    userParticipant.startTime = startTime!.toISOString();
+    userParticipant.started_at = startTime!.toISOString();
   }
   const now = Date.now();
   const elapsedTime = startTime ? now - startTime.getTime() : 0;
@@ -214,56 +211,57 @@ export function handleTypedCharacters(inputString: string) {
   for (
     let inputIndex = 0;
     inputIndex < inputString.length &&
-    userParticipant.correctPosition < text.length;
+    userParticipant.correct_position < text.length;
     inputIndex++
   ) {
     const currentChar = inputString[inputIndex];
     if (currentChar === "\b") {
-      if (userParticipant.currentPosition > userParticipant.correctPosition) {
-        userParticipant.currentPosition--;
+      if (userParticipant.current_position > userParticipant.correct_position) {
+        userParticipant.current_position--;
       } else if (
-        userParticipant.currentPosition === userParticipant.correctPosition
+        userParticipant.current_position === userParticipant.correct_position
       ) {
         if (
-          userParticipant.currentPosition > 0 &&
-          text[userParticipant.currentPosition - 1] !== " "
+          userParticipant.current_position > 0 &&
+          text[userParticipant.current_position - 1] !== " "
         ) {
-          userParticipant.currentPosition--;
-          userParticipant.correctPosition--;
+          userParticipant.current_position--;
+          userParticipant.correct_position--;
         }
       }
     } else {
-      userParticipant.totalKeystrokes++;
+      userParticipant.total_keystrokes++;
 
-      if (userParticipant.currentPosition >= text.length) continue;
+      if (userParticipant.current_position >= text.length) continue;
 
       if (
-        userParticipant.correctPosition === userParticipant.currentPosition &&
-        currentChar === text[userParticipant.currentPosition]
+        userParticipant.correct_position === userParticipant.current_position &&
+        currentChar === text[userParticipant.current_position]
       ) {
-        userParticipant.correctPosition++;
-        userParticipant.currentPosition++;
+        userParticipant.correct_position++;
+        userParticipant.current_position++;
       } else {
-        userParticipant.currentPosition++;
+        userParticipant.current_position++;
       }
     }
   }
 
-  if (userParticipant.correctPosition >= text.length) {
-    userParticipant.endTime = new Date().toISOString();
+  if (userParticipant.correct_position >= text.length) {
+    userParticipant.ended_at = new Date().toISOString();
   }
 
   const minutesElapsed = elapsedTime / 60000;
-  userParticipant.wpm =
+  userParticipant.current_speed =
     minutesElapsed > 0
-      ? Math.round(userParticipant.correctPosition / 5 / minutesElapsed)
+      ? Math.round(userParticipant.correct_position / 5 / minutesElapsed)
       : 0;
 
-  userParticipant.accuracy =
-    userParticipant.totalKeystrokes === 0
+  userParticipant.current_accuracy =
+    userParticipant.total_keystrokes === 0
       ? 100
       : Math.round(
-          (userParticipant.correctPosition / userParticipant.totalKeystrokes) *
+          (userParticipant.correct_position /
+            userParticipant.total_keystrokes) *
             100,
         );
 

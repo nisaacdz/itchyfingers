@@ -46,7 +46,7 @@ export const TypingArea = ({
       if (!paragraphRef.current) {
         return null;
       }
-      const caretPos = participant.currentPosition;
+      const caretPos = participant.current_position;
       const absPos = computeAbsolutePosition(paragraphRef, caretPos);
       return (
         <Caret
@@ -56,7 +56,7 @@ export const TypingArea = ({
             position: "absolute",
             zIndex: 10,
             height: fontSize,
-            opacity: participant.userId == userParticipant.userId ? 1 : 0.25,
+            opacity: participant.user_id == userParticipant.user_id ? 1 : 0.25,
           }}
         />
       );
@@ -67,9 +67,9 @@ export const TypingArea = ({
     ? Array.from(
         {
           length:
-            userParticipant.currentPosition - userParticipant.correctPosition,
+            userParticipant.current_position - userParticipant.correct_position,
         },
-        (_, i) => userParticipant.correctPosition + i,
+        (_, i) => userParticipant.correct_position + i,
       )
         .filter((pos) => text[pos] === " ")
         .map((pos) => (
@@ -91,15 +91,15 @@ export const TypingArea = ({
         ref={paragraphRef}
       >
         <span className="text-yellow-600">
-          {text.slice(0, userParticipant.correctPosition)}
+          {text.slice(0, userParticipant.correct_position)}
         </span>
         <span className="text-red-600">
           {text.slice(
-            userParticipant.correctPosition,
-            userParticipant.currentPosition,
+            userParticipant.correct_position,
+            userParticipant.current_position,
           )}
         </span>
-        {text.slice(userParticipant.currentPosition)}
+        {text.slice(userParticipant.current_position)}
       </p>
     </div>
   );

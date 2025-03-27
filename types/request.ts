@@ -5,30 +5,21 @@ export type User = {
 };
 
 export const DefaultUserTyping: Participant = {
-  username: "newt",
-  userId: "",
-  correctPosition: 0,
-  currentPosition: 0,
-  totalKeystrokes: 0,
-  wpm: 0,
-  accuracy: 0,
+  user_id: "kdkd",
+  user_name: "newt",
+  tournament_id: "dkskdsds",
+  started_at: null,
+  ended_at: null,
+  current_position: 0,
+  correct_position: 0,
+  total_keystrokes: 0,
+  current_accuracy: 100,
+  current_speed: 0,
 };
 
 export type UserProfile = {
   user: User;
   stats: UserStats;
-};
-
-export type Participant = {
-  userId: string;
-  username: string;
-  correctPosition: number;
-  currentPosition: number;
-  totalKeystrokes: number;
-  wpm: number;
-  accuracy: number;
-  startTime?: string;
-  endTime?: string;
 };
 
 export type StartChallenge = {
@@ -116,4 +107,28 @@ export type UserChallengeFilter = {
   status?: UserChallengeStatus;
   privacy?: ChallengePrivacy;
   search?: string;
+};
+
+export type Participant = {
+  user_id: string;
+  user_name: string | null;
+  tournament_id: string;
+  started_at: string | null;
+  ended_at: string | null;
+  current_position: number;
+  correct_position: number;
+  total_keystrokes: number;
+  current_accuracy: number;
+  current_speed: number;
+};
+
+export type TournamentInfo = {
+  id: string;
+  started_at: string | null;
+  ended_at: string | null;
+  text: string;
+  total_joined: number;
+  total_remaining: number;
+  total_completed: number;
+  automatized: boolean;
 };

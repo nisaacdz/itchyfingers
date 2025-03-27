@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Challenge, Participant, StartChallenge } from "../types/request";
+import {
+  Challenge,
+  Participant,
+  StartChallenge,
+  TournamentInfo,
+} from "../types/request";
 import { fetchSessionParticipants, typingSocketAPI } from "../api/requests";
 import { fetchChallenge, getTypingText } from "../api/requests";
 import { toast } from "react-toastify";
+import { ChallengeEventCallbacks } from "@/api/socket";
 
 export const useChallenge = (challengeId: string) => {
   const { data, isLoading, error } = useQuery({
@@ -20,10 +26,10 @@ export const useChallenge = (challengeId: string) => {
 };
 
 export const useSocket = (
-  challengeId: string,
+  tournamentId: string,
   userId: string | null,
   setTypingText: (_: string) => void,
-  challengeStartedAt?: string,
+  tournamentStartedAt?: string,
 ) => {
   const [socketError, setSocketError] = useState<Error | null>(null);
   const [socketLoading, setSocketLoading] = useState(true);
@@ -31,75 +37,81 @@ export const useSocket = (
     {},
   );
 
-  const handleLeftChallenge = (p: Participant) => {
-    toast.success(`${p.username} left`);
-    setParticipants((participants) => {
-      delete participants[p.userId];
-      return participants;
+  const handleLeftTournament = (data: { user_id: string }) => {
+    toast.success(`User ${data.user_id} left`);
+    setParticipants((prev) => {
+      const updated = { ...prev };
+      delete updated[data.user_id];
+      return updated;
     });
   };
 
   useEffect(() => {
     if (!userId) return;
 
-    const handleStartChallenge = (data: StartChallenge) => {
-      setTypingText(data.typingText);
-      setParticipants(
-        data.participants.reduce((acc: Record<string, Participant>, p) => {
-          acc[p.userId] = p;
-          return acc;
-        }, {}),
-      );
+    const handleTournamentStart = (data: TournamentInfo) => {
+      setTypingText(data.text);
+      setSocketLoading(false);
     };
 
-    const handleUpdateParticipant = (p: Participant) => {
-      setParticipants((prev) => {
-        return { ...prev, [p.userId]: p };
-      });
+    const handleSessionUpdate = (session: Participant) => {
+      setParticipants((prev) => ({
+        ...prev,
+        [session.user_id]: {
+          ...session,
+        },
+      }));
     };
 
-    const handleEnteredChallenge = (p: Participant) => {
-      toast.success(`${p.username} entered`);
-      handleUpdateParticipant(p);
+    const handleParticipantJoined = (session: Participant) => {
+      toast.success(`User ${session.user_id} joined`);
+      handleSessionUpdate(session);
     };
 
-    const handlers = {
-      onStartChallenge: handleStartChallenge,
-      onUpdateParticipant: handleUpdateParticipant,
-      onError: setSocketError,
-      onEntered: handleEnteredChallenge,
-      onLeft: handleLeftChallenge,
-      onDisconnect: (message: string) => toast.error(message),
+    const handlers: ChallengeEventCallbacks = {
+      onSessionUpdate: handleSessionUpdate,
+      onTournamentStart: handleTournamentStart,
+      onError: (message) => {
+        setSocketError(new Error(message));
+      },
+      onJoined: handleParticipantJoined,
+      onLeft: handleLeftTournament,
+      onDisconnect: (message) => toast.error(`Disconnected: ${message}`),
+      onTournamentUpdate: (data) => {
+        // Handle tournament metadata updates if needed
+      },
     };
 
-    typingSocketAPI.initialize(challengeId, handlers);
+    typingSocketAPI.initialize(tournamentId, handlers);
 
-    if (challengeStartedAt && new Date() > new Date(challengeStartedAt)) {
-      fetchSessionParticipants(challengeId).then((pss) => {
-        const data = pss.reduce((acc: Record<string, Participant>, p) => {
-          acc[p.userId] = p;
-          return acc;
-        }, {});
-        setParticipants(data);
+    if (tournamentStartedAt && new Date() > new Date(tournamentStartedAt)) {
+      fetchSessionParticipants(tournamentId).then((sessions) => {
+        const initialParticipants = sessions.reduce(
+          (acc, session) => ({
+            ...acc,
+            [session.user_id]: {
+              ...session,
+            },
+          }),
+          {} as Record<string, Participant>,
+        );
+        setParticipants(initialParticipants);
       });
     }
 
-    setSocketLoading(false);
-
     return () => {
       typingSocketAPI.disconnect();
+      setSocketLoading(true);
     };
-  }, [challengeId, userId, challengeStartedAt, setTypingText, setParticipants]);
+  }, [tournamentId, userId, tournamentStartedAt, setTypingText]);
 
-  const handleCharacterInput = (char: string) => {
-    if (!userId) return;
-    const userParticipant = participants[userId];
-    if (userParticipant?.endTime) return;
-    typingSocketAPI.sendTypingInput(char);
+  const handleCharacterInput = (input: string) => {
+    if (!userId || participants[userId]?.ended_at) return;
+    typingSocketAPI.sendTypingInput(input);
   };
 
   const handleExitCompetition = () => {
-    typingSocketAPI.leaveChallenge();
+    typingSocketAPI.leaveTournament();
   };
 
   return {
