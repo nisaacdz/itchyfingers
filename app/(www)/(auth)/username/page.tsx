@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Loader } from "lucide-react";
 import { updateUsername } from "@/api/requests";
 import { toast } from "react-toastify";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/AuthContext";
 import { AuthLoader } from "@/components/custom/AuthLoader";
 
 export default function UsernamePage() {

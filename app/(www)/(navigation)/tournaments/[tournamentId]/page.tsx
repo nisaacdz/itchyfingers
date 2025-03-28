@@ -1,7 +1,7 @@
 "use client";
 import { Challenge, Participant } from "@/types/request";
 import { useParams } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/AuthContext";
 import { useChallenge, useSocket, useTypingText } from "@/hooks/socketUtil";
 import { StatsBoard, StatsBoardLoading } from "@/components/custom/StatsBoard";
 import ProgressBoard from "@/components/custom/ProgressBoard";
@@ -13,18 +13,18 @@ import ParticipantsRanking from "@/components/custom/ParticipantsRanking";
 import { useRouter } from "next/navigation";
 
 const ChallengePage = () => {
-  const { challengeId } = useParams() as { challengeId: string };
+  const { tournamentId } = useParams() as { tournamentId: string };
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const {
-    challenge,
-    isLoading: challengeLoading,
-    error: challengeError,
-  } = useChallenge(challengeId);
+    tournament,
+    isLoading: tournamentLoading,
+    error: tournamentError,
+  } = useChallenge(tournamentId);
   const { typingText, typingTextError, setTypingText } = useTypingText(
-    challenge,
-    challengeId,
+    tournament,
+    tournamentId,
   );
 
   const {
@@ -34,14 +34,14 @@ const ChallengePage = () => {
     participants,
     handleExitCompetition,
   } = useSocket(
-    challengeId,
+    tournamentId,
     user?.userId || null,
     setTypingText,
-    challenge?.startedAt || undefined,
+    tournament?.startedAt || undefined,
   );
 
-  const loading = challengeLoading || socketLoading || authLoading;
-  const error = challengeError || socketError || typingTextError;
+  const loading = tournamentLoading || socketLoading || authLoading;
+  const error = tournamentError || socketError || typingTextError;
 
   const userParticipant = user ? participants[user.userId] : undefined;
 
@@ -51,7 +51,7 @@ const ChallengePage = () => {
   const handleExit = () => {
     if (confirm("Are you sure you want to exit competition?")) {
       handleExitCompetition();
-      router.push("/challenges");
+      router.push("/tournaments");
     }
   };
 
@@ -68,7 +68,7 @@ const ChallengePage = () => {
         />
         <MainContent
           userId={user?.userId || null}
-          challenge={challenge}
+          tournament={tournament}
           participants={participants}
           typingText={typingText}
           handleCharacterInput={handleCharacterInput}
@@ -104,13 +104,13 @@ const StatsSection = ({
 );
 
 const MainContent = ({
-  challenge,
+  tournament,
   participants,
   typingText,
   userId,
   handleCharacterInput,
 }: {
-  challenge: Challenge | null;
+  tournament: Challenge | null;
   participants: Record<string, Participant>;
   typingText: string | null;
   userId: string | null;
@@ -129,15 +129,15 @@ const MainContent = ({
           userId={userId}
           handleCharacterInput={handleCharacterInput}
         />
-      ) : challenge ? (
-        <TypingAreaCountdown scheduledAt={new Date(challenge.scheduledAt)} />
+      ) : tournament ? (
+        <TypingAreaCountdown scheduledAt={new Date(tournament.scheduledAt)} />
       ) : (
         <></>
       )}
       <ParticipantsRanking
         participants={participants}
         userId={userId}
-        challengeStartTime={challenge?.startedAt || undefined}
+        tournamentStartTime={tournament?.startedAt || undefined}
       />
     </div>
   );

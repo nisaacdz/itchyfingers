@@ -96,6 +96,7 @@ class ApiClient {
   }
 
   private handleError<T>(error: unknown): ApiResponse<T> {
+    console.log(error);
     return {
       result: null,
       error: this.resolveAxiosError(error),
@@ -105,6 +106,7 @@ class ApiClient {
   private resolveAxiosError(error: unknown, defaultMsg?: string): string {
     const axiosError = error as AxiosError<{ error?: string; msg?: string }>;
     return (
+      axiosError.message ??
       axiosError?.response?.data?.error ??
       axiosError?.response?.data?.msg ??
       defaultMsg ??
@@ -120,11 +122,6 @@ const axiosInstance = axios.create({
   },
   withCredentials: true,
 });
-
-export function getQueryStringFromUrl(url: string): string | null {
-  const [_, query] = url.split("?");
-  return query ?? null;
-}
 
 const Api = new ApiClient(axiosInstance);
 export default Api;

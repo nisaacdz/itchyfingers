@@ -1,5 +1,5 @@
 import {
-  ChallengePrivacy,
+  TournamentPrivacy,
   DefaultUserTyping,
   Participant,
   UserChallenge,
@@ -144,7 +144,7 @@ export function getZoneData() {
   const zoneData: ZoneData = {
     userId: userParticipant.user_id,
     participants,
-    challengeId: "challenge1",
+    tournamentId: "challenge1",
     sessionId: "challenge1-session1",
     startTime: startTime?.toISOString(),
   };
@@ -274,12 +274,12 @@ export async function fetchUserChallenges({ pageParam = 1, pageSize = 10 }) {
       const mockUserChallenges = Array.from({ length: pageSize }).map(() => {
         const participants = Math.floor(Math.random() * 10);
         const challenge = {
-          challengeId: Math.random().toString(36).substring(7),
+          tournamentId: Math.random().toString(36).substring(7),
           createdBy: { userId: "newt", username: "newt", email: "newt@newt" },
           scheduledAt: new Date(
             Date.now() + 15000 + Math.floor(Math.random() * 600000),
           ).toISOString(),
-          privacy: ChallengePrivacy.Invitational,
+          privacy: TournamentPrivacy.Invitational,
           duration: 10 + Math.floor(Math.random() * 100),
           participants,
         };

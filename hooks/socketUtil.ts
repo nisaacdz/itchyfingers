@@ -1,25 +1,20 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Challenge,
-  Participant,
-  StartChallenge,
-  TournamentInfo,
-} from "../types/request";
+import { Challenge, Participant, TournamentInfo } from "../types/request";
 import { fetchSessionParticipants, typingSocketAPI } from "../api/requests";
 import { fetchChallenge, getTypingText } from "../api/requests";
 import { toast } from "react-toastify";
 import { ChallengeEventCallbacks } from "@/api/socket";
 
-export const useChallenge = (challengeId: string) => {
+export const useChallenge = (tournamentId: string) => {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["challenge", challengeId],
-    queryFn: () => fetchChallenge(challengeId),
-    enabled: !!challengeId,
+    queryKey: ["tournament", tournamentId],
+    queryFn: () => fetchChallenge(tournamentId),
+    enabled: !!tournamentId,
   });
 
   return {
-    challenge: data || null,
+    tournament: data || null,
     isLoading,
     error: error as Error | null,
   };
@@ -78,6 +73,7 @@ export const useSocket = (
       onLeft: handleLeftTournament,
       onDisconnect: (message) => toast.error(`Disconnected: ${message}`),
       onTournamentUpdate: (data) => {
+        console.log(data);
         // Handle tournament metadata updates if needed
       },
     };
@@ -124,18 +120,18 @@ export const useSocket = (
 };
 
 export const useTypingText = (
-  challenge: Challenge | null,
-  challengeId: string,
+  tournament: Challenge | null,
+  tournamentId: string,
 ) => {
   const [typingText, setTypingText] = useState<string | null>(null);
   const [typingTextError, setTypingTextError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!challenge?.startedAt) return;
+    if (!tournament?.startedAt) return;
 
     const loadText = async () => {
       try {
-        const text = await getTypingText(challengeId);
+        const text = await getTypingText(tournamentId);
         setTypingText(text);
         if (typingTextError) setTypingTextError(null);
       } catch (err) {
@@ -144,7 +140,7 @@ export const useTypingText = (
     };
 
     loadText();
-  }, [challenge?.startedAt, challengeId, typingTextError]);
+  }, [tournament?.startedAt, tournamentId, typingTextError]);
 
   return { typingText, typingTextError, setTypingText };
 };

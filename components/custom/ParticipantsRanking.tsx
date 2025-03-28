@@ -5,17 +5,17 @@ import { cn } from "@/lib/utils";
 type ParticipantsRankingProps = {
   userId: string | null;
   participants: Record<string, Participant>;
-  challengeStartTime?: string;
+  tournamentStartTime?: string;
 };
 
 const ParticipantsRanking = ({
   userId,
   participants,
-  challengeStartTime,
+  tournamentStartTime,
 }: ParticipantsRankingProps) => {
-  if (!userId || !challengeStartTime) return null;
+  if (!userId || !tournamentStartTime) return null;
 
-  const challengeStart = new Date(challengeStartTime);
+  const tournamentStart = new Date(tournamentStartTime);
   const rankings = Object.values(participants)
     .filter((p) => p.started_at && p.ended_at)
     .map((p) => ({
@@ -37,7 +37,7 @@ const ParticipantsRanking = ({
   };
 
   const formatStartOffset = (start: Date) => {
-    const diff = start.getTime() - challengeStart.getTime();
+    const diff = start.getTime() - tournamentStart.getTime();
     const minutes = Math.floor(diff / 60000);
     const seconds = Math.floor((diff % 60000) / 1000);
     const centis = Math.floor((diff % 1000) / 10);

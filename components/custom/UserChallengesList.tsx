@@ -171,7 +171,7 @@ const UserChallengesList = ({ userId }: { userId: string }) => {
           result.data.map((userChallenge, index) => {
             return (
               <div
-                key={`${index}-${userChallenge.challenge.challengeId}`}
+                key={`${index}-${userChallenge.challenge.tournamentId}`}
                 className="grid grid-cols-[repeat(14,minmax(0,1fr));] items-center gap-4 p-2 bg-card rounded-lg border border-border hover:shadow-sm hover:bg-muted transition-shadow"
               >
                 <div

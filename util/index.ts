@@ -1,13 +1,15 @@
-import { ChallengePrivacy, ChallengePrivacyFilter } from "@/types/request";
+import { TournamentPrivacy, TournamentPrivacyFilter } from "@/types/request";
 
 export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-export const parseChallengePrivacyFilter = (filter: ChallengePrivacyFilter) => {
+export const parseTournamentPrivacyFilter = (
+  filter: TournamentPrivacyFilter,
+) => {
   switch (filter) {
-    case ChallengePrivacyFilter.Invitational:
-      return ChallengePrivacy.Invitational;
-    case ChallengePrivacyFilter.Open:
-      return ChallengePrivacy.Open;
+    case TournamentPrivacyFilter.Invitational:
+      return TournamentPrivacy.Invitational;
+    case TournamentPrivacyFilter.Open:
+      return TournamentPrivacy.Open;
     default:
       return undefined;
   }

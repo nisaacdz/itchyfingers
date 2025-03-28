@@ -23,7 +23,7 @@ export type UserProfile = {
 };
 
 export type StartChallenge = {
-  challengeId: string;
+  tournamentId: string;
   participants: Participant[];
   typingText: string;
 };
@@ -31,17 +31,17 @@ export type StartChallenge = {
 export type ZoneData = {
   userId: string;
   participants: Record<string, Participant>;
-  challengeId: string;
+  tournamentId: string;
   sessionId: string;
   startTime?: string;
 };
 
-export enum ChallengePrivacy {
+export enum TournamentPrivacy {
   Invitational = "Invitational",
   Open = "Open",
 }
 
-export enum ChallengePrivacyFilter {
+export enum TournamentPrivacyFilter {
   Invitational = "Invitational",
   Open = "Open",
   All = "All",
@@ -56,8 +56,8 @@ export enum UserChallengeStatus {
 }
 
 export type Challenge = {
-  privacy: ChallengePrivacy;
-  challengeId: string;
+  privacy: TournamentPrivacy;
+  tournamentId: string;
   createdBy: User;
   scheduledAt: string;
   startedAt?: string | null;
@@ -99,13 +99,13 @@ export type PaginatedData<T> = {
 };
 
 export type ChallengeFilter = {
-  privacy?: ChallengePrivacy;
+  privacy?: TournamentPrivacy;
   search?: string;
 };
 
 export type UserChallengeFilter = {
   status?: UserChallengeStatus;
-  privacy?: ChallengePrivacy;
+  privacy?: TournamentPrivacy;
   search?: string;
 };
 

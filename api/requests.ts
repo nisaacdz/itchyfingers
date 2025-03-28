@@ -1,25 +1,22 @@
 import Api from ".";
 import { CreateChallenge } from "../types/forms";
 import {
-  ApiResponse,
   Challenge,
   ChallengeFilter,
-  ChallengesData,
   PaginatedData,
   Participant,
   User,
   UserChallenge,
   UserChallengeFilter,
   UserProfile,
-  UserStats,
 } from "../types/request";
 import { Axios } from "../util/axios";
 
 export { typingSocketAPI } from "./socket";
 
-export async function getTypingText(challengeId: string) {
+export async function getTypingText(tournamentId: string) {
   try {
-    const req = await Axios.get(`challenges/${challengeId}/text`);
+    const req = await Axios.get(`tournaments/${tournamentId}/text`);
 
     if (req.status !== 200) {
       throw new Error(req.data || "Something went wrong");
@@ -31,12 +28,12 @@ export async function getTypingText(challengeId: string) {
   }
 }
 
-export async function fetchChallenges(
+export async function fetchTournaments(
   page: number,
   pageSize: number,
   filter?: ChallengeFilter,
 ) {
-  return await Api.get<PaginatedData<Challenge>>(`/challenges`, {
+  return await Api.get<PaginatedData<Challenge>>(`/tournaments`, {
     params: {
       page,
       pageSize,
@@ -45,9 +42,9 @@ export async function fetchChallenges(
   });
 }
 
-export async function fetchUserSession(challengeId: string, userId: string) {
+export async function fetchUserSession(tournamentId: string, userId: string) {
   try {
-    const req = await Axios.get(`/typingsessions/${challengeId}/${userId}`);
+    const req = await Axios.get(`/typingsessions/${tournamentId}/${userId}`);
 
     if (req.status !== 200) {
       throw new Error(req.data || "Something went wrong");
@@ -59,18 +56,19 @@ export async function fetchUserSession(challengeId: string, userId: string) {
   }
 }
 
-export async function fetchChallenge(challengeId: string) {
-  return (await Api.get<Challenge>(`/challenges/${challengeId}`)).result;
+export async function fetchChallenge(tournamentId: string) {
+  return (await Api.get<Challenge>(`/tournaments/${tournamentId}`)).result;
 }
 
-export async function enterChallenge(challengeId: string) {
-  return (await Api.patch<Challenge>(`/challenges/${challengeId}/enter`, {}))
+export async function enterTournament(tournamentId: string) {
+  return (await Api.patch<Challenge>(`/tournaments/${tournamentId}/enter`, {}))
     .result;
 }
 
 export async function getCurrentUser() {
-  const user = await Api.get<User>("/auth/current");
-  return user.result;
+  // const user = await Api.get<User>("/auth/current");
+  // return user.result;
+  return null;
 }
 
 export async function getUserProfile(username: string) {
@@ -114,12 +112,12 @@ export async function updateUsername(user: User, username: string) {
 }
 
 export async function logoutUser() {
-  return await Api.patch<{}>("/auth/logout", {});
+  return await Api.patch<string>("/auth/logout", {});
 }
 
-export async function fetchSessionParticipants(challengeId: string) {
+export async function fetchSessionParticipants(tournamentId: string) {
   try {
-    const req = await Axios.get(`/challenges/${challengeId}/participants`);
+    const req = await Axios.get(`/challenges/${tournamentId}/participants`);
 
     if (req.status !== 200) {
       throw new Error(req.data || "Something went wrong");

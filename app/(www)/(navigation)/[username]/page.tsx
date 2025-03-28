@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import UserChallengesList from "../../../../components/custom/UserChallengesList";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/AuthContext";
 import { getUserProfile } from "@/api/requests";
 import { useParams } from "next/navigation";
 

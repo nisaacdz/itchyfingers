@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import ChallengesList from "../../../../components/custom/ChallengesList";
+import ChallengesList from "../../../../components/custom/TournamentsList";
 import CreateChallengeModal from "../../../../components/custom/CreateChallengeModal";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/AuthContext";
 import { AuthLoader } from "@/components/custom/AuthLoader";
 
 export default function Page() {

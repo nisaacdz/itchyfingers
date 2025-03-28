@@ -13,8 +13,8 @@ import {
 } from "lucide-react";
 
 import { useQuery } from "@tanstack/react-query";
-import { ChallengePrivacy, ChallengePrivacyFilter } from "@/types/request";
-import { enterChallenge, fetchChallenges } from "@/api/requests";
+import { TournamentPrivacy, TournamentPrivacyFilter } from "@/types/request";
+import { enterTournament, fetchTournaments } from "@/api/requests";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
@@ -50,7 +50,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { parseChallengePrivacyFilter } from "@/util";
+import { parseTournamentPrivacyFilter } from "@/util";
 
 const formatDuration = (seconds: number) => {
   const hours = Math.floor(seconds / 3600);
@@ -88,9 +88,9 @@ const ChallengesList = ({
 
   const [privacyFilter, setPrivacyFilter] = useQueryState(
     "privacy",
-    parseAsStringEnum<ChallengePrivacyFilter>(
-      Object.values(ChallengePrivacyFilter),
-    ).withDefault(ChallengePrivacyFilter.All),
+    parseAsStringEnum<TournamentPrivacyFilter>(
+      Object.values(TournamentPrivacyFilter),
+    ).withDefault(TournamentPrivacyFilter.All),
   );
 
   const [search, setSearch] = useQueryState<string>(
@@ -105,11 +105,11 @@ const ChallengesList = ({
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["challenges", page, pageSize],
+    queryKey: ["tournaments", page, pageSize],
     queryFn: () =>
-      fetchChallenges(page, pageSize, {
+      fetchTournaments(page, pageSize, {
         search,
-        privacy: parseChallengePrivacyFilter(privacyFilter),
+        privacy: parseTournamentPrivacyFilter(privacyFilter),
       }),
     retry: false,
   });
@@ -118,15 +118,16 @@ const ChallengesList = ({
   const handleNext = () =>
     setPage((p) => Math.min(response?.result?.totalPages || p, p + 1));
 
-  const enterCompetion = (challengeId: string) => {
-    enterChallenge(challengeId)
+  const enterCompetion = (tournamentId: string) => {
+    enterTournament(tournamentId)
       .then(() => {
-        router.push(`/challenges/${challengeId}`);
+        router.push(`/tournaments/${tournamentId}`);
       })
       .catch((e) => toast.error(e.message));
   };
 
   if (!isLoading && (!response || response.error)) {
+    console.log(response?.error);
     return (
       <div className="p-4 bg-destructive/10 border border-destructive rounded-lg text-destructive-foreground max-w-4xl mx-auto">
         <p>Error: {response?.error || "Failed to load challenges"}</p>
@@ -142,7 +143,7 @@ const ChallengesList = ({
       <ControlsSection
         onSearch={setSearch}
         challengePrivacy={privacyFilter}
-        onChangeChallengePrivacy={setPrivacyFilter}
+        onChangeTournamentPrivacy={setPrivacyFilter}
         createChallenge={createChallenge}
       />
       <div className="">
@@ -199,18 +200,18 @@ const ChallengesList = ({
             ) : (
               response?.result?.data?.map((challenge) => (
                 <TableRow
-                  key={challenge.challengeId}
+                  key={challenge.tournamentId}
                   className="hover:bg-muted/50"
                 >
                   <TableCell>
                     <span
                       title={
-                        challenge.privacy === ChallengePrivacy.Open
+                        challenge.privacy === TournamentPrivacy.Open
                           ? "Open Challenge"
                           : "You're Invited"
                       }
                     >
-                      {challenge.privacy === ChallengePrivacy.Open ? (
+                      {challenge.privacy === TournamentPrivacy.Open ? (
                         <Globe size={20} className="text-primary mx-auto" />
                       ) : (
                         <Unlock
@@ -266,7 +267,7 @@ const ChallengesList = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => enterCompetion(challenge.challengeId)}
+                      onClick={() => enterCompetion(challenge.tournamentId)}
                     >
                       Enter
                     </Button>
@@ -295,15 +296,15 @@ const ChallengesList = ({
 
 type ControlsSectionProps = {
   onSearch: (value: string) => void;
-  challengePrivacy: ChallengePrivacyFilter;
-  onChangeChallengePrivacy: (value: ChallengePrivacyFilter) => void;
+  challengePrivacy: TournamentPrivacyFilter;
+  onChangeTournamentPrivacy: (value: TournamentPrivacyFilter) => void;
   createChallenge: () => void;
 };
 
 const ControlsSection = ({
   onSearch,
   challengePrivacy,
-  onChangeChallengePrivacy,
+  onChangeTournamentPrivacy,
   createChallenge,
 }: ControlsSectionProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -322,11 +323,11 @@ const ControlsSection = ({
 
   const handleFilterChange = (value: string) => {
     if (
-      value === ChallengePrivacyFilter.All ||
-      value === ChallengePrivacyFilter.Open ||
-      value === ChallengePrivacyFilter.Invitational
+      value === TournamentPrivacyFilter.All ||
+      value === TournamentPrivacyFilter.Open ||
+      value === TournamentPrivacyFilter.Invitational
     ) {
-      onChangeChallengePrivacy(value as ChallengePrivacyFilter);
+      onChangeTournamentPrivacy(value as TournamentPrivacyFilter);
     }
   };
 

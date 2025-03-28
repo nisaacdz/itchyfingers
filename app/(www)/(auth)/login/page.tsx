@@ -9,7 +9,7 @@ import { User, EyeClosed, Eye, Lock, Loader } from "lucide-react";
 import Link from "next/link";
 import { loginUser } from "@/api/requests";
 import { toast } from "react-toastify";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();

@@ -68,7 +68,7 @@ export default function Page() {
           <ParticipantsRanking
             participants={zoneData.participants}
             userId={zoneData.userId}
-            challengeStartTime={zoneData.startTime}
+            tournamentStartTime={zoneData.startTime}
           />
         </div>
       </div>
