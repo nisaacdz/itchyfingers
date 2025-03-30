@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import ChallengesList from "../../../../components/custom/TournamentsList";
-import CreateChallengeModal from "../../../../components/custom/CreateChallengeModal";
+import TournamentsList from "@/components/custom/TournamentsList";
+import CreateChallengeModal from "@/components/custom/CreateChallengeModal";
 import { useAuth } from "@/hooks/AuthContext";
 import { AuthLoader } from "@/components/custom/AuthLoader";
 
@@ -37,7 +37,7 @@ export default function Page() {
             </p>
           </div>
         </div>
-        <ChallengesList createChallenge={startCreateChallenge} />
+        <TournamentsList createChallenge={startCreateChallenge} />
       </div>
     </div>
   );

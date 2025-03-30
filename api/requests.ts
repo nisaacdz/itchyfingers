@@ -9,51 +9,33 @@ import {
   UserChallenge,
   UserChallengeFilter,
   UserProfile,
-} from "../types/request";
-import { Axios } from "../util/axios";
+} from "@/types/request";
 
 export { typingSocketAPI } from "./socket";
 
 export async function getTypingText(tournamentId: string) {
-  try {
-    const req = await Axios.get(`tournaments/${tournamentId}/text`);
-
-    if (req.status !== 200) {
-      throw new Error(req.data || "Something went wrong");
-    }
-
-    return (req.data.text || "") as string;
-  } catch (e) {
-    throw e as Error;
-  }
+  const req = await Api.get<string>(`tournaments/${tournamentId}/text`);
+  return req.result || "";
 }
 
 export async function fetchTournaments(
   page: number,
-  pageSize: number,
+  limit: number,
   filter?: ChallengeFilter,
 ) {
   return await Api.get<PaginatedData<Challenge>>(`/tournaments`, {
     params: {
       page,
-      pageSize,
+      limit,
       filter: filter || undefined,
     },
   });
 }
 
 export async function fetchUserSession(tournamentId: string, userId: string) {
-  try {
-    const req = await Axios.get(`/typingsessions/${tournamentId}/${userId}`);
-
-    if (req.status !== 200) {
-      throw new Error(req.data || "Something went wrong");
-    }
-
-    return req.data as Participant | null;
-  } catch (e) {
-    throw e as Error;
-  }
+  return await Api.get<Participant>(
+    `/tournaments/${tournamentId}/participants/${userId}`,
+  );
 }
 
 export async function fetchChallenge(tournamentId: string) {
@@ -66,9 +48,8 @@ export async function enterTournament(tournamentId: string) {
 }
 
 export async function getCurrentUser() {
-  // const user = await Api.get<User>("/auth/current");
-  // return user.result;
-  return null;
+  const user = await Api.get<User>("/auth/me");
+  return user.result;
 }
 
 export async function getUserProfile(username: string) {
@@ -116,37 +97,19 @@ export async function logoutUser() {
 }
 
 export async function fetchSessionParticipants(tournamentId: string) {
-  try {
-    const req = await Axios.get(`/challenges/${tournamentId}/participants`);
-
-    if (req.status !== 200) {
-      throw new Error(req.data || "Something went wrong");
-    }
-    return req.data as Participant[];
-  } catch (e) {
-    throw e as Error;
-  }
+  return await Api.get<Participant[]>(
+    `/tournaments/${tournamentId}/participants`,
+  );
 }
 
 export async function createChallenge(
   challenge: CreateChallenge,
   invitedUsers: string[] = [],
 ) {
-  try {
-    const req = await Axios.put("/challenges/create", {
-      challenge,
-      invitedUsers,
-    });
-
-    if (req.status !== 200) {
-      throw new Error(req.data || "Something went wrong");
-    }
-
-    return req.data as Challenge;
-  } catch (e) {
-    console.error(e);
-    return null;
-  }
+  return await Api.post<Challenge>(`/tournaments`, {
+    ...challenge,
+    invitedUsers,
+  });
 }
 
 export async function fetchUserChallenges(

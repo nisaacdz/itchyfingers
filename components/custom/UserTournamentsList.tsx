@@ -86,7 +86,7 @@ const formatTimeRemaining = (date: Date) => {
   return `${Math.floor(diffInSeconds / 86400)}d`;
 };
 
-const UserChallengesList = ({ userId }: { userId: string }) => {
+const UserTournamentsList = ({ userId }: { userId: string }) => {
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(15);
 
@@ -98,12 +98,6 @@ const UserChallengesList = ({ userId }: { userId: string }) => {
     queryKey: ["userChallenges", page, pageSize],
     queryFn: () => getUserChallenges(userId, page, pageSize),
   });
-
-  const handlePrevious = () => setPage((p) => Math.max(1, p - 1));
-  const handleNext = () =>
-    setPage((p) =>
-      Math.min(userChallengeResponse?.result?.totalPages || p, p + 1),
-    );
 
   if (isLoading) {
     return (
@@ -160,10 +154,18 @@ const UserChallengesList = ({ userId }: { userId: string }) => {
 
   const result = userChallengeResponse.result;
 
+  const totalPages =
+    !result.total || !result.limit
+      ? undefined
+      : Math.ceil(result.total / result.limit);
+
+  const handlePrevious = () => setPage((p) => Math.max(1, p - 1));
+  const handleNext = () => setPage((p) => Math.min(totalPages || p, p + 1));
+
   return (
     <div className="p-4 space-y-6 max-w-4xl mx-auto">
       <div className="space-y-2">
-        {result.totalItems === 0 ? (
+        {result.total === 0 ? (
           <div className="p-4 text-center text-muted-foreground">
             No challenges available
           </div>
@@ -278,12 +280,12 @@ const UserChallengesList = ({ userId }: { userId: string }) => {
           </button>
 
           <span className="text-sm text-foreground">
-            Page {page} of {result.totalPages || 1}
+            Page {page} of {totalPages || 1}
           </span>
 
           <button
             onClick={handleNext}
-            disabled={page === (result.totalPages || 1)}
+            disabled={page === (totalPages || 1)}
             className="p-2 border border-border rounded-md hover:bg-accent/10 disabled:opacity-50 disabled:hover:bg-transparent"
           >
             <ChevronRight className="text-foreground" />
@@ -294,4 +296,4 @@ const UserChallengesList = ({ userId }: { userId: string }) => {
   );
 };
 
-export default UserChallengesList;
+export default UserTournamentsList;

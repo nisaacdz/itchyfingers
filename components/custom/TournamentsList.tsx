@@ -72,7 +72,7 @@ const formatTimeRemaining = (date: Date) => {
   return `${Math.floor(diffInSeconds / 86400)}d`;
 };
 
-const ChallengesList = ({
+const TournamentsList = ({
   createChallenge,
 }: {
   createChallenge: () => void;
@@ -114,18 +114,6 @@ const ChallengesList = ({
     retry: false,
   });
 
-  const handlePrevious = () => setPage((p) => Math.max(1, p - 1));
-  const handleNext = () =>
-    setPage((p) => Math.min(response?.result?.totalPages || p, p + 1));
-
-  const enterCompetion = (tournamentId: string) => {
-    enterTournament(tournamentId)
-      .then(() => {
-        router.push(`/tournaments/${tournamentId}`);
-      })
-      .catch((e) => toast.error(e.message));
-  };
-
   if (!isLoading && (!response || response.error)) {
     console.log(response?.error);
     return (
@@ -138,11 +126,31 @@ const ChallengesList = ({
     );
   }
 
+  const result = response?.result;
+
+  const totalPages =
+    !result?.total || !result?.limit
+      ? undefined
+      : Math.ceil(result.total / result.limit);
+
+  const handlePrevious = () => setPage((p) => Math.max(1, p - 1));
+  const handleNext = () => {
+    setPage((p) => Math.min(totalPages || p, p + 1));
+  };
+
+  const enterCompetion = (tournamentId: string) => {
+    enterTournament(tournamentId)
+      .then(() => {
+        router.push(`/tournaments/${tournamentId}`);
+      })
+      .catch((e) => toast.error(e.message));
+  };
+
   return (
     <div className="p-4 space-y-6 mx-auto">
       <ControlsSection
         onSearch={setSearch}
-        challengePrivacy={privacyFilter}
+        privacyFilter={privacyFilter}
         onChangeTournamentPrivacy={setPrivacyFilter}
         createChallenge={createChallenge}
       />
@@ -279,11 +287,11 @@ const ChallengesList = ({
         </Table>
       </div>
 
-      {!isLoading && response?.result && response.result?.totalPages > 1 && (
+      {!isLoading && response?.result && (totalPages || 1) > 1 && (
         <PaginationSection
           page={response.result.page}
-          pageSize={response.result.pageSize}
-          totalPages={response.result.totalPages}
+          pageSize={response.result.limit}
+          totalPages={totalPages || 1}
           setPage={setPage}
           setPageSize={setPageSize}
           handlePrevious={handlePrevious}
@@ -296,14 +304,14 @@ const ChallengesList = ({
 
 type ControlsSectionProps = {
   onSearch: (value: string) => void;
-  challengePrivacy: TournamentPrivacyFilter;
+  privacyFilter: TournamentPrivacyFilter;
   onChangeTournamentPrivacy: (value: TournamentPrivacyFilter) => void;
   createChallenge: () => void;
 };
 
 const ControlsSection = ({
   onSearch,
-  challengePrivacy,
+  privacyFilter,
   onChangeTournamentPrivacy,
   createChallenge,
 }: ControlsSectionProps) => {
@@ -345,13 +353,13 @@ const ControlsSection = ({
         </Button>
       </div>
       <div className="flex items-center gap-4">
-        <Select value={challengePrivacy} onValueChange={handleFilterChange}>
+        <Select value={privacyFilter} onValueChange={handleFilterChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Challenges</SelectItem>
-            <SelectItem value="Open">Open Challenges</SelectItem>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="Open">Open</SelectItem>
             <SelectItem value="Invitational">Invitational</SelectItem>
           </SelectContent>
         </Select>
@@ -455,4 +463,4 @@ const PaginationSection = ({
   );
 };
 
-export default ChallengesList;
+export default TournamentsList;

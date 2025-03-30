@@ -30,7 +30,7 @@ const CreateChallengeModal = ({
   const [formData, setFormData] = useState<CreateChallenge>({
     challengeType: "Open",
     duration: 300,
-    startTime: DateTime.now().plus({ minutes: 5 }).toISO(),
+    startTime: DateTime.now().plus({ minutes: 3 }).toISO(),
     includeSpecialChars: false,
     includeUppercase: false,
   });

@@ -92,9 +92,8 @@ export type ChallengesData = {
 
 export type PaginatedData<T> = {
   page: number;
-  pageSize: number;
-  totalPages: number;
-  totalItems: number;
+  limit: number;
+  total: number;
   data: T[];
 };
 

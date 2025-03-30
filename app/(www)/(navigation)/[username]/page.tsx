@@ -12,7 +12,7 @@ import {
   AlertCircle,
   RefreshCw,
 } from "lucide-react";
-import UserChallengesList from "../../../../components/custom/UserChallengesList";
+import UserTournamentsList from "@/components/custom/UserTournamentsList";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/AuthContext";
 import { getUserProfile } from "@/api/requests";
@@ -172,7 +172,7 @@ export default function Page() {
           </h2>
 
           <div className="w-full h-full max-h-full overflow-auto">
-            <UserChallengesList userId={currentUser.userId} />
+            <UserTournamentsList userId={currentUser.userId} />
           </div>
         </div>
       ) : (

@@ -1,3 +1,4 @@
+import config from "@/config";
 import { TournamentInfo, Participant } from "@/types/request";
 import { io, Socket } from "socket.io-client";
 
@@ -18,7 +19,7 @@ class TypingSocketAPI {
   connect() {
     if (this.socket?.connected) return;
 
-    this.socket = io(process.env.REACT_APP_WS_URL || "http://localhost:4000", {
+    this.socket = io(config.apps.core, {
       withCredentials: true,
       autoConnect: true,
       reconnection: true,

@@ -1,6 +1,6 @@
 const config = {
   apps: {
-    core: process.env.API_BASE_URL || "http://localhost:4000",
+    core: process.env.NEXT_PUBLIC_API_BASE_URL,
   },
   client: "itchy-fingers-scratcher",
 };

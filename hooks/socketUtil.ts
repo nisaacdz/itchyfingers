@@ -82,15 +82,16 @@ export const useSocket = (
 
     if (tournamentStartedAt && new Date() > new Date(tournamentStartedAt)) {
       fetchSessionParticipants(tournamentId).then((sessions) => {
-        const initialParticipants = sessions.reduce(
-          (acc, session) => ({
-            ...acc,
-            [session.user_id]: {
-              ...session,
-            },
-          }),
-          {} as Record<string, Participant>,
-        );
+        const initialParticipants =
+          sessions.result?.reduce(
+            (acc, session) => ({
+              ...acc,
+              [session.user_id]: {
+                ...session,
+              },
+            }),
+            {},
+          ) || {};
         setParticipants(initialParticipants);
       });
     }
