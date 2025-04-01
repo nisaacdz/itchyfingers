@@ -15,7 +15,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user, update } = useAuth();
+  const { client, reload } = useAuth();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -24,7 +24,7 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (user) {
+    if (client?.user) {
       let returnTo = window.sessionStorage.getItem("returnTo");
       if (!returnTo || returnTo === "/login") {
         returnTo = "/";
@@ -45,7 +45,7 @@ export default function LoginPage() {
       toast.error(response.error || "Could not sign in");
     } else {
       toast.success("Signed in successfully");
-      update(response.result);
+      reload();
     }
     setIsSubmitting(false);
   };

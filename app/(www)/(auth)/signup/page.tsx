@@ -16,14 +16,14 @@ export default function SignupPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user, update } = useAuth();
+  const { client, reload } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
   useEffect(() => {
-    if (user) {
+    if (client?.user) {
       router.push("/username");
     }
   });
@@ -40,7 +40,7 @@ export default function SignupPage() {
       toast.error(response.error || "Could not sign up");
     } else {
       toast.success("Account created successfully");
-      update(response.result);
+      reload();
     }
     setIsSubmitting(false);
   };

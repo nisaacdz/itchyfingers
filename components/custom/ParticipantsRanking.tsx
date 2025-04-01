@@ -3,17 +3,17 @@ import { Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ParticipantsRankingProps = {
-  userId: string | null;
+  clientId: string | null;
   participants: Record<string, Participant>;
   tournamentStartTime?: string;
 };
 
 const ParticipantsRanking = ({
-  userId,
+  clientId,
   participants,
   tournamentStartTime,
 }: ParticipantsRankingProps) => {
-  if (!userId || !tournamentStartTime) return null;
+  if (!clientId || !tournamentStartTime) return null;
 
   const tournamentStart = new Date(tournamentStartTime);
   const rankings = Object.values(participants)
@@ -27,13 +27,15 @@ const ParticipantsRanking = ({
 
   if (rankings.length === 0) return null;
 
-  const currentUser = participants[userId];
+  const currentUser = participants[clientId];
 
   const formatDuration = (start: Date, end: Date) => {
     const diff = end.getTime() - start.getTime();
     const minutes = Math.floor(diff / 60000);
     const seconds = Math.floor((diff % 60000) / 1000);
-    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const formatStartOffset = (start: Date) => {
@@ -41,20 +43,22 @@ const ParticipantsRanking = ({
     const minutes = Math.floor(diff / 60000);
     const seconds = Math.floor((diff % 60000) / 1000);
     const centis = Math.floor((diff % 1000) / 10);
-    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}.${centis.toString().padStart(2, "0")}`;
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}.${centis.toString().padStart(2, "0")}`;
   };
 
-  const getRowStyle = (userId: string) =>
+  const getRowStyle = (clientId: string) =>
     cn(
       "grid grid-cols-8 items-center w-full p-3 gap-4 transition-colors",
       "border-t border-border/50 hover:bg-accent/50",
-      userId === currentUser.user_id ? "bg-secondary/80" : "",
+      clientId === currentUser.user_id ? "bg-secondary/80" : "",
     );
 
-  const getTextStyle = (userId: string) =>
+  const getTextStyle = (clientId: string) =>
     cn(
       "font-medium font-mono",
-      userId === currentUser.user_id
+      clientId === currentUser.user_id
         ? "text-foreground"
         : "text-muted-foreground",
     );

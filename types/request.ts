@@ -1,5 +1,11 @@
+export type ClientSchema = {
+  client_id: string;
+  user: User | null;
+  updated: string; // date
+};
+
 export type User = {
-  userId: string;
+  id: number;
   username: string;
   email: string;
 };
@@ -22,7 +28,7 @@ export type UserProfile = {
   stats: UserStats;
 };
 
-export type StartChallenge = {
+export type StartTournament = {
   tournamentId: string;
   participants: Participant[];
   typingText: string;
@@ -47,7 +53,7 @@ export enum TournamentPrivacyFilter {
   All = "All",
 }
 
-export enum UserChallengeStatus {
+export enum UserTournamentStatus {
   Pending = "Pending",
   Accepted = "Accepted",
   Declined = "Declined",
@@ -55,19 +61,9 @@ export enum UserChallengeStatus {
   Discarded = "Discarded",
 }
 
-export type Challenge = {
-  privacy: TournamentPrivacy;
-  tournamentId: string;
-  createdBy: User;
-  scheduledAt: string;
-  startedAt?: string | null;
-  duration: number;
-  participants: number;
-};
-
-export type UserChallenge = {
-  challenge: Challenge;
-  status: UserChallengeStatus;
+export type UserTournament = {
+  tournament: TournamentInfo;
+  status: UserTournamentStatus;
   joinedAt?: Date;
   completedAt?: Date;
 };
@@ -85,8 +81,8 @@ export interface ApiResponse<T> {
   error: string | null;
 }
 
-export type ChallengesData = {
-  challenges: Challenge[];
+export type TournamentsData = {
+  tournaments: TournamentInfo[];
   totalPages: number;
 };
 
@@ -97,13 +93,13 @@ export type PaginatedData<T> = {
   data: T[];
 };
 
-export type ChallengeFilter = {
+export type TournamentFilter = {
   privacy?: TournamentPrivacy;
   search?: string;
 };
 
-export type UserChallengeFilter = {
-  status?: UserChallengeStatus;
+export type UserTournamentFilter = {
+  status?: UserTournamentStatus;
   privacy?: TournamentPrivacy;
   search?: string;
 };
@@ -123,11 +119,12 @@ export type Participant = {
 
 export type TournamentInfo = {
   id: string;
+  scheduled_for: string;
   started_at: string | null;
   ended_at: string | null;
   text: string;
   total_joined: number;
   total_remaining: number;
   total_completed: number;
-  automatized: boolean;
+  automatized: boolean; // maybe remove this from backend
 };

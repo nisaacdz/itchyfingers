@@ -6,14 +6,14 @@ import useParagraphStyles from "../../hooks/useParagraphStyles";
 type TypingAreaProps = {
   text: string;
   participants: Record<string, Participant>;
-  userId: string;
+  clientId: string;
   handleCharacterInput: (char: string) => void;
 };
 
 export const TypingArea = ({
   text,
   participants,
-  userId,
+  clientId,
   handleCharacterInput,
 }: TypingAreaProps) => {
   const paragraphRef = useRef<HTMLParagraphElement>(null);
@@ -35,7 +35,7 @@ export const TypingArea = ({
     };
   }, [handleCharacterInput]);
 
-  const userParticipant = participants[userId];
+  const userParticipant = participants[clientId];
 
   if (!userParticipant) {
     return null;
@@ -134,10 +134,14 @@ export const TypingAreaCountdown = ({ scheduledAt }: { scheduledAt: Date }) => {
     const seconds = Math.floor((ms % (60 * 1000)) / 1000);
 
     if (ms < 60 * 60 * 1000) {
-      return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+      return `${minutes.toString().padStart(2, "0")}:${seconds
+        .toString()
+        .padStart(2, "0")}`;
     }
 
-    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   };
 
   return (

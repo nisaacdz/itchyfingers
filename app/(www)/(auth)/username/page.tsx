@@ -13,7 +13,7 @@ import { AuthLoader } from "@/components/custom/AuthLoader";
 
 export default function UsernamePage() {
   const router = useRouter();
-  const { user, reload, loading } = useAuth();
+  const { client, reload, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -23,12 +23,13 @@ export default function UsernamePage() {
     return <AuthLoader />;
   }
 
-  if (!user) return null;
+  if (!client?.user) return null; // wait for redirect or show nothing
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!client.user) return;
     setIsSubmitting(true);
-    const response = await updateUsername(user, formData.username);
+    const response = await updateUsername(client.user.id, formData.username);
 
     if (response.error || !response.result) {
       toast.error(response.error || "Could not update username");
@@ -75,7 +76,7 @@ export default function UsernamePage() {
                 type="text"
                 placeholder="adjoamensah"
                 className="pl-10 bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary"
-                value={formData.username || user.username}
+                value={formData.username || client.user.username}
                 onChange={handleInputChange}
                 required
               />

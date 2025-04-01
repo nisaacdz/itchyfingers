@@ -2,7 +2,7 @@ import config from "@/config";
 import { TournamentInfo, Participant } from "@/types/request";
 import { io, Socket } from "socket.io-client";
 
-export type ChallengeEventCallbacks = {
+export type TournamentEventCallbacks = {
   onSessionUpdate: (data: Participant) => void;
   onTournamentStart: (startData: TournamentInfo) => void;
   onError: (error: string) => void;
@@ -14,7 +14,7 @@ export type ChallengeEventCallbacks = {
 
 class TypingSocketAPI {
   private socket: Socket | null = null;
-  private callbacks: ChallengeEventCallbacks | null = null;
+  private callbacks: TournamentEventCallbacks | null = null;
 
   connect() {
     if (this.socket?.connected) return;
@@ -53,7 +53,7 @@ class TypingSocketAPI {
     });
   }
 
-  public initialize(tournamentId: string, callbacks: ChallengeEventCallbacks) {
+  public initialize(tournamentId: string, callbacks: TournamentEventCallbacks) {
     this.callbacks = callbacks;
     this.connect();
 

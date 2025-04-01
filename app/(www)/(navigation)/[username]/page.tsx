@@ -76,13 +76,13 @@ const ProfileErrorState = ({
 
 export default function Page() {
   const username = useParams().username as string;
-  const { user: currentUser } = useAuth();
+  const { client } = useAuth();
   const {
     data: getProfileResponse,
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["profile", username, currentUser?.userId],
+    queryKey: ["profile", username, client?.client_id],
     queryFn: async () => await getUserProfile(username),
     retry: false,
   });
@@ -164,7 +164,7 @@ export default function Page() {
       </div>
 
       {/* Challenges Table */}
-      {currentUser && currentUser.username === username ? (
+      {client?.user && client.user.username === username ? (
         <div className="space-y-4">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Hourglass className="text-primary" />
@@ -172,7 +172,7 @@ export default function Page() {
           </h2>
 
           <div className="w-full h-full max-h-full overflow-auto">
-            <UserTournamentsList userId={currentUser.userId} />
+            <UserTournamentsList userId={client.user.id} />
           </div>
         </div>
       ) : (

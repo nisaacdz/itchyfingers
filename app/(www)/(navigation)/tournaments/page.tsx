@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import TournamentsList from "@/components/custom/TournamentsList";
-import CreateChallengeModal from "@/components/custom/CreateChallengeModal";
+import CreateChallengeModal from "@/components/custom/CreateTournamentModal";
 import { useAuth } from "@/hooks/AuthContext";
 import { AuthLoader } from "@/components/custom/AuthLoader";
 
@@ -23,8 +23,8 @@ export default function Page() {
       id="challenges-page"
     >
       <CreateChallengeModal
-        isOpen={createModalOpen}
-        onRequestClose={() => setCreateModalOpen(false)}
+        open={createModalOpen}
+        onOpenChange={(state) => setCreateModalOpen(state)}
       />
       <div className="w-full max-w-6xl space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

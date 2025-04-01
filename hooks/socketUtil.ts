@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Challenge, Participant, TournamentInfo } from "../types/request";
+import { Participant, TournamentInfo } from "../types/request";
 import { fetchSessionParticipants, typingSocketAPI } from "../api/requests";
-import { fetchChallenge, getTypingText } from "../api/requests";
+import { fetchTournament, getTypingText } from "../api/requests";
 import { toast } from "react-toastify";
-import { ChallengeEventCallbacks } from "@/api/socket";
+import { TournamentEventCallbacks } from "@/api/socket";
 
-export const useChallenge = (tournamentId: string) => {
+export const useTournament = (tournamentId: string) => {
   const { data, isLoading, error } = useQuery({
     queryKey: ["tournament", tournamentId],
-    queryFn: () => fetchChallenge(tournamentId),
+    queryFn: () => fetchTournament(tournamentId),
     enabled: !!tournamentId,
   });
 
@@ -22,7 +22,7 @@ export const useChallenge = (tournamentId: string) => {
 
 export const useSocket = (
   tournamentId: string,
-  userId: string | null,
+  clientId: string | null,
   setTypingText: (_: string) => void,
   tournamentStartedAt?: string,
 ) => {
@@ -42,7 +42,7 @@ export const useSocket = (
   };
 
   useEffect(() => {
-    if (!userId) return;
+    if (!clientId) return;
 
     const handleTournamentStart = (data: TournamentInfo) => {
       setTypingText(data.text);
@@ -63,7 +63,7 @@ export const useSocket = (
       handleSessionUpdate(session);
     };
 
-    const handlers: ChallengeEventCallbacks = {
+    const handlers: TournamentEventCallbacks = {
       onSessionUpdate: handleSessionUpdate,
       onTournamentStart: handleTournamentStart,
       onError: (message) => {
@@ -100,10 +100,10 @@ export const useSocket = (
       typingSocketAPI.disconnect();
       setSocketLoading(true);
     };
-  }, [tournamentId, userId, tournamentStartedAt, setTypingText]);
+  }, [tournamentId, clientId, tournamentStartedAt, setTypingText]);
 
   const handleCharacterInput = (input: string) => {
-    if (!userId || participants[userId]?.ended_at) return;
+    if (!clientId || participants[clientId]?.ended_at) return;
     typingSocketAPI.sendTypingInput(input);
   };
 
@@ -121,14 +121,14 @@ export const useSocket = (
 };
 
 export const useTypingText = (
-  tournament: Challenge | null,
+  tournament: TournamentInfo | null,
   tournamentId: string,
 ) => {
   const [typingText, setTypingText] = useState<string | null>(null);
   const [typingTextError, setTypingTextError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!tournament?.startedAt) return;
+    if (!tournament?.started_at) return;
 
     const loadText = async () => {
       try {
@@ -141,7 +141,7 @@ export const useTypingText = (
     };
 
     loadText();
-  }, [tournament?.startedAt, tournamentId, typingTextError]);
+  }, [tournament?.started_at, tournamentId, typingTextError]);
 
   return { typingText, typingTextError, setTypingText };
 };

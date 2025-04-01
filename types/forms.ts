@@ -1,7 +1,7 @@
-export type CreateChallenge = {
-  challengeType: "Open" | "Invitational";
+export type CreateTournament = {
+  kind: "Open" | "Invitational";
   duration: number;
-  startTime: string;
+  scheduled_for: string;
   includeSpecialChars: boolean;
   includeUppercase: boolean;
 };

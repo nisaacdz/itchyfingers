@@ -1,8 +1,8 @@
 "use client";
-import { Challenge, Participant } from "@/types/request";
+import { TournamentInfo, Participant } from "@/types/request";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/hooks/AuthContext";
-import { useChallenge, useSocket, useTypingText } from "@/hooks/socketUtil";
+import { useTournament, useSocket, useTypingText } from "@/hooks/socketUtil";
 import { StatsBoard, StatsBoardLoading } from "@/components/custom/StatsBoard";
 import ProgressBoard from "@/components/custom/ProgressBoard";
 import {
@@ -12,16 +12,16 @@ import {
 import ParticipantsRanking from "@/components/custom/ParticipantsRanking";
 import { useRouter } from "next/navigation";
 
-const ChallengePage = () => {
+const TournamentPage = () => {
   const { tournamentId } = useParams() as { tournamentId: string };
-  const { user, loading: authLoading } = useAuth();
+  const { client, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const {
     tournament,
     isLoading: tournamentLoading,
     error: tournamentError,
-  } = useChallenge(tournamentId);
+  } = useTournament(tournamentId);
   const { typingText, typingTextError, setTypingText } = useTypingText(
     tournament,
     tournamentId,
@@ -35,15 +35,17 @@ const ChallengePage = () => {
     handleExitCompetition,
   } = useSocket(
     tournamentId,
-    user?.userId || null,
+    client?.client_id || null,
     setTypingText,
-    tournament?.startedAt || undefined,
+    tournament?.started_at || undefined,
   );
 
   const loading = tournamentLoading || socketLoading || authLoading;
   const error = tournamentError || socketError || typingTextError;
 
-  const userParticipant = user ? participants[user.userId] : undefined;
+  const currentParticipant = client
+    ? participants[client.client_id]
+    : undefined;
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-500 p-4">{error.message}</div>;
@@ -61,13 +63,13 @@ const ChallengePage = () => {
     <main className="w-full h-full p-4 pt-8 bg-background dark:bg-background">
       <div className="grid md:grid-cols-5 grid-cols-1 gap-y-4 md:gap-6">
         <StatsSection
-          userParticipant={userParticipant || null}
+          currentParticipant={currentParticipant || null}
           typingTextLength={typingText?.length || 0}
           handleExit={handleExit}
           handleRestart={handleRestart}
         />
         <MainContent
-          userId={user?.userId || null}
+          clientId={client?.client_id || null}
           tournament={tournament}
           participants={participants}
           typingText={typingText}
@@ -79,20 +81,20 @@ const ChallengePage = () => {
 };
 
 const StatsSection = ({
-  userParticipant,
+  currentParticipant,
   typingTextLength,
   handleExit,
   handleRestart,
 }: {
-  userParticipant: Participant | null;
+  currentParticipant: Participant | null;
   typingTextLength: number;
   handleExit: () => void;
   handleRestart: () => void;
 }) => (
   <div className="col-span-1 w-full h-full items-center justify-center">
-    {userParticipant ? (
+    {currentParticipant ? (
       <StatsBoard
-        userParticipant={userParticipant}
+        currentParticipant={currentParticipant}
         textLength={typingTextLength}
         onLeave={handleExit}
         onRestart={handleRestart}
@@ -107,13 +109,13 @@ const MainContent = ({
   tournament,
   participants,
   typingText,
-  userId,
+  clientId,
   handleCharacterInput,
 }: {
-  tournament: Challenge | null;
+  tournament: TournamentInfo | null;
   participants: Record<string, Participant>;
   typingText: string | null;
-  userId: string | null;
+  clientId: string | null;
   handleCharacterInput: (char: string) => void;
 }) => {
   return (
@@ -122,25 +124,25 @@ const MainContent = ({
         participants={participants}
         textLength={typingText?.length || 0}
       />
-      {typingText && userId ? (
+      {typingText && clientId ? (
         <TypingArea
           text={typingText}
           participants={participants}
-          userId={userId}
+          clientId={clientId}
           handleCharacterInput={handleCharacterInput}
         />
       ) : tournament ? (
-        <TypingAreaCountdown scheduledAt={new Date(tournament.scheduledAt)} />
+        <TypingAreaCountdown scheduledAt={new Date(tournament.started_at!)} />
       ) : (
         <></>
       )}
       <ParticipantsRanking
         participants={participants}
-        userId={userId}
-        tournamentStartTime={tournament?.startedAt || undefined}
+        clientId={clientId}
+        tournamentStartTime={tournament?.started_at || undefined}
       />
     </div>
   );
 };
 
-export default ChallengePage;
+export default TournamentPage;

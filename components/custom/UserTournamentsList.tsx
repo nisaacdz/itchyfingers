@@ -86,7 +86,7 @@ const formatTimeRemaining = (date: Date) => {
   return `${Math.floor(diffInSeconds / 86400)}d`;
 };
 
-const UserTournamentsList = ({ userId }: { userId: string }) => {
+const UserTournamentsList = ({ userId }: { userId: number }) => {
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(15);
 

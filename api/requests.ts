@@ -1,14 +1,15 @@
 import Api from ".";
-import { CreateChallenge } from "../types/forms";
+import { CreateTournament } from "@/types/forms";
 import {
-  Challenge,
-  ChallengeFilter,
+  TournamentInfo,
+  TournamentFilter,
   PaginatedData,
   Participant,
   User,
-  UserChallenge,
-  UserChallengeFilter,
+  UserTournament,
+  UserTournamentFilter,
   UserProfile,
+  ClientSchema,
 } from "@/types/request";
 
 export { typingSocketAPI } from "./socket";
@@ -21,9 +22,9 @@ export async function getTypingText(tournamentId: string) {
 export async function fetchTournaments(
   page: number,
   limit: number,
-  filter?: ChallengeFilter,
+  filter?: TournamentFilter,
 ) {
-  return await Api.get<PaginatedData<Challenge>>(`/tournaments`, {
+  return await Api.get<PaginatedData<TournamentInfo>>(`/tournaments`, {
     params: {
       page,
       limit,
@@ -38,31 +39,32 @@ export async function fetchUserSession(tournamentId: string, userId: string) {
   );
 }
 
-export async function fetchChallenge(tournamentId: string) {
-  return (await Api.get<Challenge>(`/tournaments/${tournamentId}`)).result;
+export async function fetchTournament(tournamentId: string) {
+  return (await Api.get<TournamentInfo>(`/tournaments/${tournamentId}`)).result;
 }
 
 export async function enterTournament(tournamentId: string) {
-  return (await Api.patch<Challenge>(`/tournaments/${tournamentId}/enter`, {}))
-    .result;
+  return (
+    await Api.patch<TournamentInfo>(`/tournaments/${tournamentId}/enter`, {})
+  ).result;
 }
 
 export async function getCurrentUser() {
-  const user = await Api.get<User>("/auth/me");
-  return user.result;
+  const response = await Api.get<ClientSchema>("/auth/me");
+  return response.result;
 }
 
 export async function getUserProfile(username: string) {
   return await Api.get<UserProfile>(`/users/${username}/`);
 }
 
-export async function getUserChallenges(
-  userId: string,
+export async function getUserTournaments(
+  userId: number,
   page: number,
   pageSize: number,
-  filter?: UserChallengeFilter,
+  filter?: UserTournamentFilter,
 ) {
-  return await Api.get<PaginatedData<UserChallenge>>(
+  return await Api.get<PaginatedData<UserTournament>>(
     `/users/${userId}/challenges`,
     {
       params: {
@@ -88,8 +90,8 @@ export async function registerUser(logins: {
   return await Api.post<User>("/auth/register", logins);
 }
 
-export async function updateUsername(user: User, username: string) {
-  return await Api.patch<User>(`/users/${user.username}`, { username });
+export async function updateUsername(userId: number, username: string) {
+  return await Api.patch<User>(`/users/${userId}/update`, { username });
 }
 
 export async function logoutUser() {
@@ -102,23 +104,23 @@ export async function fetchSessionParticipants(tournamentId: string) {
   );
 }
 
-export async function createChallenge(
-  challenge: CreateChallenge,
+export async function createTournament(
+  challenge: CreateTournament,
   invitedUsers: string[] = [],
 ) {
-  return await Api.post<Challenge>(`/tournaments`, {
+  return await Api.post<TournamentInfo>(`/tournaments`, {
     ...challenge,
     invitedUsers,
   });
 }
 
-export async function fetchUserChallenges(
+export async function fetchUserTournaments(
   userId: string,
   page: number,
   pageSize: number,
-  filter?: UserChallengeFilter,
+  filter?: UserTournamentFilter,
 ) {
-  return await Api.get<PaginatedData<UserChallenge>>(
+  return await Api.get<PaginatedData<UserTournament>>(
     `/users/${userId}/challenges`,
     {
       params: {
