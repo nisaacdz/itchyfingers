@@ -1,4 +1,4 @@
-export type ClientSchema = {
+export type Client = {
   client_id: string;
   user: User | null;
   updated: string; // date
@@ -21,11 +21,6 @@ export const DefaultUserTyping: Participant = {
   total_keystrokes: 0,
   current_accuracy: 100,
   current_speed: 0,
-};
-
-export type UserProfile = {
-  user: User;
-  stats: UserStats;
 };
 
 export type StartTournament = {
@@ -62,7 +57,7 @@ export enum UserTournamentStatus {
 }
 
 export type UserTournament = {
-  tournament: TournamentInfo;
+  tournament: Tournament;
   status: UserTournamentStatus;
   joinedAt?: Date;
   completedAt?: Date;
@@ -80,11 +75,6 @@ export interface ApiResponse<T> {
   result: T | null;
   error: string | null;
 }
-
-export type TournamentsData = {
-  tournaments: TournamentInfo[];
-  totalPages: number;
-};
 
 export type PaginatedData<T> = {
   page: number;
@@ -117,14 +107,46 @@ export type Participant = {
   current_speed: number;
 };
 
+export class TextOptions {
+  constructor(
+    public upper_case: boolean,
+    public lower_case: boolean,
+    public numbers: boolean,
+    public symbols: boolean,
+    public meaningful_words: boolean,
+  ) {}
+
+  display(): string {
+    const options: string[] = [];
+    if (this.upper_case) options.push("Uppercase");
+    if (this.lower_case) options.push("Lowercase");
+    if (this.numbers) options.push("Numbers");
+    if (this.symbols) options.push("Symbols");
+    if (!this.meaningful_words) options.push("Random");
+
+    if (options.length === 0) options.push("None");
+    return options.join(", ");
+  }
+}
+
+export type Tournament = {
+  id: string;
+  title: string;
+  created_by: User;
+  created_at: string;
+  scheduled_for: string;
+  joined: number;
+  privacy: TournamentPrivacy;
+  text_options: TextOptions;
+};
+
 export type TournamentInfo = {
   id: string;
   scheduled_for: string;
   started_at: string | null;
   ended_at: string | null;
   text: string;
-  total_joined: number;
+  joined: number;
   total_remaining: number;
   total_completed: number;
-  automatized: boolean; // maybe remove this from backend
 };

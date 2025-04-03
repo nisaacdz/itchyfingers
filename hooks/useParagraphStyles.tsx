@@ -1,5 +1,5 @@
 import { useEffect, useState, RefObject } from "react";
-import { ParagraphStyles } from "../types/util";
+import { ParagraphStyles } from "@/types/util";
 
 function useParagraphStyles(
   elementRef: RefObject<HTMLParagraphElement | null>,

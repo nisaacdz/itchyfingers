@@ -1,4 +1,4 @@
-import { Participant } from "../../types/request";
+import { Participant } from "@/types/request";
 import { Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 

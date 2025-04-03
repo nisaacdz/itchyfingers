@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Participant, TournamentInfo } from "../types/request";
-import { fetchSessionParticipants, typingSocketAPI } from "../api/requests";
-import { fetchTournament, getTypingText } from "../api/requests";
-import { toast } from "react-toastify";
+import { Participant, TournamentInfo } from "@/types/request";
+import { fetchSessionParticipants, typingSocketAPI } from "@/api/requests";
+import { fetchTournament, getTypingText } from "@/api/requests";
+import { toast } from "sonner";
 import { TournamentEventCallbacks } from "@/api/socket";
 
 export const useTournament = (tournamentId: string) => {

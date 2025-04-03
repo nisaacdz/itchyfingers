@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Loader } from "lucide-react";
 import { updateUsername } from "@/api/requests";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/AuthContext";
 import { AuthLoader } from "@/components/custom/AuthLoader";
 

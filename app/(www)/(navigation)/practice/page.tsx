@@ -48,7 +48,7 @@ export default function Page() {
       <div className="grid md:grid-cols-5 grid-cols-1 gap-y-4 md:gap-6">
         <div className="col-span-1 w-full h-full items-center justify-center">
           <StatsBoard
-            userParticipant={zoneData.participants[zoneData.userId]}
+            currentParticipant={zoneData.participants[zoneData.userId]}
             textLength={typingText.length}
             onLeave={handleExitZone}
             onRestart={handleRestartZone}
@@ -62,12 +62,12 @@ export default function Page() {
           <TypingArea
             text={typingText}
             participants={zoneData.participants}
-            userId={zoneData.userId}
+            clientId={zoneData.userId}
             handleCharacterInput={handleTypedCharacters}
           />
           <ParticipantsRanking
             participants={zoneData.participants}
-            userId={zoneData.userId}
+            clientId={zoneData.userId}
             tournamentStartTime={zoneData.startTime}
           />
         </div>

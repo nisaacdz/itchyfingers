@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Caret, WhiteSpaceErrorHighlight } from "./Elems";
-import { Participant } from "../../types/request";
-import useParagraphStyles from "../../hooks/useParagraphStyles";
+import { Participant } from "@/types/request";
+import useParagraphStyles from "@/hooks/useParagraphStyles";
 
 type TypingAreaProps = {
   text: string;

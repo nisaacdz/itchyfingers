@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, EyeClosed, Eye, Lock, Loader } from "lucide-react";
 import Link from "next/link";
 import { registerUser } from "@/api/requests";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/AuthContext";
 
 // Random commment by nisaacdz

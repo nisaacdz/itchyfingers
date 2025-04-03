@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
-import config from "../config";
+import config from "@/config";
 import { ApiResponse } from "@/types/request";
 
 class ApiClient {

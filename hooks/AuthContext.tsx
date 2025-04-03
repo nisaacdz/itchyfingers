@@ -6,11 +6,11 @@ import React, {
   useContext,
   PropsWithChildren,
 } from "react";
-import { ClientSchema } from "../types/request";
+import { Client } from "@/types/request";
 import { getCurrentUser, logoutUser } from "../api/requests";
 
 interface AuthContextType {
-  client: ClientSchema | null;
+  client: Client | null;
   logout: () => void;
   loading: boolean;
   reload: () => void;
@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthContextProvider: React.FC<PropsWithChildren> = ({
   children,
 }) => {
-  const [client, setUser] = useState<ClientSchema | null>(null);
+  const [client, setUser] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
 
   const reload = () => {

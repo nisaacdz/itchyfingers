@@ -2,7 +2,7 @@ import { BellDot, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import NavHiddenMenu from "./HiddenNav";
-import { NavMenuItems } from "../../util/etc";
+import { NavMenuItems } from "@/util/etc";
 
 const NavBar = () => {
   return (

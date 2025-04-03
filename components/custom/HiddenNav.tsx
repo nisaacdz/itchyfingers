@@ -8,7 +8,7 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import { Ellipsis } from "lucide-react";
 import { useState } from "react";
-import { NavMenuItems } from "../../util/etc";
+import { NavMenuItems } from "@/util/etc";
 import Link from "next/link";
 
 const NavHiddenMenu = () => {

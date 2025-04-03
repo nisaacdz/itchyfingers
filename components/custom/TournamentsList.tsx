@@ -14,9 +14,9 @@ import {
 
 import { useQuery } from "@tanstack/react-query";
 import { TournamentPrivacy, TournamentPrivacyFilter } from "@/types/request";
-import { enterTournament, fetchTournaments } from "@/api/requests";
+import { enterTournament, allTournaments } from "@/api/requests";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
   useQueryState,
@@ -107,7 +107,7 @@ const TournamentsList = ({
   } = useQuery({
     queryKey: ["tournaments", page, pageSize],
     queryFn: () =>
-      fetchTournaments(page, pageSize, {
+      allTournaments(page, pageSize, {
         search,
         privacy: parseTournamentPrivacyFilter(privacyFilter),
       }),
@@ -161,7 +161,6 @@ const TournamentsList = ({
               <TableHead className="w-[50px]"></TableHead>
               <TableHead>Creator</TableHead>
               <TableHead>Starts In</TableHead>
-              <TableHead>Duration</TableHead>
               <TableHead>Participants</TableHead>
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
@@ -206,20 +205,17 @@ const TournamentsList = ({
                 </TableCell>
               </TableRow>
             ) : (
-              response?.result?.data?.map((challenge) => (
-                <TableRow
-                  key={challenge.tournamentId}
-                  className="hover:bg-muted/50"
-                >
+              response?.result?.data?.map((tournament) => (
+                <TableRow key={tournament.id} className="hover:bg-muted/50">
                   <TableCell>
                     <span
                       title={
-                        challenge.privacy === TournamentPrivacy.Open
+                        tournament.privacy === TournamentPrivacy.Open
                           ? "Open Challenge"
                           : "You're Invited"
                       }
                     >
-                      {challenge.privacy === TournamentPrivacy.Open ? (
+                      {tournament.privacy === TournamentPrivacy.Open ? (
                         <Globe size={20} className="text-primary mx-auto" />
                       ) : (
                         <Unlock
@@ -233,10 +229,10 @@ const TournamentsList = ({
                   <TableCell>
                     <div
                       className="flex items-center gap-2"
-                      title={`Creator: ${challenge.createdBy.username}`}
+                      title={`Creator: ${tournament.created_by.username}`}
                     >
                       <User size={16} className="text-muted-foreground" />
-                      <span>{challenge.createdBy.username}</span>
+                      <span>{tournament.created_by.username}</span>
                     </div>
                   </TableCell>
 
@@ -244,30 +240,25 @@ const TournamentsList = ({
                     <div
                       className="flex items-center gap-2"
                       title={`Starts in ${formatTimeRemaining(
-                        new Date(challenge.scheduledAt),
+                        new Date(tournament.scheduled_for),
                       )}`}
                     >
                       <Hourglass size={16} className="text-muted-foreground" />
                       <span>
-                        {formatTimeRemaining(new Date(challenge.scheduledAt))}
+                        {formatTimeRemaining(
+                          new Date(tournament.scheduled_for),
+                        )}
                       </span>
-                    </div>
-                  </TableCell>
-
-                  <TableCell>
-                    <div className="flex items-center gap-2" title="Duration">
-                      <Keyboard size={16} className="text-muted-foreground" />
-                      <span>{formatDuration(challenge.duration)}</span>
                     </div>
                   </TableCell>
 
                   <TableCell>
                     <div
                       className="flex items-center gap-2"
-                      title={`${challenge.participants} participants`}
+                      title={`${tournament.joined} participants`}
                     >
                       <Users size={16} className="text-muted-foreground" />
-                      <span>{challenge.participants}</span>
+                      <span>{tournament.joined}</span>
                     </div>
                   </TableCell>
 
@@ -275,7 +266,7 @@ const TournamentsList = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => enterCompetion(challenge.tournamentId)}
+                      onClick={() => enterCompetion(tournament.id)}
                     >
                       Enter
                     </Button>

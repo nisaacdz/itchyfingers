@@ -9,7 +9,8 @@ import {
   UserTournament,
   UserTournamentFilter,
   UserProfile,
-  ClientSchema,
+  Client,
+  Tournament,
 } from "@/types/request";
 
 export { typingSocketAPI } from "./socket";
@@ -19,12 +20,12 @@ export async function getTypingText(tournamentId: string) {
   return req.result || "";
 }
 
-export async function fetchTournaments(
+export async function allTournaments(
   page: number,
   limit: number,
   filter?: TournamentFilter,
 ) {
-  return await Api.get<PaginatedData<TournamentInfo>>(`/tournaments`, {
+  return await Api.get<PaginatedData<Tournament>>(`/tournaments`, {
     params: {
       page,
       limit,
@@ -50,7 +51,7 @@ export async function enterTournament(tournamentId: string) {
 }
 
 export async function getCurrentUser() {
-  const response = await Api.get<ClientSchema>("/auth/me");
+  const response = await Api.get<Client>("/auth/me");
   return response.result;
 }
 

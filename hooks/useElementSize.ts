@@ -1,5 +1,5 @@
 import { RefObject, useEffect, useState } from "react";
-import { Size } from "../types/util";
+import { Size } from "@/types/util";
 
 const useElementSize = (ref: RefObject<HTMLElement | null>) => {
   const [size, setSize] = useState<Size>({ width: 0, height: 0 });

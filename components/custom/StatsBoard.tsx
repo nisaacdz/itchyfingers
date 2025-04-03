@@ -1,4 +1,4 @@
-import { Participant } from "../../types/request";
+import { Participant } from "@/types/request";
 import { SpeedVortexMeter, SpeedVortexWaiting } from "./SpeedVortexMeter";
 import { AccuracyMeter, AccuracyMeterActive } from "./AccuracyMeter";
 import { LogOut, RotateCcw } from "lucide-react";

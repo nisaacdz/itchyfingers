@@ -4,9 +4,11 @@ import {
   Participant,
   UserTournament,
   UserTournamentStatus,
-  UserProfile,
   ZoneData,
   TournamentInfo,
+  UserStats,
+  Client,
+  Tournament,
 } from "@/types/request";
 
 // const text2 =
@@ -20,19 +22,22 @@ const userParticipant: Participant = {
   ...DefaultUserTyping,
 };
 
-const userProfile: UserProfile = {
+const userStats: UserStats = {
+  accuracy: 92.4,
+  wpm: 128,
+  competitions: 45,
+  keystrokes: 245892,
+  lastActive: new Date().toISOString(),
+};
+
+const client: Client = {
+  client_id: "12345",
   user: {
-    userId: "typespeedmaster",
-    username: "typespeedmaster",
-    email: "master@typing.io",
+    id: 123,
+    username: "newt",
+    email: "newt@domain.xyz",
   },
-  stats: {
-    accuracy: 92.4,
-    wpm: 128,
-    competitions: 45,
-    keystrokes: 245892,
-    lastActive: new Date().toISOString(),
-  },
+  updated: new Date().toISOString(),
 };
 
 const loading = false;
@@ -269,72 +274,10 @@ export function handleTypedCharacters(inputString: string) {
   updateStates();
 }
 
-export async function fetchUserTournaments({ pageParam = 1, pageSize = 10 }) {
-  const userChallenges = await new Promise<UserTournament[]>((resolve) => {
-    setTimeout(() => {
-      const mockUserTournaments: UserTournament[] = Array.from({
-        length: pageSize,
-      }).map(() => {
-        const total_joined = Math.floor(Math.random() * 10);
-        const tournament: TournamentInfo = {
-          id: Math.random().toString(36).substring(7),
-          scheduled_for: new Date(
-            Date.now() + 15000 + Math.floor(Math.random() * 600000),
-          ).toISOString(),
-          total_joined,
-          total_completed: 0,
-          total_remaining: total_joined,
-          started_at: null,
-          ended_at: null,
-          text: "",
-          automatized: false,
-        };
-
-        let status = UserTournamentStatus.Pending;
-        const random = Math.random();
-        if (random < 0.2) {
-          status = UserTournamentStatus.Accepted;
-        } else if (random < 0.4) {
-          status = UserTournamentStatus.Declined;
-        } else if (random < 0.6) {
-          status = UserTournamentStatus.Completed;
-        } else if (random < 0.8) {
-          status = UserTournamentStatus.Discarded;
-        }
-
-        let joinedAt: Date | undefined = undefined;
-        if (status === UserTournamentStatus.Accepted && Math.random() > 0.5) {
-          joinedAt = new Date(
-            Date.now() - 15000 - Math.floor(Math.random() * 600000),
-          );
-        }
-
-        let completedAt: Date | undefined = undefined;
-
-        if (joinedAt && Math.random() > 0.5) {
-          completedAt = new Date(
-            joinedAt.getTime() + 15000 + Math.floor(Math.random() * 600000),
-          );
-        }
-
-        return { tournament, joinedAt, completedAt, status };
-      });
-      resolve(mockUserTournaments);
-    }, 1000);
-  });
-
-  return {
-    userChallenges,
-    page: pageParam,
-    pageSize,
-    totalPages: 13,
-  };
-}
-
 export async function getCurrentUser() {
-  return await new Promise<UserProfile>((resolve) => {
+  return await new Promise<Client>((resolve) => {
     setTimeout(() => {
-      resolve(userProfile);
+      resolve(client);
     }, 1000);
   });
 }
