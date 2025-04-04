@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - production
+      - master
   pull_request:
     branches:
       - master
+      - production
 
 jobs:
   code-quality:
