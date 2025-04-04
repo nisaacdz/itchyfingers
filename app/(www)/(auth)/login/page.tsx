@@ -18,7 +18,7 @@ export default function LoginPage() {
   const { client, reload } = useAuth();
 
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
     remember: false,
   });
@@ -37,7 +37,7 @@ export default function LoginPage() {
     e.preventDefault();
     setIsSubmitting(true);
     const response = await loginUser({
-      username: formData.username,
+      email: formData.email,
       password: formData.password,
     });
 
@@ -69,17 +69,17 @@ export default function LoginPage() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username" className="text-foreground">
-              Username
+            <Label htmlFor="email" className="text-foreground">
+              Email
             </Label>
             <div className="relative">
               <Input
-                id="username"
-                name="username"
+                id="email"
+                name="email"
                 type="text"
                 placeholder="adjoamensah"
                 className="pl-10 bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary"
-                value={formData.username}
+                value={formData.email}
                 onChange={handleInputChange}
                 required
               />

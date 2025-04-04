@@ -36,7 +36,7 @@ export default function SignupPage() {
       password: formData.password,
     });
 
-    if (response.error || !response.result) {
+    if (response.error) {
       toast.error(response.error || "Could not sign up");
     } else {
       toast.success("Account created successfully");

@@ -8,7 +8,6 @@ import {
   User,
   UserTournament,
   UserTournamentFilter,
-  UserProfile,
   Client,
   Tournament,
 } from "@/types/request";
@@ -55,8 +54,8 @@ export async function getCurrentUser() {
   return response.result;
 }
 
-export async function getUserProfile(username: string) {
-  return await Api.get<UserProfile>(`/users/${username}/`);
+export async function getUser(username: string) {
+  return await Api.get<User>(`/users/${username}`);
 }
 
 export async function getUserTournaments(
@@ -77,10 +76,7 @@ export async function getUserTournaments(
   );
 }
 
-export async function loginUser(logins: {
-  username: string;
-  password: string;
-}) {
+export async function loginUser(logins: { email: string; password: string }) {
   return await Api.post<User>("/auth/login", logins);
 }
 

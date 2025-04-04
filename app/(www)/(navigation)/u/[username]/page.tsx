@@ -12,11 +12,10 @@ import {
   AlertCircle,
   RefreshCw,
 } from "lucide-react";
-import UserTournamentsList from "@/components/custom/UserTournamentsList";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/AuthContext";
-import { getUserProfile } from "@/api/requests";
 import { useParams } from "next/navigation";
+import { getUser } from "@/api/requests";
 
 const ProfileLoadingSkeleton = () => (
   <div className="max-w-6xl mx-auto p-6 space-y-8 animate-pulse">
@@ -78,29 +77,25 @@ export default function Page() {
   const username = useParams().username as string;
   const { client } = useAuth();
   const {
-    data: getProfileResponse,
+    data: getUserResponse,
     isLoading,
     refetch,
   } = useQuery({
     queryKey: ["profile", username, client?.client_id],
-    queryFn: async () => await getUserProfile(username),
+    queryFn: async () => await getUser(username),
     retry: false,
   });
 
   if (isLoading) return <ProfileLoadingSkeleton />;
-  if (
-    !getProfileResponse ||
-    getProfileResponse.error ||
-    !getProfileResponse.result
-  )
+  if (!getUserResponse || getUserResponse.error || !getUserResponse.result)
     return (
       <ProfileErrorState
-        error={new Error(getProfileResponse?.error || "Something went wrong")}
+        error={new Error(getUserResponse?.error || "Something went wrong")}
         retry={refetch}
       />
     );
 
-  const userProfile = getProfileResponse.result;
+  const user = getUserResponse.result;
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
@@ -109,11 +104,11 @@ export default function Page() {
         <div className="space-y-2 flex-1">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <User className="text-primary" />
-            {userProfile.user.username}
+            {user.username}
           </h1>
           <p className="flex items-center gap-2 text-muted-foreground">
             <Mail className="h-4 w-4" />
-            {userProfile.user.email}
+            {user.email}
           </p>
         </div>
 
@@ -124,9 +119,7 @@ export default function Page() {
               <Target className="h-5 w-5 text-green-500" />
               <span className="text-sm text-muted-foreground">Accuracy</span>
             </div>
-            <div className="text-2xl font-bold mt-2">
-              {userProfile.stats.accuracy}%
-            </div>
+            <div className="text-2xl font-bold mt-2">{99.5}%</div>
           </div>
 
           <div className="p-4 bg-card rounded-lg border">
@@ -134,9 +127,7 @@ export default function Page() {
               <Zap className="h-5 w-5 text-blue-500" />
               <span className="text-sm text-muted-foreground">Speed (WPM)</span>
             </div>
-            <div className="text-2xl font-bold mt-2">
-              {userProfile.stats.wpm}
-            </div>
+            <div className="text-2xl font-bold mt-2">{142}</div>
           </div>
 
           <div className="p-4 bg-card rounded-lg border">
@@ -146,9 +137,7 @@ export default function Page() {
                 Competitions
               </span>
             </div>
-            <div className="text-2xl font-bold mt-2">
-              {userProfile.stats.competitions}
-            </div>
+            <div className="text-2xl font-bold mt-2">{44}</div>
           </div>
 
           <div className="p-4 bg-card rounded-lg border">
@@ -156,9 +145,7 @@ export default function Page() {
               <Keyboard className="h-5 w-5 text-purple-500" />
               <span className="text-sm text-muted-foreground">Keystrokes</span>
             </div>
-            <div className="text-2xl font-bold mt-2">
-              {userProfile.stats.keystrokes.toLocaleString()}
-            </div>
+            <div className="text-2xl font-bold mt-2">{343343}</div>
           </div>
         </div>
       </div>
@@ -172,7 +159,7 @@ export default function Page() {
           </h2>
 
           <div className="w-full h-full max-h-full overflow-auto">
-            <UserTournamentsList userId={client.user.id} />
+            <p>Loading...</p>
           </div>
         </div>
       ) : (

@@ -6,7 +6,6 @@ import {
   User,
   Hourglass,
   Users,
-  Keyboard,
   Unlock,
   SearchIcon,
   PlusIcon,
@@ -51,15 +50,6 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { parseTournamentPrivacyFilter } from "@/util";
-
-const formatDuration = (seconds: number) => {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = seconds % 60;
-  return `${hours}h ${minutes}m ${remainingSeconds}s`
-    .replace(/\b0h\s?|0m\s?|0s\b/gi, "")
-    .trim();
-};
 
 const formatTimeRemaining = (date: Date) => {
   const now = new Date();

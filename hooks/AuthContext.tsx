@@ -21,14 +21,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthContextProvider: React.FC<PropsWithChildren> = ({
   children,
 }) => {
-  const [client, setUser] = useState<Client | null>(null);
+  const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
 
   const reload = () => {
     setLoading(true);
     getCurrentUser()
-      .then(setUser)
+      .then(setClient)
       .finally(() => setLoading(false));
+
+    console.log("User is : ", client);
   };
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export const AuthContextProvider: React.FC<PropsWithChildren> = ({
   const logout = () => {
     setLoading(true);
     logoutUser()
-      .then(() => setUser(null))
+      .then(() => setClient(null))
       .catch(console.error)
       .finally(() => setLoading(false));
   };
