@@ -77,7 +77,7 @@ export default function LoginPage() {
                 id="email"
                 name="email"
                 type="text"
-                placeholder="adjoamensah"
+                placeholder="yawkuma@gmail.com"
                 className="pl-10 bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary"
                 value={formData.email}
                 onChange={handleInputChange}
