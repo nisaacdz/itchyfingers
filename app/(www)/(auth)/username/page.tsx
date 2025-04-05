@@ -16,7 +16,7 @@ export default function UsernamePage() {
   const { client, reload, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    username: "",
+    username: client?.user?.username || "",
   });
 
   useEffect(() => {
@@ -30,18 +30,19 @@ export default function UsernamePage() {
   }
 
   if (!client?.user) return null; // wait for redirect or show nothing
+  console.log("current user is ", client?.user);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!client.user) return;
     setIsSubmitting(true);
-    const response = await updateUsername(client.user.id, formData.username);
+    const response = await updateUsername(formData.username);
 
     if (response.error || !response.result) {
       toast.error(response.error || "Could not update username");
     } else {
       toast.success("Username updated successfully");
-      reload();
+      await reload();
       const returnTo = window.sessionStorage.getItem("returnTo") || "/";
       router.push(returnTo);
     }
@@ -82,7 +83,7 @@ export default function UsernamePage() {
                 type="text"
                 placeholder="adjoamensah"
                 className="pl-10 bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary"
-                value={formData.username || client.user.username}
+                value={formData.username}
                 onChange={handleInputChange}
                 required
               />

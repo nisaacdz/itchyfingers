@@ -87,8 +87,8 @@ export async function registerUser(logins: {
   return await Api.post<User>("/auth/register", logins);
 }
 
-export async function updateUsername(userId: number, username: string) {
-  return await Api.patch<User>(`/users/${userId}/update`, { username });
+export async function updateUsername(username: string) {
+  return await Api.patch<User>(`/users/me/update`, { username });
 }
 
 export async function logoutUser() {
