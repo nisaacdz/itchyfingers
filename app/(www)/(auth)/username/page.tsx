@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,12 @@ export default function UsernamePage() {
   const [formData, setFormData] = useState({
     username: "",
   });
+
+  useEffect(() => {
+    if (!client?.user) {
+      reload();
+    }
+  }, [client]);
 
   if (loading) {
     return <AuthLoader />;

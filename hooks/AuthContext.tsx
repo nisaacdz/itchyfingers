@@ -8,12 +8,13 @@ import React, {
 } from "react";
 import { Client } from "@/types/request";
 import { getCurrentUser, logoutUser } from "../api/requests";
+import { toast } from "sonner";
 
 interface AuthContextType {
   client: Client | null;
   logout: () => void;
   loading: boolean;
-  reload: () => void;
+  reload: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,13 +25,15 @@ export const AuthContextProvider: React.FC<PropsWithChildren> = ({
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const reload = () => {
+  const reload = async () => {
     setLoading(true);
-    getCurrentUser()
-      .then(setClient)
-      .finally(() => setLoading(false));
-
-    console.log("User is : ", client);
+    const response = await getCurrentUser();
+    if (response.error) {
+      toast.error(response.error);
+    } else {
+      setClient(response.result);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {

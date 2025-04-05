@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,16 +16,9 @@ export default function SignupPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { client, reload } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-  });
-
-  useEffect(() => {
-    if (client?.user) {
-      router.push("/username");
-    }
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +33,7 @@ export default function SignupPage() {
       toast.error(response.error || "Could not sign up");
     } else {
       toast.success("Account created successfully");
-      reload();
+      router.push("/username");
     }
     setIsSubmitting(false);
   };

@@ -51,7 +51,7 @@ export async function enterTournament(tournamentId: string) {
 
 export async function getCurrentUser() {
   const response = await Api.get<Client>("/auth/me");
-  return response.result;
+  return response;
 }
 
 export async function getUser(username: string) {
