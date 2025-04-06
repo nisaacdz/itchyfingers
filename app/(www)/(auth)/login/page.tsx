@@ -41,8 +41,8 @@ export default function LoginPage() {
       password: formData.password,
     });
 
-    if (response.error || !response.result) {
-      toast.error(response.error || "Could not sign in");
+    if (response.error) {
+      toast.error(response.error);
     } else {
       toast.success("Signed in successfully");
       reload();

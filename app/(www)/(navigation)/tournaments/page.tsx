@@ -3,14 +3,14 @@ import { useState } from "react";
 import TournamentsList from "@/components/custom/TournamentsList";
 import CreateChallengeModal from "@/components/custom/CreateTournamentModal";
 import { useAuth } from "@/hooks/AuthContext";
-import { AuthLoader } from "@/components/custom/AuthLoader";
+import { PageLoader } from "@/components/custom/PageLoader";
 
 export default function Page() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const { loading } = useAuth();
 
   if (loading) {
-    return <AuthLoader />;
+    return <PageLoader />;
   }
 
   const startCreateChallenge = () => {

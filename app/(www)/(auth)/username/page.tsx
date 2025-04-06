@@ -9,15 +9,18 @@ import { User, Loader } from "lucide-react";
 import { updateUsername } from "@/api/requests";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/AuthContext";
-import { AuthLoader } from "@/components/custom/AuthLoader";
+import { PageLoader } from "@/components/custom/PageLoader";
+
+type Username = {
+  username: string;
+};
 
 export default function UsernamePage() {
   const router = useRouter();
   const { client, reload, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    username: client?.user?.username || "",
-  });
+  const [redirecting, setRedirecting] = useState(false);
+  const [formData, setFormData] = useState<Username | null>(null);
 
   useEffect(() => {
     if (!client?.user) {
@@ -25,23 +28,23 @@ export default function UsernamePage() {
     }
   }, [client]);
 
-  if (loading) {
-    return <AuthLoader />;
+  if (loading || redirecting) {
+    return <PageLoader />;
   }
 
-  if (!client?.user) return null; // wait for redirect or show nothing
-  console.log("current user is ", client?.user);
+  if (!client?.user) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!client.user) return;
+    if (!client.user || !formData) return;
     setIsSubmitting(true);
     const response = await updateUsername(formData.username);
 
-    if (response.error || !response.result) {
-      toast.error(response.error || "Could not update username");
+    if (response.error) {
+      toast.error(response.error);
     } else {
       toast.success("Username updated successfully");
+      setRedirecting(true); // forever shows redirect until redirect completes
       await reload();
       const returnTo = window.sessionStorage.getItem("returnTo") || "/";
       router.push(returnTo);
@@ -55,18 +58,22 @@ export default function UsernamePage() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+    const value = e.target.value;
     setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      username: value,
     }));
   };
+
+  const username = formData == null ? client.user.username : formData.username;
 
   return (
     <Card className="w-96 bg-background shadow-lg transition-all hover:shadow-xl">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl text-center text-foreground">
           Choose Your Username
+        </CardTitle>
+        <CardTitle className="text-sm text-center text-muted-foreground">
+          This will be displayed on your profile and in competitions
         </CardTitle>
       </CardHeader>
 
@@ -83,7 +90,7 @@ export default function UsernamePage() {
                 type="text"
                 placeholder="adjoamensah"
                 className="pl-10 bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary"
-                value={formData.username}
+                value={username}
                 onChange={handleInputChange}
                 required
               />
