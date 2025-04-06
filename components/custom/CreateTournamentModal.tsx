@@ -65,7 +65,7 @@ const CreateTournamentModal = ({
     setValidationError("");
     setCreatingChallenge(true);
 
-    let response = await createTournament(formData);
+    const response = await createTournament(formData);
 
     if (response.error) {
       toast.error(response.error);
