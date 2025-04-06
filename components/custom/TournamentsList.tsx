@@ -1,6 +1,6 @@
 "use client";
 
-import React, { KeyboardEventHandler, useRef } from "react";
+import React, { KeyboardEventHandler, useRef, useState } from "react";
 import {
   Globe,
   User,
@@ -13,7 +13,7 @@ import {
 
 import { useQuery } from "@tanstack/react-query";
 import { TournamentPrivacy, TournamentPrivacyFilter } from "@/types/request";
-import { enterTournament, allTournaments } from "@/api/requests";
+import { allTournaments } from "@/api/requests";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { parseTournamentPrivacyFilter } from "@/util";
+import CreateTournamentModal from "./CreateTournamentModal";
 
 const formatTimeRemaining = (date: Date) => {
   const now = new Date();
@@ -62,11 +63,8 @@ const formatTimeRemaining = (date: Date) => {
   return `${Math.floor(diffInSeconds / 86400)}d`;
 };
 
-const TournamentsList = ({
-  createTournament,
-}: {
-  createTournament: () => void;
-}) => {
+const TournamentsList = () => {
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [page, setPage] = useQueryState<number>(
     "page",
     parseAsInteger.withDefault(1),
@@ -104,6 +102,10 @@ const TournamentsList = ({
     retry: false,
   });
 
+  const startCreateTournament = () => {
+    setCreateModalOpen(true);
+  };
+
   if (!isLoading && (!response || response.error)) {
     console.log(response?.error);
     return (
@@ -129,20 +131,21 @@ const TournamentsList = ({
   };
 
   const enterCompetion = (tournamentId: string) => {
-    enterTournament(tournamentId)
-      .then(() => {
-        router.push(`/tournaments/${tournamentId}`);
-      })
-      .catch((e) => toast.error(e.message));
+    router.push(`/tournaments/${tournamentId}`);
   };
 
   return (
     <div className="p-4 space-y-6 mx-auto">
+      <CreateTournamentModal
+        open={createModalOpen}
+        onOpenChange={(state) => setCreateModalOpen(state)}
+        onSuccess={() => refetch()}
+      />
       <ControlsSection
         onSearch={setSearch}
         privacyFilter={privacyFilter}
         onChangeTournamentPrivacy={setPrivacyFilter}
-        createTournament={createTournament}
+        createTournament={startCreateTournament}
       />
       <div className="">
         <Table>

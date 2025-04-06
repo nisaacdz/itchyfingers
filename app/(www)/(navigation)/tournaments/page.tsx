@@ -13,19 +13,11 @@ export default function Page() {
     return <ContentLoader />;
   }
 
-  const startCreateTournament = () => {
-    setCreateModalOpen(true);
-  };
-
   return (
     <div
       className="flex flex-col items-center justify-start w-full h-full p-8 bg-background"
       id="challenges-page"
     >
-      <CreateTournamentModal
-        open={createModalOpen}
-        onOpenChange={(state) => setCreateModalOpen(state)}
-      />
       <div className="w-full max-w-6xl space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
@@ -37,7 +29,7 @@ export default function Page() {
             </p>
           </div>
         </div>
-        <TournamentsList createTournament={startCreateTournament} />
+        <TournamentsList />
       </div>
     </div>
   );

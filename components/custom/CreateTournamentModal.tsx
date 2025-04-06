@@ -28,11 +28,13 @@ import { toast } from "sonner";
 type CreateTournamentModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
 };
 
 const CreateTournamentModal = ({
   open,
   onOpenChange,
+  onSuccess,
 }: CreateTournamentModalProps) => {
   const [formData, setFormData] = useState<CreateTournament>({
     title: "",
@@ -72,6 +74,7 @@ const CreateTournamentModal = ({
     } else {
       toast.success("Challenge created successfully!");
       onOpenChange(false);
+      onSuccess();
     }
 
     setCreatingChallenge(false);

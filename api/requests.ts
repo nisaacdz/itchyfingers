@@ -43,12 +43,6 @@ export async function fetchTournament(tournamentId: string) {
   return (await Api.get<TournamentInfo>(`/tournaments/${tournamentId}`)).result;
 }
 
-export async function enterTournament(tournamentId: string) {
-  return (
-    await Api.patch<TournamentInfo>(`/tournaments/${tournamentId}/enter`, {})
-  ).result;
-}
-
 export async function getCurrentUser() {
   const response = await Api.get<Client>("/auth/me");
   return response;
