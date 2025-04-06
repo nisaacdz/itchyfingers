@@ -12,7 +12,7 @@ import {
   Tournament,
 } from "@/types/request";
 
-export { typingSocketAPI } from "./socket";
+export { TournamentAPI } from "./socket";
 
 export async function getTypingText(tournamentId: string) {
   const req = await Api.get<string>(`tournaments/${tournamentId}/text`);

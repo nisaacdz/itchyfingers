@@ -52,13 +52,13 @@ const ParticipantsRanking = ({
     cn(
       "grid grid-cols-8 items-center w-full p-3 gap-4 transition-colors",
       "border-t border-border/50 hover:bg-accent/50",
-      clientId === currentParticipant.client.client_id ? "bg-secondary/80" : "",
+      clientId === currentParticipant.client.id ? "bg-secondary/80" : "",
     );
 
   const getTextStyle = (clientId: string) =>
     cn(
       "font-medium font-mono",
-      clientId === currentParticipant.client.client_id
+      clientId === currentParticipant.client.id
         ? "text-foreground"
         : "text-muted-foreground",
     );
@@ -84,43 +84,42 @@ const ParticipantsRanking = ({
       <div className="rounded-lg border border-border overflow-hidden shadow-sm">
         {rankings.map((participant, index) => (
           <div
-            key={participant.client.client_id}
-            className={getRowStyle(participant.client.client_id)}
+            key={participant.client.id}
+            className={getRowStyle(participant.client.id)}
           >
             {/* Rank */}
-            <span className={getTextStyle(participant.client.client_id)}>
+            <span className={getTextStyle(participant.client.id)}>
               {index + 1}.
               {index === 0 && <span className="ml-2 text-amber-400">🥇</span>}
             </span>
 
             {/* Racer Name */}
             <div className="col-span-2 flex items-center gap-2">
-              <span className={getTextStyle(participant.client.client_id)}>
+              <span className={getTextStyle(participant.client.id)}>
                 {participant.client.user?.username || "Anonymous"}
-                {participant.client.client_id ===
-                  currentParticipant.client.client_id && (
+                {participant.client.id === currentParticipant.client.id && (
                   <span className="ml-2 text-xs text-primary">(You)</span>
                 )}
               </span>
             </div>
 
             {/* Start Offset */}
-            <span className={getTextStyle(participant.client.client_id)}>
+            <span className={getTextStyle(participant.client.id)}>
               {formatStartOffset(participant.startTime)}
             </span>
 
             {/* Duration */}
-            <span className={getTextStyle(participant.client.client_id)}>
+            <span className={getTextStyle(participant.client.id)}>
               {formatDuration(participant.startTime, participant.endTime)}
             </span>
 
             {/* Accuracy */}
-            <span className={getTextStyle(participant.client.client_id)}>
+            <span className={getTextStyle(participant.client.id)}>
               {participant.current_accuracy?.toFixed(1)}%
             </span>
 
             {/* WPM */}
-            <span className={getTextStyle(participant.client.client_id)}>
+            <span className={getTextStyle(participant.client.id)}>
               {participant.current_speed?.toFixed(0)}
             </span>
           </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Participant, TournamentInfo } from "@/types/request";
-import { fetchSessionParticipants, typingSocketAPI } from "@/api/requests";
+import { fetchSessionParticipants, TournamentAPI } from "@/api/requests";
 import { fetchTournament, getTypingText } from "@/api/requests";
 import { toast } from "sonner";
 import { TournamentEventCallbacks } from "@/api/socket";
@@ -78,7 +78,7 @@ export const useSocket = (
       },
     };
 
-    typingSocketAPI.initialize(tournamentId, handlers);
+    TournamentAPI.initialize(tournamentId, handlers);
 
     if (tournamentStartedAt && new Date() > new Date(tournamentStartedAt)) {
       fetchSessionParticipants(tournamentId).then((sessions) => {
@@ -97,18 +97,18 @@ export const useSocket = (
     }
 
     return () => {
-      typingSocketAPI.disconnect();
+      TournamentAPI.disconnect();
       setSocketLoading(true);
     };
   }, [tournamentId, clientId, tournamentStartedAt, setTypingText]);
 
   const handleCharacterInput = (input: string) => {
     if (!clientId || participants[clientId]?.ended_at) return;
-    typingSocketAPI.sendTypingInput(input);
+    TournamentAPI.sendTypingInput(input);
   };
 
   const handleExitCompetition = () => {
-    typingSocketAPI.leaveTournament();
+    TournamentAPI.leaveTournament();
   };
 
   return {

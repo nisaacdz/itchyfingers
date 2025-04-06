@@ -149,19 +149,19 @@ export function getTypingText() {
 
 export function getZoneData() {
   const participants = {
-    [userParticipant.client.client_id]: {
+    [userParticipant.client.id]: {
       ...userParticipant,
     },
     ...fakeParticipants.reduce(
       (acc, fakeParticipant) => {
-        acc[fakeParticipant.data.client.client_id] = fakeParticipant.data;
+        acc[fakeParticipant.data.client.id] = fakeParticipant.data;
         return acc;
       },
       {} as Record<string, Participant>,
     ),
   };
   const zoneData: ZoneData = {
-    clientId: userParticipant.client.client_id,
+    clientId: userParticipant.client.id,
     participants,
     tournamentId: "challenge1",
     sessionId: "challenge1-session1",

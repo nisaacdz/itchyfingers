@@ -1,8 +1,11 @@
 "use client";
-import { TournamentInfo, Participant } from "@/types/request";
-import { useParams } from "next/navigation";
-import { useAuth } from "@/hooks/AuthContext";
-import { useTournament, useSocket, useTypingText } from "@/hooks/socketUtil";
+
+import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext"; // Assuming you have this
+import {
+  TournamentProvider,
+  useTournamentContext,
+} from "@/context/TournamentContext";
 import { StatsBoard, StatsBoardLoading } from "@/components/custom/StatsBoard";
 import ProgressBoard from "@/components/custom/ProgressBoard";
 import {
@@ -10,140 +13,118 @@ import {
   TypingAreaCountdown,
 } from "@/components/custom/TypingArea";
 import ParticipantsRanking from "@/components/custom/ParticipantsRanking";
-import { useRouter } from "next/navigation";
 import { ContentLoader } from "@/components/custom/ContentLoader";
+import { PageLoader } from "@/components/custom/PageLoader";
 
-const TournamentPage = () => {
+const TournamentPageWrapper = () => {
   const { tournamentId } = useParams() as { tournamentId: string };
-  const { client, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
+
+  if (authLoading) {
+    return <PageLoader />;
+  }
+
+  return (
+    <TournamentProvider tournamentId={tournamentId}>
+      <TournamentPageContent />
+    </TournamentProvider>
+  );
+};
+
+const TournamentPageContent = () => {
+  const {
+    isLoading,
+    error,
+    tournamentInfo,
+    participants,
+    currentParticipant,
+    sendTypingInput,
+    leaveTournament,
+  } = useTournamentContext();
   const router = useRouter();
 
-  const {
-    tournament,
-    isLoading: tournamentLoading,
-    error: tournamentError,
-  } = useTournament(tournamentId);
-  const { typingText, typingTextError, setTypingText } = useTypingText(
-    tournament,
-    tournamentId,
-  );
+  const clientId = currentParticipant?.client.id || null;
+  const typingText = tournamentInfo?.text || null;
+  const textLength = typingText?.length || 0;
 
-  const {
-    socketError,
-    handleCharacterInput,
-    socketLoading,
-    participants,
-    handleExitCompetition,
-  } = useSocket(
-    tournamentId,
-    client?.client_id || null,
-    setTypingText,
-    tournament?.started_at || undefined,
-  );
-
-  const loading = tournamentLoading || socketLoading || authLoading;
-  const error = tournamentError || socketError || typingTextError;
-
-  const currentParticipant = client
-    ? participants[client.client_id]
-    : undefined;
-
-  if (loading) return <ContentLoader />;
-  if (error) return <div className="text-red-500 p-4">{error.message}</div>;
+  if (isLoading) return <ContentLoader />;
+  if (error) return <div className="text-red-500 p-4">Error: {error}</div>;
+  if (!tournamentInfo && !isLoading)
+    return <div className="p-4">Tournament data not available.</div>; // Handle case where join succeeded but no info yet?
 
   const handleExit = () => {
-    if (confirm("Are you sure you want to exit competition?")) {
-      handleExitCompetition();
-      router.push("/tournaments");
+    if (confirm("Are you sure you want to leave the tournament?")) {
+      leaveTournament();
+      router.push("/tournaments"); // Navigate away after initiating leave
     }
   };
 
-  const handleRestart = () => {};
+  // Restart might need specific backend logic or just be a client-side reset if allowed
+  const handleRestart = () => {
+    console.log("Restart action triggered - implement if needed");
+    // This might involve re-joining or a specific socket event if supported by backend
+  };
 
   return (
     <main className="w-full h-full p-4 pt-8 bg-background dark:bg-background">
       <div className="grid md:grid-cols-5 grid-cols-1 gap-y-4 md:gap-6">
-        <StatsSection
-          currentParticipant={currentParticipant || null}
-          typingTextLength={typingText?.length || 0}
-          handleExit={handleExit}
-          handleRestart={handleRestart}
-        />
-        <MainContent
-          clientId={client?.client_id || null}
-          tournament={tournament}
-          participants={participants}
-          typingText={typingText}
-          handleCharacterInput={handleCharacterInput}
-        />
+        {/* Stats Section */}
+        <div className="col-span-1 w-full h-full items-center justify-center">
+          {currentParticipant ? (
+            <StatsBoard
+              currentParticipant={currentParticipant}
+              textLength={textLength}
+              onLeave={handleExit}
+              onRestart={handleRestart} // Pass handler if implemented
+            />
+          ) : (
+            // Show loading state if participant data isn't available yet,
+            // even if global loading is false (e.g., waiting for user:joined event)
+            <StatsBoardLoading />
+          )}
+        </div>
+
+        {/* Main Content Section */}
+        <div className="flex flex-col gap-6 col-span-4 w-full h-full">
+          {/* Progress Board */}
+          {textLength > 0 && (
+            <ProgressBoard
+              participants={participants}
+              textLength={textLength}
+            />
+          )}
+
+          {/* Typing Area or Countdown */}
+          {/* Check if tournament has started using started_at from tournamentInfo */}
+          {tournamentInfo?.started_at && typingText && clientId ? (
+            <TypingArea
+              text={typingText}
+              participants={participants} // Pass all for potential multi-cursor display
+              clientId={clientId} // Identify the current user
+              handleCharacterInput={sendTypingInput} // Pass action from context
+            />
+          ) : tournamentInfo?.scheduled_for ? (
+            // Show countdown if not started yet but scheduled
+            <TypingAreaCountdown
+              scheduledAt={new Date(tournamentInfo.scheduled_for)}
+            />
+          ) : (
+            // Fallback if info isn't ready or structure is unexpected
+            <div className="p-4">Waiting for tournament details...</div>
+          )}
+
+          {/* Participants Ranking */}
+          {tournamentInfo && (
+            <ParticipantsRanking
+              participants={participants}
+              clientId={clientId}
+              tournamentStartTime={tournamentInfo.started_at || undefined}
+            />
+          )}
+        </div>
       </div>
     </main>
   );
 };
 
-const StatsSection = ({
-  currentParticipant,
-  typingTextLength,
-  handleExit,
-  handleRestart,
-}: {
-  currentParticipant: Participant | null;
-  typingTextLength: number;
-  handleExit: () => void;
-  handleRestart: () => void;
-}) => (
-  <div className="col-span-1 w-full h-full items-center justify-center">
-    {currentParticipant ? (
-      <StatsBoard
-        currentParticipant={currentParticipant}
-        textLength={typingTextLength}
-        onLeave={handleExit}
-        onRestart={handleRestart}
-      />
-    ) : (
-      <StatsBoardLoading />
-    )}
-  </div>
-);
-
-const MainContent = ({
-  tournament,
-  participants,
-  typingText,
-  clientId,
-  handleCharacterInput,
-}: {
-  tournament: TournamentInfo | null;
-  participants: Record<string, Participant>;
-  typingText: string | null;
-  clientId: string | null;
-  handleCharacterInput: (char: string) => void;
-}) => {
-  return (
-    <div className="flex flex-col gap-6 col-span-4 w-full h-full">
-      <ProgressBoard
-        participants={participants}
-        textLength={typingText?.length || 0}
-      />
-      {typingText && clientId ? (
-        <TypingArea
-          text={typingText}
-          participants={participants}
-          clientId={clientId}
-          handleCharacterInput={handleCharacterInput}
-        />
-      ) : tournament ? (
-        <TypingAreaCountdown scheduledAt={new Date(tournament.started_at!)} />
-      ) : (
-        <></>
-      )}
-      <ParticipantsRanking
-        participants={participants}
-        clientId={clientId}
-        tournamentStartTime={tournament?.started_at || undefined}
-      />
-    </div>
-  );
-};
-
-export default TournamentPage;
+export default TournamentPageWrapper; // Export the wrapper component

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Loader } from "lucide-react";
 import { updateUsername } from "@/api/requests";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { PageLoader } from "@/components/custom/PageLoader";
 
 type Username = {

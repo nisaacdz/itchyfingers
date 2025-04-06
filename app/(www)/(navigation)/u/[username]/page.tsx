@@ -13,7 +13,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useParams } from "next/navigation";
 import { getUser } from "@/api/requests";
 
@@ -81,7 +81,7 @@ export default function Page() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["profile", username, client?.client_id],
+    queryKey: ["profile", username, client?.id],
     queryFn: async () => await getUser(username),
     retry: false,
   });

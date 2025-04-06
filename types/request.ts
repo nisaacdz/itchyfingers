@@ -1,7 +1,7 @@
 export type Client = {
-  client_id: string;
+  id: string;
   user: User | null;
-  updated: string; // date
+  updated: string;
 };
 
 export type User = {

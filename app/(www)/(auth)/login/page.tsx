@@ -9,7 +9,7 @@ import { User, EyeClosed, Eye, Lock, Loader } from "lucide-react";
 import Link from "next/link";
 import { loginUser } from "@/api/requests";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { PageLoader } from "@/components/custom/PageLoader";
 
 export default function LoginPage() {

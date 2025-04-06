@@ -1,5 +1,5 @@
 "use client";
-import { AuthContextProvider } from "@/hooks/AuthContext";
+import { AuthContextProvider } from "@/context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { Toaster } from "sonner";

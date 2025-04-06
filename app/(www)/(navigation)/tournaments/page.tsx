@@ -2,7 +2,7 @@
 import { useState } from "react";
 import TournamentsList from "@/components/custom/TournamentsList";
 import CreateTournamentModal from "@/components/custom/CreateTournamentModal";
-import { useAuth } from "@/hooks/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { ContentLoader } from "@/components/custom/ContentLoader";
 
 export default function Page() {
