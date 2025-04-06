@@ -11,6 +11,7 @@ import {
 } from "@/components/custom/TypingArea";
 import ParticipantsRanking from "@/components/custom/ParticipantsRanking";
 import { useRouter } from "next/navigation";
+import { ContentLoader } from "@/components/custom/ContentLoader";
 
 const TournamentPage = () => {
   const { tournamentId } = useParams() as { tournamentId: string };
@@ -47,7 +48,7 @@ const TournamentPage = () => {
     ? participants[client.client_id]
     : undefined;
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <ContentLoader />;
   if (error) return <div className="text-red-500 p-4">{error.message}</div>;
 
   const handleExit = () => {

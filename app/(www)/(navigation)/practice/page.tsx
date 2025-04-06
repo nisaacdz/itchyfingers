@@ -13,6 +13,7 @@ import {
 } from "@/api/dummy_api";
 import ParticipantsRanking from "@/components/custom/ParticipantsRanking";
 import { handleExitZone, handleRestartZone } from "@/api/dummy_api";
+import { ContentLoader } from "@/components/custom/ContentLoader";
 
 export default function Page() {
   const [zoneData, setZoneData] = useState<ZoneData | null>(null);
@@ -32,7 +33,7 @@ export default function Page() {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <ContentLoader />;
   }
 
   if (error) {

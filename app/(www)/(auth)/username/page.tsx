@@ -26,7 +26,7 @@ export default function UsernamePage() {
     if (!client?.user) {
       reload();
     }
-  }, [client]);
+  }, [client?.user, reload]);
 
   if (loading || redirecting) {
     return <PageLoader />;
@@ -59,7 +59,7 @@ export default function UsernamePage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setFormData((prev) => ({
+    setFormData(() => ({
       username: value,
     }));
   };

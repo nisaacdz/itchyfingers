@@ -9,7 +9,6 @@ import { User, EyeClosed, Eye, Lock, Loader } from "lucide-react";
 import Link from "next/link";
 import { registerUser } from "@/api/requests";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/AuthContext";
 
 // Random commment by nisaacdz
 export default function SignupPage() {
@@ -30,7 +29,7 @@ export default function SignupPage() {
     });
 
     if (response.error) {
-      toast.error(response.error || "Could not sign up");
+      toast.error(response.error);
     } else {
       toast.success("Account created successfully");
       router.push("/username");

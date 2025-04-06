@@ -77,14 +77,14 @@ export async function getUserTournaments(
 }
 
 export async function loginUser(logins: { email: string; password: string }) {
-  return await Api.post<User>("/auth/login", logins);
+  return await Api.post<null>("/auth/login", logins);
 }
 
 export async function registerUser(logins: {
   email: string;
   password: string;
 }) {
-  return await Api.post<User>("/auth/register", logins);
+  return await Api.post<null>("/auth/register", logins);
 }
 
 export async function updateUsername(username: string) {

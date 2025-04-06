@@ -43,9 +43,9 @@ export enum TournamentPrivacy {
 }
 
 export enum TournamentPrivacyFilter {
-  Invitational = "Invitational",
-  Open = "Open",
   All = "All",
+  Open = "Open",
+  Invitational = "Invitational",
 }
 
 export enum UserTournamentStatus {

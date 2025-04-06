@@ -19,7 +19,7 @@ class TypingSocketAPI {
   connect() {
     if (this.socket?.connected) return;
 
-    this.socket = io(config.apps.core, {
+    this.socket = io(config.apps.ws, {
       withCredentials: true,
       autoConnect: true,
       reconnection: true,

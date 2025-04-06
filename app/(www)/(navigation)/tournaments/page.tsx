@@ -1,19 +1,19 @@
 "use client";
 import { useState } from "react";
 import TournamentsList from "@/components/custom/TournamentsList";
-import CreateChallengeModal from "@/components/custom/CreateTournamentModal";
+import CreateTournamentModal from "@/components/custom/CreateTournamentModal";
 import { useAuth } from "@/hooks/AuthContext";
-import { PageLoader } from "@/components/custom/PageLoader";
+import { ContentLoader } from "@/components/custom/ContentLoader";
 
 export default function Page() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const { loading } = useAuth();
 
   if (loading) {
-    return <PageLoader />;
+    return <ContentLoader />;
   }
 
-  const startCreateChallenge = () => {
+  const startCreateTournament = () => {
     setCreateModalOpen(true);
   };
 
@@ -22,7 +22,7 @@ export default function Page() {
       className="flex flex-col items-center justify-start w-full h-full p-8 bg-background"
       id="challenges-page"
     >
-      <CreateChallengeModal
+      <CreateTournamentModal
         open={createModalOpen}
         onOpenChange={(state) => setCreateModalOpen(state)}
       />
@@ -30,14 +30,14 @@ export default function Page() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <h2 className="text-2xl font-bold text-card-foreground">
-              Active Challenges
+              Active Tournaments
             </h2>
             <p className="text-muted-foreground">
-              Join community challenges and compete with others
+              Join open tournaments and compete with others
             </p>
           </div>
         </div>
-        <TournamentsList createChallenge={startCreateChallenge} />
+        <TournamentsList createTournament={startCreateTournament} />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,12 +10,14 @@ import Link from "next/link";
 import { loginUser } from "@/api/requests";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/AuthContext";
+import { PageLoader } from "@/components/custom/PageLoader";
 
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { client, reload } = useAuth();
+  const [redirecting, setRedirecting] = useState(false);
+  const { reload, loading } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -23,15 +25,7 @@ export default function LoginPage() {
     remember: false,
   });
 
-  useEffect(() => {
-    if (client?.user) {
-      let returnTo = window.sessionStorage.getItem("returnTo");
-      if (!returnTo || returnTo === "/login") {
-        returnTo = "/";
-      }
-      router.push(returnTo);
-    }
-  });
+  if (redirecting || loading) return <PageLoader />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,11 +37,17 @@ export default function LoginPage() {
 
     if (response.error) {
       toast.error(response.error);
+      setIsSubmitting(false);
     } else {
       toast.success("Signed in successfully");
-      reload();
+      setRedirecting(true);
+      await reload();
+      let returnTo = window.sessionStorage.getItem("returnTo");
+      if (!returnTo || returnTo === "/login") {
+        returnTo = "/";
+      }
+      router.push(returnTo);
     }
-    setIsSubmitting(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

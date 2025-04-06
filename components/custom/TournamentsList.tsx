@@ -63,9 +63,9 @@ const formatTimeRemaining = (date: Date) => {
 };
 
 const TournamentsList = ({
-  createChallenge,
+  createTournament,
 }: {
-  createChallenge: () => void;
+  createTournament: () => void;
 }) => {
   const [page, setPage] = useQueryState<number>(
     "page",
@@ -95,7 +95,7 @@ const TournamentsList = ({
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["tournaments", page, pageSize],
+    queryKey: ["tournaments", page, pageSize, privacyFilter],
     queryFn: () =>
       allTournaments(page, pageSize, {
         search,
@@ -142,7 +142,7 @@ const TournamentsList = ({
         onSearch={setSearch}
         privacyFilter={privacyFilter}
         onChangeTournamentPrivacy={setPrivacyFilter}
-        createChallenge={createChallenge}
+        createTournament={createTournament}
       />
       <div className="">
         <Table>
@@ -191,7 +191,7 @@ const TournamentsList = ({
             ) : response?.result?.data?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
-                  No challenges available
+                  No tournaments available
                 </TableCell>
               </TableRow>
             ) : (
@@ -201,7 +201,7 @@ const TournamentsList = ({
                     <span
                       title={
                         tournament.privacy === TournamentPrivacy.Open
-                          ? "Open Challenge"
+                          ? "Open Tournament"
                           : "You're Invited"
                       }
                     >
@@ -287,14 +287,14 @@ type ControlsSectionProps = {
   onSearch: (value: string) => void;
   privacyFilter: TournamentPrivacyFilter;
   onChangeTournamentPrivacy: (value: TournamentPrivacyFilter) => void;
-  createChallenge: () => void;
+  createTournament: () => void;
 };
 
 const ControlsSection = ({
   onSearch,
   privacyFilter,
   onChangeTournamentPrivacy,
-  createChallenge,
+  createTournament,
 }: ControlsSectionProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -339,15 +339,17 @@ const ControlsSection = ({
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="Open">Open</SelectItem>
-            <SelectItem value="Invitational">Invitational</SelectItem>
+            {Object.values(TournamentPrivacyFilter).map((value) => (
+              <SelectItem key={value} value={value}>
+                {value}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
-        <Button className="flex items-center gap-2" onClick={createChallenge}>
+        <Button className="flex items-center gap-2" onClick={createTournament}>
           <PlusIcon className="w-6 h-6" />
-          Create Challenge
+          Create New
         </Button>
       </div>
     </div>
