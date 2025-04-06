@@ -102,11 +102,11 @@ export async function fetchSessionParticipants(tournamentId: string) {
 }
 
 export async function createTournament(
-  challenge: CreateTournament,
+  createTournament: CreateTournament,
   invitedUsers: string[] = [],
 ) {
-  return await Api.post<TournamentInfo>(`/tournaments`, {
-    ...challenge,
+  return await Api.post<TournamentInfo>(`/tournaments/new`, {
+    ...createTournament,
     invitedUsers,
   });
 }

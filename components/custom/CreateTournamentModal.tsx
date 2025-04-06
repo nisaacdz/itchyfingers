@@ -23,6 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CreateTournament } from "@/types/forms";
 import { createTournament } from "@/api/requests";
 import { Loader } from "lucide-react";
+import { toast } from "sonner";
 
 type CreateTournamentModalProps = {
   open: boolean;
@@ -34,6 +35,7 @@ const CreateTournamentModal = ({
   onOpenChange,
 }: CreateTournamentModalProps) => {
   const [formData, setFormData] = useState<CreateTournament>({
+    title: "",
     kind: "Open",
     duration: 300,
     scheduled_for: DateTime.now().plus({ minutes: 3 }).toISO(),
@@ -63,12 +65,16 @@ const CreateTournamentModal = ({
     setValidationError("");
     setCreatingChallenge(true);
 
-    try {
-      await createTournament(formData);
+    let response = await createTournament(formData);
+
+    if (response.error) {
+      toast.error(response.error);
+    } else {
+      toast.success("Challenge created successfully!");
       onOpenChange(false);
-    } finally {
-      setCreatingChallenge(false);
     }
+
+    setCreatingChallenge(false);
   };
 
   return (
@@ -83,6 +89,24 @@ const CreateTournamentModal = ({
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
+            {/* Tournament Title */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="title" className="text-right">
+                Title
+              </Label>
+              <Input
+                type="text"
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+                className="col-span-3"
+                id="title"
+                placeholder="Enter challenge title"
+                value={formData.title}
+                required
+              />
+            </div>
+
             {/* Challenge Type */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="kind" className="text-right">
