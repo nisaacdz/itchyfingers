@@ -6,10 +6,7 @@ type CaretProps = {
 
 export const Caret: React.FC<CaretProps> = ({ styles = {} }) => {
   return (
-    <div
-      className="w-1 h-6 bg-black animate-blink bg-current"
-      style={styles}
-    ></div>
+    <div className="w-1 h-6 animate-blink bg-current" style={styles}></div>
   );
 };
 

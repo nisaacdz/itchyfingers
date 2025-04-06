@@ -27,7 +27,7 @@ const ParticipantsRanking = ({
 
   if (rankings.length === 0) return null;
 
-  const currentUser = participants[clientId];
+  const currentParticipant = participants[clientId];
 
   const formatDuration = (start: Date, end: Date) => {
     const diff = end.getTime() - start.getTime();
@@ -52,13 +52,13 @@ const ParticipantsRanking = ({
     cn(
       "grid grid-cols-8 items-center w-full p-3 gap-4 transition-colors",
       "border-t border-border/50 hover:bg-accent/50",
-      clientId === currentUser.user_id ? "bg-secondary/80" : "",
+      clientId === currentParticipant.client.client_id ? "bg-secondary/80" : "",
     );
 
   const getTextStyle = (clientId: string) =>
     cn(
       "font-medium font-mono",
-      clientId === currentUser.user_id
+      clientId === currentParticipant.client.client_id
         ? "text-foreground"
         : "text-muted-foreground",
     );
@@ -84,42 +84,43 @@ const ParticipantsRanking = ({
       <div className="rounded-lg border border-border overflow-hidden shadow-sm">
         {rankings.map((participant, index) => (
           <div
-            key={participant.user_id}
-            className={getRowStyle(participant.user_id)}
+            key={participant.client.client_id}
+            className={getRowStyle(participant.client.client_id)}
           >
             {/* Rank */}
-            <span className={getTextStyle(participant.user_id)}>
+            <span className={getTextStyle(participant.client.client_id)}>
               {index + 1}.
               {index === 0 && <span className="ml-2 text-amber-400">🥇</span>}
             </span>
 
             {/* Racer Name */}
             <div className="col-span-2 flex items-center gap-2">
-              <span className={getTextStyle(participant.user_id)}>
-                {participant.user_name || "Anonymous"}
-                {participant.user_id === currentUser.user_id && (
+              <span className={getTextStyle(participant.client.client_id)}>
+                {participant.client.user?.username || "Anonymous"}
+                {participant.client.client_id ===
+                  currentParticipant.client.client_id && (
                   <span className="ml-2 text-xs text-primary">(You)</span>
                 )}
               </span>
             </div>
 
             {/* Start Offset */}
-            <span className={getTextStyle(participant.user_id)}>
+            <span className={getTextStyle(participant.client.client_id)}>
               {formatStartOffset(participant.startTime)}
             </span>
 
             {/* Duration */}
-            <span className={getTextStyle(participant.user_id)}>
+            <span className={getTextStyle(participant.client.client_id)}>
               {formatDuration(participant.startTime, participant.endTime)}
             </span>
 
             {/* Accuracy */}
-            <span className={getTextStyle(participant.user_id)}>
+            <span className={getTextStyle(participant.client.client_id)}>
               {participant.current_accuracy?.toFixed(1)}%
             </span>
 
             {/* WPM */}
-            <span className={getTextStyle(participant.user_id)}>
+            <span className={getTextStyle(participant.client.client_id)}>
               {participant.current_speed?.toFixed(0)}
             </span>
           </div>

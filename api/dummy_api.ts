@@ -1,6 +1,5 @@
 import {
   TournamentPrivacy,
-  DefaultUserTyping,
   Participant,
   UserTournament,
   UserTournamentStatus,
@@ -11,16 +10,8 @@ import {
   Tournament,
 } from "@/types/request";
 
-// const text2 =
-//   "Ipsum dolor sit amet, consectetur adipiscing elit. Sed ac purus sit amet nisl tincidunt tincidunt";
-
 const text =
   "In the land of myth and a time of magic, the destiny of a great kingdom rests on the shoulders of a young boy. His name, Merlin.";
-
-let updateStates: () => void;
-const userParticipant: Participant = {
-  ...DefaultUserTyping,
-};
 
 const userStats: UserStats = {
   accuracy: 92.4,
@@ -40,6 +31,23 @@ const client: Client = {
   updated: new Date().toISOString(),
 };
 
+export const DefaultUserTyping: Participant = {
+  client: client,
+  tournament_id: "dkskdsds",
+  started_at: null,
+  ended_at: null,
+  current_position: 0,
+  correct_position: 0,
+  total_keystrokes: 0,
+  current_accuracy: 100,
+  current_speed: 0,
+};
+
+let updateStates: () => void;
+const userParticipant: Participant = {
+  ...DefaultUserTyping,
+};
+
 const loading = false;
 const error = false;
 let startTime: Date | undefined | null;
@@ -56,8 +64,11 @@ function generateFakeParticipants() {
   return Array.from({ length: numParticipants }, () => {
     return {
       data: {
-        user_id: Math.random().toString(36).substring(7),
-        user_name: null,
+        client: {
+          client_id: Math.random().toString(36).substring(7),
+          user: null,
+          updated: new Date().toISOString(),
+        },
         tournament_id: "challenge1",
         current_position: 0,
         correct_position: 0,
@@ -116,6 +127,8 @@ function startRace() {
             Math.ceil(waitTime * ((participant.current_speed * 5) / 60000)),
         );
 
+        participant.current_position = participant.correct_position;
+
         updateStates();
       };
 
@@ -136,19 +149,19 @@ export function getTypingText() {
 
 export function getZoneData() {
   const participants = {
-    [userParticipant.user_id]: {
+    [userParticipant.client.client_id]: {
       ...userParticipant,
     },
     ...fakeParticipants.reduce(
       (acc, fakeParticipant) => {
-        acc[fakeParticipant.data.user_id] = fakeParticipant.data;
+        acc[fakeParticipant.data.client.client_id] = fakeParticipant.data;
         return acc;
       },
       {} as Record<string, Participant>,
     ),
   };
   const zoneData: ZoneData = {
-    userId: userParticipant.user_id,
+    clientId: userParticipant.client.client_id,
     participants,
     tournamentId: "challenge1",
     sessionId: "challenge1-session1",

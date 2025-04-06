@@ -56,7 +56,10 @@ export const TypingArea = ({
             position: "absolute",
             zIndex: 10,
             height: fontSize,
-            opacity: participant.user_id == userParticipant.user_id ? 1 : 0.25,
+            opacity:
+              participant.client.client_id == userParticipant.client.client_id
+                ? 1
+                : 0.25,
           }}
         />
       );

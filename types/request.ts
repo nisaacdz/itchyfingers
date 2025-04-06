@@ -10,19 +10,6 @@ export type User = {
   email: string;
 };
 
-export const DefaultUserTyping: Participant = {
-  user_id: "kdkd",
-  user_name: "newt",
-  tournament_id: "dkskdsds",
-  started_at: null,
-  ended_at: null,
-  current_position: 0,
-  correct_position: 0,
-  total_keystrokes: 0,
-  current_accuracy: 100,
-  current_speed: 0,
-};
-
 export type StartTournament = {
   tournamentId: string;
   participants: Participant[];
@@ -30,7 +17,7 @@ export type StartTournament = {
 };
 
 export type ZoneData = {
-  userId: string;
+  clientId: string;
   participants: Record<string, Participant>;
   tournamentId: string;
   sessionId: string;
@@ -95,8 +82,7 @@ export type UserTournamentFilter = {
 };
 
 export type Participant = {
-  user_id: string;
-  user_name: string | null;
+  client: Client;
   tournament_id: string;
   started_at: string | null;
   ended_at: string | null;
