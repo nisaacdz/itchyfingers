@@ -1,12 +1,9 @@
 "use client";
-import { useState } from "react";
 import TournamentsList from "@/components/custom/TournamentsList";
-import CreateTournamentModal from "@/components/custom/CreateTournamentModal";
 import { useAuth } from "@/context/AuthContext";
 import { ContentLoader } from "@/components/custom/ContentLoader";
 
 export default function Page() {
-  const [createModalOpen, setCreateModalOpen] = useState(false);
   const { loading } = useAuth();
 
   if (loading) {

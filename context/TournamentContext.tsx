@@ -103,25 +103,24 @@ export const TournamentProvider = ({
   const handleTournamentStart = useCallback(
     (startData: TournamentInfo) => {
       console.log("Context: Tournament Started", startData);
-      setTournamentInfo((prev) => ({
-        ...(prev ?? ({} as TournamentInfo)), // Keep existing info if any
-        ...startData, // Overwrite with start data (esp. text, started_at)
-        id: prev?.id || startData.id || tournamentId, // Ensure ID consistency
-      }));
-      // Maybe fetch initial participants IF backend doesn't send them on join/start
-      // This depends heavily on your backend's event flow
+      setTournamentInfo(startData);
     },
     [tournamentId],
   );
 
   const handleTournamentUpdate = useCallback(
-    (data: TournamentInfo) => {
+    (data: { tournament: TournamentInfo; participants: Participant[] }) => {
       console.log("Context: Tournament Updated", data);
-      setTournamentInfo((prev) => ({
-        ...prev,
-        ...data,
-        id: prev?.id || data.id || tournamentId,
-      }));
+      const participantsMap = data.participants.reduce(
+        (acc: Record<string, Participant>, participant: Participant) => {
+          acc[participant.client.id] = participant;
+          return acc;
+        },
+        {} as Record<string, Participant>,
+      );
+
+      setParticipants(participantsMap);
+      setTournamentInfo(data.tournament);
     },
     [tournamentId],
   );
@@ -220,8 +219,6 @@ export const TournamentProvider = ({
     // Connect the socket
     TournamentAPI.connect(callbacks);
 
-    // Trigger the join event *after* connection is likely established
-    // The 'connect' handler in TournamentAPI also attempts re-join
     TournamentAPI.joinTournament(tournamentId);
 
     // Cleanup function: Disconnect when component unmounts or dependencies change

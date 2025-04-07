@@ -1,4 +1,3 @@
-// src/api/socket.ts (or similar path)
 import config from "@/config";
 import { TournamentInfo, Participant } from "@/types/request"; // Assuming these types match backend schemas
 import { io, Socket } from "socket.io-client";
@@ -10,20 +9,19 @@ export interface WsResponse<T> {
   data?: T;
 }
 
-// Define specific payload types based on backend emissions
-// These might need adjustments based on exact backend structures
-type JoinResponsePayload = WsResponse<null>; // Or maybe initial data?
+type JoinResponsePayload = WsResponse<null>;
 type LeaveResponsePayload = WsResponse<null>;
-type TypingUpdatePayload = WsResponse<Participant>; // Participant might correspond to TypingSessionSchema
+type TypingUpdatePayload = WsResponse<Participant>;
 type TypingErrorPayload = WsResponse<null>;
-type UserJoinedPayload = Participant; // Backend sends ClientSchema, adapt as needed
-type UserLeftPayload = { user_id: string }; // Adapt based on backend ClientSchema/ID emission
-type TournamentStartPayload = TournamentInfo; // Adapt based on backend TournamentSession/Info emission
-type TournamentUpdatePayload = TournamentInfo; // Adapt based on backend TournamentSession/Info emission
+type UserJoinedPayload = Participant;
+type UserLeftPayload = { user_id: string };
+type TournamentStartPayload = TournamentInfo;
+type TournamentUpdatePayload = {
+  tournament: TournamentInfo;
+  participants: Participant[];
+};
 
-// Callbacks expected by the context provider
 export type TournamentEventCallbacks = {
-  // Connection Status
   onConnect: () => void;
   onDisconnect: (reason: string) => void;
   onError: (errorMsg: string) => void;

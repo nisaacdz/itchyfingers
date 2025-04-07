@@ -15,7 +15,6 @@ import { useQuery } from "@tanstack/react-query";
 import { TournamentPrivacy, TournamentPrivacyFilter } from "@/types/request";
 import { allTournaments } from "@/api/requests";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
   useQueryState,

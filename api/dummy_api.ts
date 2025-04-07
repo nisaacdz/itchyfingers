@@ -22,7 +22,7 @@ const userStats: UserStats = {
 };
 
 const client: Client = {
-  client_id: "12345",
+  id: "12345",
   user: {
     id: 123,
     username: "newt",
@@ -65,7 +65,7 @@ function generateFakeParticipants() {
     return {
       data: {
         client: {
-          client_id: Math.random().toString(36).substring(7),
+          id: Math.random().toString(36).substring(7),
           user: null,
           updated: new Date().toISOString(),
         },

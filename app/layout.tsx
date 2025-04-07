@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 const courierPrime = Courier_Prime({
   weight: ["400", "700"],
   variable: "--font-courier-prime",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {

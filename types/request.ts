@@ -131,8 +131,6 @@ export type TournamentInfo = {
   scheduled_for: string;
   started_at: string | null;
   ended_at: string | null;
-  text: string;
-  joined: number;
-  total_remaining: number;
-  total_completed: number;
+  text: string | null;
+  current: number;
 };

@@ -148,7 +148,7 @@ export const TypingAreaCountdown = ({ scheduledAt }: { scheduledAt: Date }) => {
   return (
     <div className="relative w-full h-full mb-8 flex justify-center items-center">
       <p className="text-6xl text-muted-foreground font-bold">
-        {formatTime(timeLeftMs ? Math.max(0, timeLeftMs) : 0)}
+        {timeLeftMs && timeLeftMs >= 0 ? formatTime(timeLeftMs) : "Starting..."}
       </p>
     </div>
   );
