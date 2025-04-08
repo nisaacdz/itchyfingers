@@ -14,7 +14,7 @@ import {
   TournamentEventCallbacks,
   WsResponse,
 } from "@/api/socket";
-import { Participant, TournamentInfo } from "@/types/request";
+import { Client, Participant, TournamentInfo } from "@/types/request";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
@@ -78,21 +78,27 @@ export const TournamentProvider = ({
     toast.error(`Socket Error: ${errorMsg}`);
   }, []);
 
-  const handleJoinSuccess = useCallback((response: WsResponse<null>) => {
-    console.log("Context: Joined Tournament Successfully", response);
-    setError(null);
-    setIsLoading(false);
-    toast.success(response.message || "Joined tournament!");
-    // If backend sends initial state (participants, tournamentInfo) in join response, process it here.
-    // Example: if (response.data) { setParticipants(response.data.participants); setTournamentInfo(response.data.tournamentInfo); }
-  }, []);
+  const handleJoinSuccess = useCallback(
+    (response: WsResponse<TournamentInfo>) => {
+      console.log("Context: Joined Tournament Successfully", response);
+      setError(null);
+      setIsLoading(false);
+      toast.success(response.message || "Joined tournament!");
+      if (response.data) {
+        setTournamentInfo(response.data);
+      }
+    },
+    [],
+  );
 
-  const handleJoinError = useCallback((response: WsResponse<null>) => {
-    console.error("Context: Failed to Join Tournament", response);
-    setError(response.message || "Failed to join tournament.");
-    setIsLoading(false);
-    // Potentially redirect or show a persistent error state
-  }, []);
+  const handleJoinError = useCallback(
+    (response: WsResponse<TournamentInfo>) => {
+      console.error("Context: Failed to Join Tournament", response);
+      setError(response.message || "Failed to join tournament.");
+      setIsLoading(false);
+    },
+    [],
+  );
 
   const handleLeaveSuccess = useCallback((response: WsResponse<null>) => {
     console.log("Context: Left tournament", response);
@@ -127,36 +133,23 @@ export const TournamentProvider = ({
 
   const handleUserJoined = useCallback(
     (participantData: Participant) => {
-      console.log("Context: User Joined", participantData);
-      // Ensure participantData has a user_id or equivalent key
-      const participantId = participantData.client.id; // Adjust field name if needed
-      if (!participantId) {
-        console.error(
-          "Received participant data without a user_id",
-          participantData,
-        );
-        return;
-      }
       setParticipants((prev) => ({
         ...prev,
-        [participantId]: participantData,
+        [participantData.client.id]: participantData,
       }));
-      if (participantId !== clientId) {
-        // Don't toast for self joining
-        toast.info(
-          `User ${participantData.client.user?.username || participantId} joined.`,
-        ); // Use username if available
-      }
+      toast.info(
+        `${participantData.client.user?.username || "Anonymous user"} joined.`,
+      );
     },
     [clientId],
   );
 
-  const handleUserLeft = useCallback((data: { user_id: string }) => {
+  const handleUserLeft = useCallback((data: Client) => {
     console.log("Context: User Left", data);
-    toast.info(`User ${data.user_id} left.`); // Enhance with username if possible later
+    toast.info(`${data.user?.username || "Ananymous user"} left.`);
     setParticipants((prev) => {
       const updated = { ...prev };
-      delete updated[data.user_id];
+      delete updated[data.id];
       return updated;
     });
   }, []);
@@ -165,11 +158,9 @@ export const TournamentProvider = ({
     (response: WsResponse<Participant>) => {
       const participantData = response.data;
       if (!participantData || !participantData.client.id) return;
-      // console.log("Context: Participant Update", participantData); // Can be noisy
       setParticipants((prev) => ({
         ...prev,
         [participantData.client.id]: {
-          // Smart merging: keep existing non-updated fields if backend only sends partial updates
           ...(prev[participantData.client.id] || {}),
           ...participantData,
         },
@@ -181,47 +172,39 @@ export const TournamentProvider = ({
   const handleTypingError = useCallback((errorData: WsResponse<null>) => {
     console.error("Context: Typing Error", errorData);
     toast.error(`Typing Error: ${errorData.message}`);
-    // Potentially update UI to show error state for typing
   }, []);
 
-  // Effect for initializing and cleaning up the socket connection
   useEffect(() => {
-    // Don't initialize until we have the tournament ID and user is authenticated
-    if (!tournamentId || authLoading || !clientId) {
-      if (!authLoading && !clientId) {
-        setError("Authentication required to join.");
-        setIsLoading(false);
-      }
+    if (!tournamentId) {
+      setError("Authentication required to join.");
+      setIsLoading(false);
       return;
     }
 
     console.log(
       `Context: Initializing socket for tournament ${tournamentId} and client ${clientId}`,
     );
-    setIsLoading(true); // Set loading true when we start initialization attempt
+    setIsLoading(true);
 
-    // Define the callbacks object using the memoized handlers
     const callbacks: TournamentEventCallbacks = {
       onConnect: handleConnect,
       onDisconnect: handleDisconnect,
       onError: handleError,
       onJoinSuccess: handleJoinSuccess,
       onJoinError: handleJoinError,
-      onLeaveSuccess: handleLeaveSuccess, // Added callback
+      onLeaveSuccess: handleLeaveSuccess,
       onTournamentStart: handleTournamentStart,
       onTournamentUpdate: handleTournamentUpdate,
       onUserJoined: handleUserJoined,
       onUserLeft: handleUserLeft,
       onParticipantUpdate: handleParticipantUpdate,
-      onTypingError: handleTypingError, // Added callback
+      onTypingError: handleTypingError,
     };
 
-    // Connect the socket
     TournamentAPI.connect(callbacks);
 
     TournamentAPI.joinTournament(tournamentId);
 
-    // Cleanup function: Disconnect when component unmounts or dependencies change
     return () => {
       console.log(`Context: Cleaning up socket for tournament ${tournamentId}`);
       TournamentAPI.disconnect();
@@ -232,7 +215,6 @@ export const TournamentProvider = ({
       setTournamentInfo(null);
       setParticipants({});
     };
-    // Ensure dependencies cover everything needed for initialization
   }, [
     tournamentId,
     clientId,
@@ -251,7 +233,6 @@ export const TournamentProvider = ({
     handleTypingError,
   ]);
 
-  // --- Actions exposed by the context ---
   const sendTypingInput = useCallback(
     (char: string) => {
       const currentUser = participants[clientId || ""];
@@ -284,7 +265,6 @@ export const TournamentProvider = ({
     TournamentAPI.leaveTournament();
   }, [isConnected]);
 
-  // --- Memoized Context Value ---
   const contextValue = useMemo(
     () => ({
       tournamentId,
@@ -317,7 +297,6 @@ export const TournamentProvider = ({
   );
 };
 
-// Custom hook to easily consume the context
 export const useTournamentContext = () => {
   const context = useContext(TournamentContext);
   if (!context) {

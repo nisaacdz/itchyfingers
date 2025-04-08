@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext"; // Assuming you have this
+import { useAuth } from "@/context/AuthContext";
 import {
   TournamentProvider,
   useTournamentContext,
@@ -34,7 +34,6 @@ const TournamentPageWrapper = () => {
 const TournamentPageContent = () => {
   const {
     isLoading,
-    error,
     tournamentInfo,
     participants,
     currentParticipant,
@@ -48,21 +47,16 @@ const TournamentPageContent = () => {
   const textLength = typingText?.length || 0;
 
   if (isLoading) return <ContentLoader />;
-  if (error) return <div className="text-red-500 p-4">Error: {error}</div>;
-  if (!tournamentInfo && !isLoading)
-    return <div className="p-4">Tournament data not available.</div>; // Handle case where join succeeded but no info yet?
 
   const handleExit = () => {
     if (confirm("Are you sure you want to leave the tournament?")) {
       leaveTournament();
-      router.push("/tournaments"); // Navigate away after initiating leave
+      router.push("/tournaments");
     }
   };
 
-  // Restart might need specific backend logic or just be a client-side reset if allowed
   const handleRestart = () => {
     console.log("Restart action triggered - implement if needed");
-    // This might involve re-joining or a specific socket event if supported by backend
   };
 
   return (
@@ -75,11 +69,9 @@ const TournamentPageContent = () => {
               currentParticipant={currentParticipant}
               textLength={textLength}
               onLeave={handleExit}
-              onRestart={handleRestart} // Pass handler if implemented
+              onRestart={handleRestart}
             />
           ) : (
-            // Show loading state if participant data isn't available yet,
-            // even if global loading is false (e.g., waiting for user:joined event)
             <StatsBoardLoading />
           )}
         </div>
@@ -99,18 +91,16 @@ const TournamentPageContent = () => {
           {tournamentInfo?.started_at && typingText && clientId ? (
             <TypingArea
               text={typingText}
-              participants={participants} // Pass all for potential multi-cursor display
-              clientId={clientId} // Identify the current user
-              handleCharacterInput={sendTypingInput} // Pass action from context
+              participants={participants}
+              clientId={clientId}
+              handleCharacterInput={sendTypingInput}
             />
-          ) : tournamentInfo?.scheduled_for ? (
-            // Show countdown if not started yet but scheduled
+          ) : tournamentInfo ? (
             <TypingAreaCountdown
               scheduledAt={new Date(tournamentInfo.scheduled_for)}
             />
           ) : (
-            // Fallback if info isn't ready or structure is unexpected
-            <div className="p-4">Waiting for tournament details...</div>
+            <ContentLoader />
           )}
 
           {/* Participants Ranking */}
@@ -127,4 +117,4 @@ const TournamentPageContent = () => {
   );
 };
 
-export default TournamentPageWrapper; // Export the wrapper component
+export default TournamentPageWrapper;

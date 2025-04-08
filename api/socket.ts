@@ -1,20 +1,19 @@
 import config from "@/config";
-import { TournamentInfo, Participant } from "@/types/request"; // Assuming these types match backend schemas
+import { TournamentInfo, Participant, Client } from "@/types/request";
 import { io, Socket } from "socket.io-client";
 
-// Backend sends WsResponse structure for responses/errors
 export interface WsResponse<T> {
   success: boolean;
   message: string;
   data?: T;
 }
 
-type JoinResponsePayload = WsResponse<null>;
+type JoinResponsePayload = WsResponse<TournamentInfo>;
 type LeaveResponsePayload = WsResponse<null>;
 type TypingUpdatePayload = WsResponse<Participant>;
 type TypingErrorPayload = WsResponse<null>;
 type UserJoinedPayload = Participant;
-type UserLeftPayload = { user_id: string };
+type UserLeftPayload = Client;
 type TournamentStartPayload = TournamentInfo;
 type TournamentUpdatePayload = {
   tournament: TournamentInfo;
@@ -26,17 +25,15 @@ export type TournamentEventCallbacks = {
   onDisconnect: (reason: string) => void;
   onError: (errorMsg: string) => void;
 
-  // Tournament Lifecycle & Data
-  onJoinSuccess: (response: JoinResponsePayload) => void; // Handle success/failure of join attempt
+  onJoinSuccess: (response: JoinResponsePayload) => void;
   onJoinError: (response: JoinResponsePayload) => void;
   onLeaveSuccess: (response: LeaveResponsePayload) => void;
   onTournamentStart: (startData: TournamentStartPayload) => void;
   onTournamentUpdate: (data: TournamentUpdatePayload) => void;
 
-  // Participant Updates
   onUserJoined: (data: UserJoinedPayload) => void;
   onUserLeft: (data: UserLeftPayload) => void;
-  onParticipantUpdate: (data: TypingUpdatePayload) => void; // Renamed from onSessionUpdate for clarity
+  onParticipantUpdate: (data: TypingUpdatePayload) => void;
   onTypingError: (errorData: TypingErrorPayload) => void;
 };
 
@@ -48,9 +45,7 @@ class TournamentAPIService {
   connect(callbacks: TournamentEventCallbacks) {
     if (this.socket?.connected) {
       console.warn("Socket already connected.");
-      // Ensure callbacks are updated if re-connecting logically
       this.callbacks = callbacks;
-      // Maybe re-register base handlers if needed, though usually not
       return;
     }
 
@@ -59,15 +54,14 @@ class TournamentAPIService {
 
     this.socket = io(config.apps.ws, {
       withCredentials: true,
-      autoConnect: true, // Let it auto-connect
+      autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 3,
       reconnectionDelay: 1500,
-      // Consider adding transports: ['websocket'] if needed
     });
 
     this.registerBaseHandlers();
-    this.registerTournamentHandlers(); // Register app-specific handlers
+    this.registerTournamentHandlers();
   }
 
   private registerBaseHandlers() {
@@ -76,11 +70,6 @@ class TournamentAPIService {
     this.socket.on("connect", () => {
       console.log("Socket connected:", this.socket?.id);
       this.callbacks?.onConnect();
-      // Re-join the tournament room if connection was lost and re-established
-      if (this.tournamentId) {
-        console.log("Re-joining tournament room:", this.tournamentId);
-        this.joinTournament(this.tournamentId); // Emit join event again
-      }
     });
 
     this.socket.on("connect_error", (err) => {
@@ -91,17 +80,12 @@ class TournamentAPIService {
     this.socket.on("disconnect", (reason) => {
       console.log("Socket disconnected:", reason);
       this.callbacks?.onDisconnect(reason);
-      // Reset tournamentId on clean disconnect if needed, or handle via UI logic
-      // this.tournamentId = null;
     });
   }
 
-  // Register listeners for specific backend events
   private registerTournamentHandlers() {
     if (!this.socket) return;
 
-    // --- Listener Alignment Example (MUST MATCH BACKEND) ---
-    // Assuming backend emits 'join:response' after 'join-tournament' request
     this.socket.on("join:response", (response: JoinResponsePayload) => {
       if (response.success) {
         this.callbacks?.onJoinSuccess(response);
@@ -110,53 +94,42 @@ class TournamentAPIService {
       }
     });
 
-    // Assuming backend emits 'leave:response' after 'leave-tournament' request
     this.socket.on("leave:response", (response: LeaveResponsePayload) => {
       if (response.success) {
         this.callbacks?.onLeaveSuccess(response);
       } else {
-        // Handle leave error if necessary, maybe via onError callback
         this.callbacks?.onError(response.message || "Failed to leave");
       }
     });
 
-    // Assuming backend emits 'user:joined' when someone joins the room
     this.socket.on("user:joined", (data: UserJoinedPayload) => {
       this.callbacks?.onUserJoined(data);
     });
 
-    // Assuming backend emits 'user:left' when someone leaves
     this.socket.on("user:left", (data: UserLeftPayload) => {
       this.callbacks?.onUserLeft(data);
     });
 
-    // Assuming backend emits 'typing:update' for participant progress
     this.socket.on("typing:update", (data: TypingUpdatePayload) => {
       if (data.success && data.data) {
         this.callbacks?.onParticipantUpdate(data);
       } else {
-        // Handle potential error within the update structure
         console.error("Typing update error:", data.message);
       }
     });
 
-    // Assuming backend emits 'typing:error' for specific typing issues
     this.socket.on("typing:error", (data: TypingErrorPayload) => {
       this.callbacks?.onTypingError(data);
     });
 
-    // Assuming backend emits 'tournament:start' when ready
     this.socket.on("tournament:start", (data: TournamentStartPayload) => {
       console.log("Tournament Start event received", data);
       this.callbacks?.onTournamentStart(data);
     });
 
-    // Assuming backend emits 'tournament:update' for meta changes (less common)
     this.socket.on("tournament:update", (data: TournamentUpdatePayload) => {
       this.callbacks?.onTournamentUpdate(data);
     });
-
-    // Add listeners for any other events from your backend...
   }
 
   // --- Emitter Alignment Example (MUST MATCH BACKEND) ---
@@ -165,8 +138,7 @@ class TournamentAPIService {
       console.error("Socket not initialized for joinTournament");
       return;
     }
-    this.tournamentId = tournamentId; // Store for potential rejoin on reconnect
-    // Assuming backend listens on 'join-tournament'
+    this.tournamentId = tournamentId;
     this.socket.emit("join-tournament", { tournament_id: tournamentId });
   }
 

@@ -96,7 +96,6 @@ class ApiClient {
   }
 
   private handleError<T>(error: unknown): ApiResponse<T> {
-    console.log(error);
     return {
       result: null,
       error: this.resolveAxiosError(error),
