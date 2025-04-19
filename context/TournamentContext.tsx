@@ -201,9 +201,7 @@ export const TournamentProvider = ({
       onTypingError: handleTypingError,
     };
 
-    TournamentAPI.connect(callbacks);
-
-    TournamentAPI.joinTournament(tournamentId);
+    TournamentAPI.connect(tournamentId, callbacks);
 
     return () => {
       console.log(`Context: Cleaning up socket for tournament ${tournamentId}`);

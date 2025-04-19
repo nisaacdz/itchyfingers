@@ -40,9 +40,8 @@ export type TournamentEventCallbacks = {
 class TournamentAPIService {
   private socket: Socket | null = null;
   private callbacks: TournamentEventCallbacks | null = null;
-  private tournamentId: string | null = null;
 
-  connect(callbacks: TournamentEventCallbacks) {
+  connect(tournament_id: string, callbacks: TournamentEventCallbacks) {
     if (this.socket?.connected) {
       console.warn("Socket already connected.");
       this.callbacks = callbacks;
@@ -52,7 +51,7 @@ class TournamentAPIService {
     this.callbacks = callbacks;
     console.log("Attempting to connect to WS:", config.apps.ws);
 
-    this.socket = io(config.apps.ws, {
+    this.socket = io(`${config.apps.ws}/tournament/${tournament_id}`, {
       withCredentials: true,
       autoConnect: true,
       reconnection: true,
@@ -132,16 +131,6 @@ class TournamentAPIService {
     });
   }
 
-  // --- Emitter Alignment Example (MUST MATCH BACKEND) ---
-  public joinTournament(tournamentId: string) {
-    if (!this.socket) {
-      console.error("Socket not initialized for joinTournament");
-      return;
-    }
-    this.tournamentId = tournamentId;
-    this.socket.emit("join-tournament", { tournament_id: tournamentId });
-  }
-
   public sendTypingInput(character: string) {
     if (!this.socket) {
       console.error("Socket not initialized for sendTypingInput");
@@ -151,21 +140,19 @@ class TournamentAPIService {
   }
 
   public leaveTournament() {
-    if (!this.socket || !this.tournamentId) {
+    if (!this.socket) {
       console.error(
         "Socket not initialized or no tournament ID for leaveTournament",
       );
       return;
     }
-    this.socket.emit("leave-tournament", { tournament_id: this.tournamentId });
-    this.tournamentId = null;
+    this.socket.emit("leave-tournament", {});
   }
 
   public disconnect() {
     this.socket?.disconnect();
     this.socket = null;
     this.callbacks = null;
-    this.tournamentId = null;
     console.log("Socket API disconnected and cleaned up.");
   }
 
