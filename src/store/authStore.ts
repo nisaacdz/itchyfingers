@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { UserSchema, ClientSchema } from "../types/apiTypes";
+import { UserSchema, ClientSchema } from "../types/api";
 
 interface AuthState {
   user: UserSchema | null;

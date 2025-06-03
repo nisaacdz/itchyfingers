@@ -12,8 +12,8 @@ import { Progress } from "@/components/ui/progress";
 import { Navbar } from "../components/Navbar";
 import { useTournamentStore } from "../store/tournamentStore";
 import { useAuthStore } from "../store/authStore";
-import axiosInstance from "../api/axiosInstance";
-import { ApiResponse, TournamentSchema } from "../types/apiTypes";
+import axiosInstance from "../api/apiService";
+import { ApiResponse, TournamentSchema } from "../types/api";
 
 export default function Tournament() {
   const { id } = useParams<{ id: string }>();

@@ -2,8 +2,8 @@ import { io, Socket } from "socket.io-client";
 import {
   TypeArgs,
   TypingSessionSchema,
-  SocketApiResponse,
-} from "../types/apiTypes";
+  SocketResponse,
+} from "../types/api";
 
 class SocketService {
   private socket: Socket | null = null;
@@ -60,7 +60,7 @@ class SocketService {
 
   // Subscribe to typing updates
   onTypingUpdate(
-    callback: (data: SocketApiResponse<TypingSessionSchema>) => void,
+    callback: (data: SocketResponse<TypingSessionSchema>) => void,
   ): void {
     if (this.socket) {
       this.socket.on("typing:update", callback);

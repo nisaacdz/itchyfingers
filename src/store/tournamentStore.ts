@@ -3,7 +3,7 @@ import {
   TournamentSchema,
   TypingSessionSchema,
   StandingEntry,
-} from "../types/apiTypes";
+} from "../types/api";
 
 interface TournamentState {
   currentTournament: TournamentSchema | null;

@@ -15,8 +15,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
 import { toast } from "@/hooks/use-toast";
-import axiosInstance from "../api/axiosInstance";
-import { ApiResponse, UserSchema } from "../types/apiTypes";
+import axiosInstance from "../api/apiService";
+import { ApiResponse, LoginSchema, UserSchema } from "../types/api";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -47,7 +47,7 @@ export default function Register() {
     }
 
     try {
-      const response = await axiosInstance.post<ApiResponse<UserSchema>>(
+      const response = await axiosInstance.post<ApiResponse<LoginSchema>>(
         "/auth/register",
         {
           username,
@@ -56,8 +56,8 @@ export default function Register() {
         },
       );
 
-      if (response.data.success && response.data.data) {
-        setUser(response.data.data);
+      if (response.data.success) {
+        setUser(response.data.data.user);
         toast({
           title: "Account created!",
           description: "Your account has been created successfully.",

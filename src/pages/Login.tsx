@@ -15,8 +15,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
 import { toast } from "@/hooks/use-toast";
-import apiService from "../api/axiosInstance";
-import { UserSchema } from "../types/apiTypes";
+import apiService from "../api/apiService";
+import { ApiResponse, LoginSchema, UserSchema } from "../types/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -39,15 +39,15 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await apiService.post<UserSchema>("/auth/login", {
+      const response = await apiService.post<ApiResponse<LoginSchema>>("/auth/login", {
         email,
         password,
       });
 
       console.log("Login response is: ", response.data);
 
-      if (response.data) {
-        setUser(response.data);
+      if (response.data.success) {
+        setUser(response.data.data.user);
         toast({
           title: "Welcome back!",
           description: "You have been logged in successfully.",

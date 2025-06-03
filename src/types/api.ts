@@ -47,7 +47,7 @@ export interface TypingSessionSchema {
   updated_at: string;
 }
 
-export interface SocketApiResponse<T> {
+export interface SocketResponse<T> {
   success: boolean;
   data: T | null;
   message?: string;
@@ -73,4 +73,10 @@ export interface PaginatedData<T> {
     page: number;
     total: number;
   };
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T | null;
+  message?: string;
 }

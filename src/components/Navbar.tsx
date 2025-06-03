@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import axiosInstance from "../api/axiosInstance";
+import axiosInstance from "../api/apiService";
 import { toast } from "@/hooks/use-toast";
 
 export function Navbar() {

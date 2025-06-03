@@ -8,7 +8,7 @@ class ApiService {
 
   constructor() {
     this.instance = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
+      baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1",
       timeout: 10000,
     });
 
@@ -26,7 +26,16 @@ class ApiService {
 
     // Handle 401 errors (optionally refresh token here)
     this.instance.interceptors.response.use(
-      (response: AxiosResponse) => response,
+      (response: AxiosResponse) => {
+        if (response.data.tokens) {
+          const accessToken = response.data.tokens.access;
+          const refreshToken = response.data.tokens.refresh;
+
+          this.setTokens(accessToken, refreshToken);
+        }
+
+        return response
+      },
       (error: AxiosError) => {
         if (error.response?.status === 401) {
           // Remove tokens on 401

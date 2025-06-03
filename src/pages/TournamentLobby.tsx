@@ -12,8 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
-import axiosInstance from "../api/axiosInstance";
-import { SocketApiResponse, TournamentUpcomingSchema } from "../types/apiTypes";
+import axiosInstance from "../api/apiService";
+import { SocketResponse, TournamentUpcomingSchema } from "../types/api";
 import { format } from "date-fns";
 import {
   Pagination,
@@ -24,7 +24,7 @@ import {
   PaginationEllipsis,
   PaginationLink,
 } from "@/components/ui/pagination";
-import { PaginatedData } from "../types/apiTypes";
+import { PaginatedData } from "../types/api";
 
 export default function TournamentLobby() {
   const [tournaments, setTournaments] = useState<TournamentUpcomingSchema[]>(
