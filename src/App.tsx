@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,7 +19,7 @@ const App = () => {
 
   useEffect(() => {
     // Apply theme to document
-    document.documentElement.setAttribute('data-theme', resolvedTheme);
+    document.documentElement.setAttribute("data-theme", resolvedTheme);
   }, [resolvedTheme]);
 
   return (

@@ -1,8 +1,13 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
@@ -12,7 +17,9 @@ import { ApiResponse, TournamentUpcomingSchema } from "../types/apiTypes";
 import { format } from "date-fns";
 
 export default function TournamentLobby() {
-  const [tournaments, setTournaments] = useState<TournamentUpcomingSchema[]>([]);
+  const [tournaments, setTournaments] = useState<TournamentUpcomingSchema[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthStore();
@@ -25,9 +32,12 @@ export default function TournamentLobby() {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await axiosInstance.get<ApiResponse<TournamentUpcomingSchema[]>>('/tournaments');
-      
+
+      const response =
+        await axiosInstance.get<ApiResponse<TournamentUpcomingSchema[]>>(
+          "/tournaments",
+        );
+
       if (response.data.success && response.data.data) {
         setTournaments(response.data.data);
       } else {
@@ -42,14 +52,14 @@ export default function TournamentLobby() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'waiting':
-        return 'default';
-      case 'active':
-        return 'destructive';
-      case 'completed':
-        return 'secondary';
+      case "waiting":
+        return "default";
+      case "active":
+        return "destructive";
+      case "completed":
+        return "secondary";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
@@ -60,7 +70,8 @@ export default function TournamentLobby() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4">Tournament Lobby</h1>
           <p className="text-xl text-muted-foreground">
-            Join live typing competitions and test your speed against other typists!
+            Join live typing competitions and test your speed against other
+            typists!
           </p>
         </div>
 
@@ -99,7 +110,10 @@ export default function TournamentLobby() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {tournaments.map((tournament) => (
-              <Card key={tournament.id} className="hover:shadow-lg transition-shadow">
+              <Card
+                key={tournament.id}
+                className="hover:shadow-lg transition-shadow"
+              >
                 <CardHeader>
                   <div className="flex justify-between items-start mb-2">
                     <CardTitle className="text-xl">{tournament.name}</CardTitle>
@@ -114,10 +128,15 @@ export default function TournamentLobby() {
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Participants:</span>
-                      <span>{tournament.current_participants}/{tournament.max_participants}</span>
+                      <span className="text-muted-foreground">
+                        Participants:
+                      </span>
+                      <span>
+                        {tournament.current_participants}/
+                        {tournament.max_participants}
+                      </span>
                     </div>
-                    
+
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Status:</span>
                       <span className="capitalize">{tournament.status}</span>
@@ -126,23 +145,33 @@ export default function TournamentLobby() {
                     {tournament.scheduled_start && (
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Starts:</span>
-                        <span>{format(new Date(tournament.scheduled_start), 'MMM dd, HH:mm')}</span>
+                        <span>
+                          {format(
+                            new Date(tournament.scheduled_start),
+                            "MMM dd, HH:mm",
+                          )}
+                        </span>
                       </div>
                     )}
 
                     <div className="pt-4">
                       <Link to={`/tournament/${tournament.id}`}>
-                        <Button 
-                          className="w-full" 
-                          disabled={tournament.status === 'completed' || tournament.current_participants >= tournament.max_participants}
+                        <Button
+                          className="w-full"
+                          disabled={
+                            tournament.status === "completed" ||
+                            tournament.current_participants >=
+                              tournament.max_participants
+                          }
                         >
-                          {tournament.status === 'completed' 
-                            ? 'Tournament Ended' 
-                            : tournament.current_participants >= tournament.max_participants
-                            ? 'Tournament Full'
-                            : tournament.status === 'active'
-                            ? 'Join Now'
-                            : 'Join Tournament'}
+                          {tournament.status === "completed"
+                            ? "Tournament Ended"
+                            : tournament.current_participants >=
+                                tournament.max_participants
+                              ? "Tournament Full"
+                              : tournament.status === "active"
+                                ? "Join Now"
+                                : "Join Tournament"}
                         </Button>
                       </Link>
                     </div>

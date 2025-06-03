@@ -1,10 +1,16 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
@@ -19,13 +25,13 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const { setUser, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      navigate("/");
     }
   }, [isAuthenticated, navigate]);
 
@@ -41,11 +47,14 @@ export default function Register() {
     }
 
     try {
-      const response = await axiosInstance.post<ApiResponse<UserSchema>>('/auth/register', {
-        username,
-        email,
-        password,
-      });
+      const response = await axiosInstance.post<ApiResponse<UserSchema>>(
+        "/auth/register",
+        {
+          username,
+          email,
+          password,
+        },
+      );
 
       if (response.data.success && response.data.data) {
         setUser(response.data.data);
@@ -53,12 +62,13 @@ export default function Register() {
           title: "Account created!",
           description: "Your account has been created successfully.",
         });
-        navigate('/');
+        navigate("/");
       } else {
         setError(response.data.message || "Registration failed");
       }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || "An error occurred during registration";
+      const errorMessage =
+        err.response?.data?.message || "An error occurred during registration";
       setError(errorMessage);
       toast({
         title: "Registration failed",
@@ -76,7 +86,9 @@ export default function Register() {
       <div className="container flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Create your account</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              Create your account
+            </CardTitle>
             <CardDescription className="text-center">
               Join ItchyFingers and start competing in typing tournaments
             </CardDescription>
@@ -88,7 +100,7 @@ export default function Register() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
                 <Input
@@ -101,7 +113,7 @@ export default function Register() {
                   disabled={isLoading}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -114,7 +126,7 @@ export default function Register() {
                   disabled={isLoading}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
@@ -127,7 +139,7 @@ export default function Register() {
                   disabled={isLoading}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input
@@ -145,7 +157,7 @@ export default function Register() {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Creating account..." : "Create account"}
               </Button>
-              
+
               <div className="text-center text-sm text-muted-foreground">
                 Already have an account?{" "}
                 <Link to="/login" className="text-primary hover:underline">

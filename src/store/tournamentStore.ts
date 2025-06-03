@@ -1,6 +1,9 @@
-
-import { create } from 'zustand';
-import { TournamentSchema, TypingSessionSchema, StandingEntry } from '../types/apiTypes';
+import { create } from "zustand";
+import {
+  TournamentSchema,
+  TypingSessionSchema,
+  StandingEntry,
+} from "../types/apiTypes";
 
 interface TournamentState {
   currentTournament: TournamentSchema | null;
@@ -23,57 +26,58 @@ interface TournamentActions {
   reset: () => void;
 }
 
-export const useTournamentStore = create<TournamentState & TournamentActions>((set, get) => ({
-  currentTournament: null,
-  participants: [],
-  standings: [],
-  isConnected: false,
-  loading: false,
-  error: null,
+export const useTournamentStore = create<TournamentState & TournamentActions>(
+  (set, get) => ({
+    currentTournament: null,
+    participants: [],
+    standings: [],
+    isConnected: false,
+    loading: false,
+    error: null,
 
-  setCurrentTournament: (tournament) => 
-    set((state) => ({ ...state, currentTournament: tournament })),
+    setCurrentTournament: (tournament) =>
+      set((state) => ({ ...state, currentTournament: tournament })),
 
-  setParticipants: (participants) => 
-    set((state) => ({ ...state, participants })),
+    setParticipants: (participants) =>
+      set((state) => ({ ...state, participants })),
 
-  updateParticipant: (participant) => 
-    set((state) => {
-      const existingIndex = state.participants.findIndex(
-        p => p.user.id === participant.user.id
-      );
-      
-      if (existingIndex >= 0) {
-        const newParticipants = [...state.participants];
-        newParticipants[existingIndex] = participant;
-        return { ...state, participants: newParticipants };
-      } else {
-        return { ...state, participants: [...state.participants, participant] };
-      }
-    }),
+    updateParticipant: (participant) =>
+      set((state) => {
+        const existingIndex = state.participants.findIndex(
+          (p) => p.user.id === participant.user.id,
+        );
 
-  setStandings: (standings) => 
-    set((state) => ({ ...state, standings })),
+        if (existingIndex >= 0) {
+          const newParticipants = [...state.participants];
+          newParticipants[existingIndex] = participant;
+          return { ...state, participants: newParticipants };
+        } else {
+          return {
+            ...state,
+            participants: [...state.participants, participant],
+          };
+        }
+      }),
 
-  setConnected: (connected) => 
-    set((state) => ({ ...state, isConnected: connected })),
+    setStandings: (standings) => set((state) => ({ ...state, standings })),
 
-  setLoading: (loading) => 
-    set((state) => ({ ...state, loading })),
+    setConnected: (connected) =>
+      set((state) => ({ ...state, isConnected: connected })),
 
-  setError: (error) => 
-    set((state) => ({ ...state, error })),
+    setLoading: (loading) => set((state) => ({ ...state, loading })),
 
-  clearError: () => 
-    set((state) => ({ ...state, error: null })),
+    setError: (error) => set((state) => ({ ...state, error })),
 
-  reset: () => 
-    set({
-      currentTournament: null,
-      participants: [],
-      standings: [],
-      isConnected: false,
-      loading: false,
-      error: null,
-    }),
-}));
+    clearError: () => set((state) => ({ ...state, error: null })),
+
+    reset: () =>
+      set({
+        currentTournament: null,
+        participants: [],
+        standings: [],
+        isConnected: false,
+        loading: false,
+        error: null,
+      }),
+  }),
+);

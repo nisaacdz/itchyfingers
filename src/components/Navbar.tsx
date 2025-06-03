@@ -1,4 +1,3 @@
-
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
@@ -20,13 +19,13 @@ export function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await axiosInstance.post('/auth/logout');
+      await axiosInstance.post("/auth/logout");
       logout();
       toast({
         title: "Logged out successfully",
         description: "You have been logged out of your account.",
       });
-      navigate('/');
+      navigate("/");
     } catch (error) {
       toast({
         title: "Logout failed",
@@ -46,7 +45,7 @@ export function Navbar() {
             </div>
             <span className="font-bold text-xl">ItchyFingers</span>
           </Link>
-          
+
           <div className="hidden md:flex items-center space-x-4">
             <Link to="/tournaments">
               <Button variant="ghost">Tournaments</Button>
@@ -56,11 +55,14 @@ export function Navbar() {
 
         <div className="flex items-center space-x-4">
           <ThemeToggle />
-          
+
           {isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-9 w-9 rounded-full"
+                >
                   <Avatar className="h-9 w-9">
                     <AvatarFallback>
                       {user.username.charAt(0).toUpperCase()}
@@ -68,7 +70,10 @@ export function Navbar() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-background border z-50" align="end">
+              <DropdownMenuContent
+                className="w-56 bg-background border z-50"
+                align="end"
+              >
                 <div className="flex items-center justify-start gap-2 p-2">
                   <div className="flex flex-col space-y-1 leading-none">
                     <p className="font-medium">{user.username}</p>

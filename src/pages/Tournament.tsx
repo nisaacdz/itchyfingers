@@ -1,7 +1,12 @@
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Navbar } from "../components/Navbar";
@@ -12,7 +17,13 @@ import { ApiResponse, TournamentSchema } from "../types/apiTypes";
 
 export default function Tournament() {
   const { id } = useParams<{ id: string }>();
-  const { currentTournament, participants, setCurrentTournament, setLoading, loading } = useTournamentStore();
+  const {
+    currentTournament,
+    participants,
+    setCurrentTournament,
+    setLoading,
+    loading,
+  } = useTournamentStore();
   const { user } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
 
@@ -25,8 +36,10 @@ export default function Tournament() {
   const fetchTournament = async (tournamentId: string) => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get<ApiResponse<TournamentSchema>>(`/tournaments/${tournamentId}`);
-      
+      const response = await axiosInstance.get<ApiResponse<TournamentSchema>>(
+        `/tournaments/${tournamentId}`,
+      );
+
       if (response.data.success && response.data.data) {
         setCurrentTournament(response.data.data);
       } else {
@@ -92,10 +105,16 @@ export default function Tournament() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">{currentTournament.name}</h1>
-          <p className="text-muted-foreground mb-4">{currentTournament.description}</p>
-          
+          <p className="text-muted-foreground mb-4">
+            {currentTournament.description}
+          </p>
+
           <div className="flex gap-4 mb-4">
-            <Badge variant={currentTournament.status === 'active' ? 'default' : 'secondary'}>
+            <Badge
+              variant={
+                currentTournament.status === "active" ? "default" : "secondary"
+              }
+            >
               {currentTournament.status}
             </Badge>
             <Badge variant="outline">
@@ -133,14 +152,20 @@ export default function Tournament() {
                   participants.map((participant) => (
                     <div key={participant.user.id} className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="font-medium">{participant.user.username}</span>
+                        <span className="font-medium">
+                          {participant.user.username}
+                        </span>
                         <div className="flex gap-2 text-sm text-muted-foreground">
                           <span>{participant.current_speed} WPM</span>
                           <span>{participant.current_accuracy}% acc</span>
                         </div>
                       </div>
-                      <Progress 
-                        value={(participant.current_position / (currentTournament.text?.length || 1)) * 100} 
+                      <Progress
+                        value={
+                          (participant.current_position /
+                            (currentTournament.text?.length || 1)) *
+                          100
+                        }
                         className="h-2"
                       />
                     </div>
@@ -155,7 +180,9 @@ export default function Tournament() {
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Typing Interface</CardTitle>
-            <CardDescription>Start typing when the tournament begins</CardDescription>
+            <CardDescription>
+              Start typing when the tournament begins
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="p-8 border-2 border-dashed border-muted-foreground/25 rounded-lg text-center">

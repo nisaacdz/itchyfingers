@@ -1,7 +1,6 @@
-
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { UserSchema, ClientSchema } from '../types/apiTypes';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { UserSchema, ClientSchema } from "../types/apiTypes";
 
 interface AuthState {
   user: UserSchema | null;
@@ -29,27 +28,25 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       loading: false,
       error: null,
 
-      setUser: (user) => 
-        set((state) => ({ 
-          ...state, 
-          user, 
-          isAuthenticated: !!user 
+      setUser: (user) =>
+        set((state) => ({
+          ...state,
+          user,
+          isAuthenticated: !!user,
         })),
 
-      setClient: (client) => 
-        set((state) => ({ 
-          ...state, 
+      setClient: (client) =>
+        set((state) => ({
+          ...state,
           client,
-          isAuthenticated: client?.is_authenticated || false
+          isAuthenticated: client?.is_authenticated || false,
         })),
 
-      setLoading: (loading) => 
-        set((state) => ({ ...state, loading })),
+      setLoading: (loading) => set((state) => ({ ...state, loading })),
 
-      setError: (error) => 
-        set((state) => ({ ...state, error })),
+      setError: (error) => set((state) => ({ ...state, error })),
 
-      logout: () => 
+      logout: () =>
         set({
           user: null,
           client: null,
@@ -58,16 +55,15 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           error: null,
         }),
 
-      clearError: () => 
-        set((state) => ({ ...state, error: null })),
+      clearError: () => set((state) => ({ ...state, error: null })),
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
       partialize: (state) => ({
         user: state.user,
         client: state.client,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
+    },
+  ),
 );

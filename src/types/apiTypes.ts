@@ -8,7 +8,7 @@ export interface UserSchema {
 
 export interface ClientSchema {
   id: string;
-  user: UserSchema;
+  user: UserSchema | null;
   created_at: string;
   updated_at: string;
 }
@@ -19,7 +19,7 @@ export interface TournamentSchema {
   description: string;
   text: string;
   max_participants: number;
-  status: 'waiting' | 'active' | 'completed';
+  status: "waiting" | "active" | "completed";
   created_at: string;
   updated_at: string;
   scheduled_start?: string;
@@ -31,7 +31,7 @@ export interface TournamentUpcomingSchema {
   description: string;
   max_participants: number;
   current_participants: number;
-  status: 'waiting' | 'active' | 'completed';
+  status: "waiting" | "active" | "completed";
   scheduled_start?: string;
   created_at: string;
 }
@@ -47,7 +47,7 @@ export interface TypingSessionSchema {
   updated_at: string;
 }
 
-export interface ApiResponse<T> {
+export interface SocketApiResponse<T> {
   success: boolean;
   data: T | null;
   message?: string;
@@ -56,4 +56,12 @@ export interface ApiResponse<T> {
 export interface TypeArgs {
   character: string;
   timestamp: number;
+}
+
+export interface LoginSchema {
+  user: UserSchema;
+  tokens: {
+    access: string;
+    refresh: string;
+  };
 }

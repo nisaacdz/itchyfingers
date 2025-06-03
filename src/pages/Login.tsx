@@ -1,29 +1,35 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
 import { toast } from "@/hooks/use-toast";
-import axiosInstance from "../api/axiosInstance";
-import { ApiResponse, UserSchema } from "../types/apiTypes";
+import apiService from "../api/axiosInstance";
+import { UserSchema } from "../types/apiTypes";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const { setUser, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      navigate("/");
     }
   }, [isAuthenticated, navigate]);
 
@@ -33,27 +39,31 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await axiosInstance.post<ApiResponse<UserSchema>>('/auth/login', {
+      const response = await apiService.post<UserSchema>("/auth/login", {
         email,
         password,
       });
 
-      if (response.data.success && response.data.data) {
-        setUser(response.data.data);
+      console.log("Login response is: ", response.data);
+
+      if (response.data) {
+        setUser(response.data);
         toast({
           title: "Welcome back!",
           description: "You have been logged in successfully.",
         });
 
         // Redirect to returnTo route or home
-        const returnTo = sessionStorage.getItem('returnTo');
-        sessionStorage.removeItem('returnTo');
-        navigate(returnTo || '/');
+        const returnTo = sessionStorage.getItem("returnTo");
+        sessionStorage.removeItem("returnTo");
+        navigate(returnTo || "/");
       } else {
-        setError(response.data.message || "Login failed");
+        setError("Login failed");
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || "An error occurred during login";
+      const errorMessage =
+        err.response?.data?.message || "An error occurred during login";
       setError(errorMessage);
       toast({
         title: "Login failed",
@@ -71,7 +81,9 @@ export default function Login() {
       <div className="container flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              Welcome back
+            </CardTitle>
             <CardDescription className="text-center">
               Enter your credentials to access your account
             </CardDescription>
@@ -83,7 +95,7 @@ export default function Login() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -96,7 +108,7 @@ export default function Login() {
                   disabled={isLoading}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
@@ -114,7 +126,7 @@ export default function Login() {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Signing in..." : "Sign in"}
               </Button>
-              
+
               <div className="text-center text-sm text-muted-foreground">
                 Don't have an account?{" "}
                 <Link to="/register" className="text-primary hover:underline">
