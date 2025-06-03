@@ -65,3 +65,12 @@ export interface LoginSchema {
     refresh: string;
   };
 }
+
+export interface PaginatedData<T> {
+  data: T[];
+  meta: {
+    limit: number;
+    page: number;
+    total: number;
+  };
+}

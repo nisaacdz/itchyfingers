@@ -13,8 +13,18 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
 import axiosInstance from "../api/axiosInstance";
-import { ApiResponse, TournamentUpcomingSchema } from "../types/apiTypes";
+import { SocketApiResponse, TournamentUpcomingSchema } from "../types/apiTypes";
 import { format } from "date-fns";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+  PaginationLink,
+} from "@/components/ui/pagination";
+import { PaginatedData } from "../types/apiTypes";
 
 export default function TournamentLobby() {
   const [tournaments, setTournaments] = useState<TournamentUpcomingSchema[]>(
@@ -22,26 +32,28 @@ export default function TournamentLobby() {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(9); // 9 per page for 3x3 grid
+  const [total, setTotal] = useState(0);
   const { user } = useAuthStore();
 
   useEffect(() => {
-    fetchTournaments();
-  }, []);
+    fetchTournaments(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 
-  const fetchTournaments = async () => {
+  const fetchTournaments = async (pageNum = 1) => {
     try {
       setLoading(true);
       setError(null);
-
-      const response =
-        await axiosInstance.get<ApiResponse<TournamentUpcomingSchema[]>>(
-          "/tournaments",
-        );
-
-      if (response.data.success && response.data.data) {
+      const response = await axiosInstance.get<
+        PaginatedData<TournamentUpcomingSchema>
+      >(`/tournaments?page=${pageNum}&limit=${limit}`);
+      if (response.data && response.data.data) {
         setTournaments(response.data.data);
+        setTotal(response.data.meta.total);
       } else {
-        setError(response.data.message || "Failed to load tournaments");
+        setError("Failed to load tournaments");
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to load tournaments");
@@ -62,6 +74,8 @@ export default function TournamentLobby() {
         return "outline";
     }
   };
+
+  const totalPages = Math.ceil(total / limit);
 
   return (
     <div className="min-h-screen bg-background">
@@ -182,10 +196,38 @@ export default function TournamentLobby() {
           </div>
         )}
 
-        <div className="mt-8 text-center">
-          <Button onClick={fetchTournaments} variant="outline">
+        <div className="mt-8 flex flex-col items-center gap-4">
+          <Button onClick={() => fetchTournaments(page)} variant="outline">
             Refresh Tournaments
           </Button>
+          {totalPages > 1 && (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    aria-disabled={page === 1}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <PaginationItem key={i + 1}>
+                    <PaginationLink
+                      isActive={page === i + 1}
+                      onClick={() => setPage(i + 1)}
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    aria-disabled={page === totalPages}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
         </div>
       </div>
     </div>

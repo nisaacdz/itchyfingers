@@ -60,7 +60,7 @@ export default function Login() {
       } else {
         setError("Login failed");
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message || "An error occurred during login";
