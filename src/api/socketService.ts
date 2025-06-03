@@ -1,9 +1,5 @@
 import { io, Socket } from "socket.io-client";
-import {
-  TypeArgs,
-  TypingSessionSchema,
-  SocketResponse,
-} from "../types/api";
+import { TypeArgs, TypingSessionSchema, SocketResponse } from "../types/api";
 
 class SocketService {
   private socket: Socket | null = null;

@@ -150,10 +150,12 @@ export default function Tournament() {
                   <p className="text-muted-foreground">No participants yet</p>
                 ) : (
                   participants.map((participant) => (
-                    <div key={participant.user.id} className="space-y-2">
+                    <div key={participant.client.id} className="space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="font-medium">
-                          {participant.user.username}
+                          {participant.client.user
+                            ? participant.client.user.username
+                            : "Anonymous"}
                         </span>
                         <div className="flex gap-2 text-sm text-muted-foreground">
                           <span>{participant.current_speed} WPM</span>

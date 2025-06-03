@@ -39,10 +39,13 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await apiService.post<ApiResponse<LoginSchema>>("/auth/login", {
-        email,
-        password,
-      });
+      const response = await apiService.post<ApiResponse<LoginSchema>>(
+        "/auth/login",
+        {
+          email,
+          password,
+        },
+      );
 
       console.log("Login response is: ", response.data);
 
@@ -60,7 +63,6 @@ export default function Login() {
       } else {
         setError("Login failed");
       }
-      
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message || "An error occurred during login";
