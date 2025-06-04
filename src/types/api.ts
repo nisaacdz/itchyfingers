@@ -24,16 +24,28 @@ export interface TournamentSchema {
   updated_at: string;
   scheduled_start?: string;
 }
-
+/*
+correct api types
+pub struct TournamentUpcomingSchema {
+    pub id: String,
+    pub title: String,
+    pub created_at: DateTimeUtc,
+    pub created_by: UserSchema,
+    pub scheduled_for: DateTimeUtc,
+    pub joined: i32,
+    pub privacy: TournamentPrivacy,
+    pub text_options: Option<TextOptions>,
+}
+*/
 export interface TournamentUpcomingSchema {
   id: string;
-  name: string;
-  description: string;
-  max_participants: number;
-  current_participants: number;
-  status: "waiting" | "active" | "completed";
-  scheduled_start?: string;
+  title: string;
   created_at: string;
+  created_by: UserSchema;
+  scheduled_for: string;
+  joined: number;
+  privacy: string;
+  text_options?: any;
 }
 
 export interface TypingSessionSchema {
@@ -68,11 +80,9 @@ export interface LoginSchema {
 
 export interface PaginatedData<T> {
   data: T[];
-  meta: {
-    limit: number;
-    page: number;
-    total: number;
-  };
+  limit: number;
+  page: number;
+  total: number;
 }
 
 export interface ApiResponse<T> {

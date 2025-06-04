@@ -18,21 +18,13 @@ export function Navbar() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    try {
-      await axiosInstance.post("/auth/logout");
-      logout();
-      toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of your account.",
-      });
-      navigate("/");
-    } catch (error) {
-      toast({
-        title: "Logout failed",
-        description: "There was an error logging out. Please try again.",
-        variant: "destructive",
-      });
-    }
+    axiosInstance.clearTokens();
+    logout();
+    toast({
+      title: "Logged out successfully",
+      description: "You have been logged out of your account.",
+    });
+    navigate("/");
   };
 
   return (

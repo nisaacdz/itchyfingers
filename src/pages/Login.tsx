@@ -47,8 +47,6 @@ export default function Login() {
         },
       );
 
-      console.log("Login response is: ", response.data);
-
       if (response.data.success) {
         setUser(response.data.data.user);
         toast({

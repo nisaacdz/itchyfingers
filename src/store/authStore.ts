@@ -39,7 +39,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         set((state) => ({
           ...state,
           client,
-          isAuthenticated: client?.is_authenticated || false,
+          isAuthenticated: !!client.user,
         })),
 
       setLoading: (loading) => set((state) => ({ ...state, loading })),
