@@ -109,7 +109,9 @@ export default function CreateTournament() {
 export function CreateTournamentDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { isAuthenticated } = useAuthStore();
   const [title, setTitle] = useState("");
-  const [scheduledFor, setScheduledFor] = useState("");
+  // Prefill with now + 5 minutes, formatted for datetime-local
+  const defaultScheduledFor = DateTime.now().plus({ minutes: 5 }).toFormat("yyyy-MM-dd'T'HH:mm");
+  const [scheduledFor, setScheduledFor] = useState(defaultScheduledFor);
   const [includeSpecialChars, setIncludeSpecialChars] = useState(false);
   const [includeUppercase, setIncludeUppercase] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -125,10 +127,17 @@ export function CreateTournamentDialog({ open, onOpenChange }: { open: boolean; 
       setIsLoading(false);
       return;
     }
+    // Validate that scheduledFor is a valid future datetime
+    const scheduledDate = DateTime.fromFormat(scheduledFor, "yyyy-MM-dd'T'HH:mm");
+    if (!scheduledDate.isValid || scheduledDate < DateTime.now().plus({ minutes: 1 })) {
+      setError("Scheduled time must be at least 1 minute from now and valid.");
+      setIsLoading(false);
+      return;
+    }
     try {
       const response = await apiService.post<HttpResponse<{ tournamentId: string }>>("/tournaments", {
         title,
-        scheduled_for: scheduledFor,
+        scheduled_for: scheduledDate.toISO(),
         includeSpecialChars,
         includeUppercase,
       });
@@ -176,6 +185,7 @@ export function CreateTournamentDialog({ open, onOpenChange }: { open: boolean; 
                 id="scheduledFor"
                 type="datetime-local"
                 value={scheduledFor}
+                min={defaultScheduledFor}
                 onChange={(e) => setScheduledFor(e.target.value)}
                 required
                 disabled={isLoading}
