@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CreateTournamentDialog } from "./CreateTournament";
 
 export default function TournamentLobby() {
   const [tournaments, setTournaments] = useState<PaginatedData<TournamentUpcomingSchema> | null>(null);
@@ -37,6 +38,7 @@ export default function TournamentLobby() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(9);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { user } = useAuthStore();
 
   const fetchTournaments = useCallback(async (pageNum = 1) => {
@@ -103,12 +105,20 @@ export default function TournamentLobby() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">Tournament Lobby</h1>
-          <p className="text-xl text-muted-foreground">
-            Join live typing competitions and test your speed against other
-            typists!
-          </p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold mb-4">Tournament Lobby</h1>
+            <p className="text-xl text-muted-foreground">
+              Join live typing competitions and test your speed against other
+              typists!
+            </p>
+          </div>
+          <>
+            <Button className="text-lg" onClick={() => setDialogOpen(true)}>
+              Create Tournament
+            </Button>
+            <CreateTournamentDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+          </>
         </div>
 
         {error && (
