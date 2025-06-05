@@ -85,7 +85,7 @@ export type PaginatedData<T> = {
   total: number;
 };
 
-export interface ApiResponse<T> {
+export interface HttpResponse<T> {
   success: boolean;
   data: T | null;
   message?: string;

@@ -13,7 +13,7 @@ import { Navbar } from "../components/Navbar";
 import { useTournamentStore } from "../store/tournamentStore";
 import { useAuthStore } from "../store/authStore";
 import axiosInstance from "../api/apiService";
-import { ApiResponse, TournamentSchema } from "../types/api";
+import { HttpResponse, TournamentSchema } from "../types/api";
 
 export default function Tournament() {
   const { id } = useParams<{ id: string }>();
@@ -36,7 +36,7 @@ export default function Tournament() {
   const fetchTournament = async (tournamentId: string) => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get<ApiResponse<TournamentSchema>>(
+      const response = await axiosInstance.get<HttpResponse<TournamentSchema>>(
         `/tournaments/${tournamentId}`,
       );
 

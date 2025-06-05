@@ -16,7 +16,7 @@ import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
 import { toast } from "@/hooks/use-toast";
 import axiosInstance from "../api/apiService";
-import { ApiResponse, LoginSchema } from "../types/api";
+import { HttpResponse, LoginSchema } from "../types/api";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -46,7 +46,7 @@ export default function Register() {
     }
 
     try {
-      const response = await axiosInstance.post<ApiResponse<LoginSchema>>(
+      const response = await axiosInstance.post<HttpResponse<LoginSchema>>(
         "/auth/register",
         {
           email,

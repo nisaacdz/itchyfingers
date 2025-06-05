@@ -15,7 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { toast } from "@/hooks/use-toast";
 import apiService from "../api/apiService";
-import { ApiResponse } from "../types/api";
+import { HttpResponse } from "../types/api";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -30,7 +30,7 @@ export default function ForgotPassword() {
     setSuccessMessage("");
 
     try {
-      const response = await apiService.post<ApiResponse<null>>(
+      const response = await apiService.post<HttpResponse<null>>(
         "/auth/forgot-password",
         { email },
       );

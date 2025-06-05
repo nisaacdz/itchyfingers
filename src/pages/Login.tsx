@@ -16,7 +16,7 @@ import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
 import { toast } from "@/hooks/use-toast";
 import apiService from "../api/apiService";
-import { ApiResponse, LoginSchema, UserSchema } from "../types/api";
+import { HttpResponse, LoginSchema, UserSchema } from "../types/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -39,7 +39,7 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await apiService.post<ApiResponse<LoginSchema>>(
+      const response = await apiService.post<HttpResponse<LoginSchema>>(
         "/auth/login",
         {
           email,

@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
 import axiosInstance from "../api/apiService";
-import { ApiResponse, TournamentUpcomingSchema, PaginatedData } from "../types/api";
+import { HttpResponse, TournamentUpcomingSchema, PaginatedData } from "../types/api";
 import { format } from "date-fns";
 import {
   Pagination,
@@ -44,7 +44,7 @@ export default function TournamentLobby() {
       setLoading(true);
       setError(null);
       const response = await axiosInstance.get<
-        ApiResponse<PaginatedData<TournamentUpcomingSchema>>
+        HttpResponse<PaginatedData<TournamentUpcomingSchema>>
       >(`/tournaments?page=${pageNum}&limit=${pageSize}`);
 
       console.log("Tournaments is ", response.data.data)

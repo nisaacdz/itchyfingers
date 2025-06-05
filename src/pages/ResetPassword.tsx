@@ -15,7 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { toast } from "@/hooks/use-toast";
 import apiService from "../api/apiService";
-import { ApiResponse, LoginSchema, UserSchema } from "../types/api";
+import { HttpResponse, LoginSchema, UserSchema } from "../types/api";
 import { useAuthStore } from "@/store/authStore";
 
 const validateToken = async (token: string | null, ifValid: (user: UserSchema) => void, ifInvalid: () => void) => {
@@ -28,7 +28,7 @@ const validateToken = async (token: string | null, ifValid: (user: UserSchema) =
         return ifInvalid();
     }
     try {
-        const response = await apiService.post<ApiResponse<LoginSchema>>(`/auth/verifications/use/${token}`);
+        const response = await apiService.post<HttpResponse<LoginSchema>>(`/auth/verifications/use/${token}`);
         if (response.data.success) {
             const user = response.data.data.user;
             ifValid(user);
@@ -100,7 +100,7 @@ export default function ResetPassword() {
         }
 
         try {
-            const response = await apiService.post<ApiResponse<null>>(
+            const response = await apiService.post<HttpResponse<null>>(
                 `/auth/reset-password/${token}`,
                 { password },
             );
