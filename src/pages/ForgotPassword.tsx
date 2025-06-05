@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,12 +16,14 @@ import { Navbar } from "../components/Navbar";
 import { toast } from "@/hooks/use-toast";
 import apiService from "../api/apiService";
 import { HttpResponse } from "../types/api";
+import { Loader } from "lucide-react";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,13 +39,14 @@ export default function ForgotPassword() {
 
       if (response.data.success) {
         setSuccessMessage(
-          response.data.message || "Password reset instructions have been sent to your email.",
+          response.data.message || "An OTP has been sent to your email.",
         );
         toast({
           title: "Check your email",
-          description: response.data.message || "Password reset instructions have been sent.",
+          description: response.data.message || "An OTP has been sent to your email.",
         });
-        setEmail(""); // Clear the email field
+
+        navigate("/auth/reset-password");
       } else {
         setError(response.data.message || "Failed to send password reset email.");
       }
@@ -105,7 +108,7 @@ export default function ForgotPassword() {
             <CardFooter className="flex flex-col space-y-4">
               {!successMessage && ( // Only show button if no success message
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Sending..." : "Send Reset Link"}
+                  {isLoading ? <Loader className="animate-spin" /> : "Send Reset Link"}
                 </Button>
               )}
               <div className="text-center text-sm text-muted-foreground">

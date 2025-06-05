@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { DateTime } from "luxon";
+import { Loader } from "lucide-react";
 
 export default function CreateTournament() {
   const { isAuthenticated } = useAuthStore();
@@ -97,7 +98,7 @@ export default function CreateTournament() {
             </div>
             {error && <div className="text-destructive text-sm">{error}</div>}
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create Tournament"}
+              {isLoading ? <Loader className="animate-spin" /> : "Create Tournament"}
             </Button>
           </form>
         </CardContent>
@@ -207,7 +208,7 @@ export function CreateTournamentDialog({ open, onOpenChange }: { open: boolean; 
             {error && <div className="text-destructive text-sm">{error}</div>}
             <DialogFooter>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating..." : "Create Tournament"}
+                {isLoading ? <Loader className="animate-spin" /> : "Create Tournament"}
               </Button>
             </DialogFooter>
           </form>

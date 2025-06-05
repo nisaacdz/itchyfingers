@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,71 +15,24 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { toast } from "@/hooks/use-toast";
 import apiService from "../api/apiService";
-import { HttpResponse, LoginSchema, UserSchema } from "../types/api";
-import { useAuthStore } from "@/store/authStore";
-
-const validateToken = async (token: string | null, ifValid: (user: UserSchema) => void, ifInvalid: () => void) => {
-    if (!token) {
-        toast({
-            title: "Invalid Token",
-            description: "No token provided. Please check the link or request a new password reset.",
-            variant: "destructive",
-        });
-        return ifInvalid();
-    }
-    try {
-        const response = await apiService.post<HttpResponse<LoginSchema>>(`/auth/verifications/use/${token}`);
-        if (response.data.success) {
-            const user = response.data.data.user;
-            ifValid(user);
-            toast({
-                title: "Token Validated",
-                description: "You can now reset your password.",
-            });
-        } else {
-            ifInvalid();
-            toast({
-                title: "Invalid Token",
-                description: response.data.message || "The provided token is invalid or has expired.",
-                variant: "destructive",
-            });
-        }
-    } catch (err: any) {
-        ifInvalid();
-        const errorMessage = err.response?.data?.message || "An error occurred while validating the token.";
-        toast({
-            title: "Error",
-            description: errorMessage,
-            variant: "destructive",
-        });
-    }
-};
+import { HttpResponse } from "../types/api";
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSeparator,
+    InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { Loader } from "lucide-react";
 
 export default function ResetPassword() {
-    const { setUser, isAuthenticated } = useAuthStore();
-    const [searchParams] = useSearchParams();
-    const token = searchParams.get("token");
     const navigate = useNavigate();
 
+    const [otp, setOtp] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
-    const [isPageLoading, setIsPageLoading] = useState(true);
-
-    // Basic token validation (you might want to do more)
-    useEffect(() => {
-        setIsPageLoading(true);
-        validateToken(token, (user) => {
-            setUser(user);
-            setIsPageLoading(false);
-        }, () => {
-            console.error("Invalid or expired token");
-            setError("Invalid or expired token. Please request a new password reset.");
-            setIsPageLoading(false);
-        });
-    }, [token, navigate, setUser]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -93,16 +46,16 @@ export default function ResetPassword() {
             return;
         }
 
-        if (!token) {
-            setError("Invalid or missing reset token."); // Should be caught by useEffect too
+        if (otp.length !== 6) {
+            setError("Please enter a valid 6-digit OTP.");
             setIsLoading(false);
             return;
         }
 
         try {
             const response = await apiService.post<HttpResponse<null>>(
-                `/auth/reset-password/${token}`,
-                { password },
+                `/auth/reset-password`,
+                { password, otp },
             );
 
             if (response.data.success) {
@@ -113,10 +66,14 @@ export default function ResetPassword() {
                     title: "Password Reset Successful",
                     description: response.data.message || "You can now log in with your new password.",
                 });
-                // Redirect to login page after a short delay or on button click
                 setTimeout(() => navigate("/auth/login"), 3000);
             } else {
-                setError(response.data.message || "Failed to reset password.");
+                setError(response.data.message || "Failed to reset password. Invalid OTP or other error.");
+                toast({
+                    title: "Reset Failed",
+                    description: response.data.message || "Failed to reset password. Invalid OTP or other error.",
+                    variant: "destructive",
+                });
             }
         } catch (err: any) {
             const errorMessage =
@@ -142,85 +99,91 @@ export default function ResetPassword() {
                             Reset Your Password
                         </CardTitle>
                         <CardDescription className="text-center">
-                            Enter your new password below.
+                            Enter the 6-digit OTP sent to your email and your new password below.
                         </CardDescription>
                     </CardHeader>
-                    {isPageLoading ? (
-                        <CardContent className="space-y-4 text-center">
-                            <span>Loading...</span>
+                    <form onSubmit={handleSubmit}>
+                        <CardContent className="space-y-4">
+                            {error && (
+                                <Alert variant="destructive">
+                                    <AlertDescription>{error}</AlertDescription>
+                                </Alert>
+                            )}
+                            {successMessage && (
+                                <Alert variant="default">
+                                    <AlertDescription>{successMessage}</AlertDescription>
+                                </Alert>
+                            )}
+                            {!successMessage && (
+                                <>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="otp">One-Time Password (OTP)</Label>
+                                        <InputOTP
+                                            maxLength={6}
+                                            value={otp}
+                                            onChange={(value) => setOtp(value)}
+                                            disabled={isLoading}
+                                        >
+                                            <InputOTPGroup className="w-full justify-center">
+                                                <InputOTPSlot index={0} />
+                                                <InputOTPSlot index={1} />
+                                                <InputOTPSlot index={2} />
+                                                <InputOTPSlot index={3} />
+                                                <InputOTPSlot index={4} />
+                                                <InputOTPSlot index={5} />
+                                            </InputOTPGroup>
+                                        </InputOTP>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="password">New Password</Label>
+                                        <Input
+                                            id="password"
+                                            type="password"
+                                            placeholder="Enter your new password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                            disabled={isLoading}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                                        <Input
+                                            id="confirmPassword"
+                                            type="password"
+                                            placeholder="Confirm your new password"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            required
+                                            disabled={isLoading}
+                                        />
+                                    </div>
+                                </>
+                            )}
                         </CardContent>
-                    ) : !isAuthenticated ? (
-                        <CardContent className="space-y-4 text-center">
-                            <Alert variant="destructive">
-                                <AlertDescription>{error || "You are not authorized to reset the password."}</AlertDescription>
-                            </Alert>
-                        </CardContent>
-                    ) : (
-                        <form onSubmit={handleSubmit}>
-                            <CardContent className="space-y-4">
-                                {error && (
-                                    <Alert variant="destructive">
-                                        <AlertDescription>{error}</AlertDescription>
-                                    </Alert>
-                                )}
-                                {successMessage && (
-                                    <Alert variant="default">
-                                        <AlertDescription>{successMessage}</AlertDescription>
-                                    </Alert>
-                                )}
-                                {!successMessage && (
-                                    <>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="password">New Password</Label>
-                                            <Input
-                                                id="password"
-                                                type="password"
-                                                placeholder="Enter your new password"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                required
-                                                disabled={isLoading || !token}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                                            <Input
-                                                id="confirmPassword"
-                                                type="password"
-                                                placeholder="Confirm your new password"
-                                                value={confirmPassword}
-                                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                                required
-                                                disabled={isLoading || !token}
-                                            />
-                                        </div>
-                                    </>
-                                )}
-                            </CardContent>
-                            <CardFooter className="flex flex-col space-y-4">
-                                {!successMessage && (
-                                    <Button
-                                        type="submit"
-                                        className="w-full"
-                                        disabled={isLoading || !token || password !== confirmPassword}
-                                    >
-                                        {isLoading ? "Resetting..." : "Reset Password"}
-                                    </Button>
-                                )}
-                                {successMessage && (
-                                    <Button onClick={() => navigate("/auth/login")} className="w-full">
-                                        Go to Login
-                                    </Button>
-                                )}
-                                <div className="text-center text-sm text-muted-foreground">
-                                    Remembered your password or need help?{" "}
-                                    <Link to="/auth/login" className="text-primary hover:underline">
-                                        Sign in
-                                    </Link>
-                                </div>
-                            </CardFooter>
-                        </form>
-                    )}
+                        <CardFooter className="flex flex-col space-y-4">
+                            {!successMessage && (
+                                <Button
+                                    type="submit"
+                                    className="w-full"
+                                    disabled={isLoading || otp.length !== 6 || password !== confirmPassword || !password}
+                                >
+                                    {isLoading ? <Loader className="animate-spin" /> : "Reset Password"}
+                                </Button>
+                            )}
+                            {successMessage && (
+                                <Button onClick={() => navigate("/auth/login")} className="w-full">
+                                    Go to Login
+                                </Button>
+                            )}
+                            <div className="text-center text-sm text-muted-foreground">
+                                Remembered your password or need help?{" "}
+                                <Link to="/auth/login" className="text-primary hover:underline">
+                                    Sign in
+                                </Link>
+                            </div>
+                        </CardFooter>
+                    </form>
                 </Card>
             </div>
         </div>

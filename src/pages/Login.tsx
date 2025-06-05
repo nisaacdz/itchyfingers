@@ -17,6 +17,7 @@ import { useAuthStore } from "../store/authStore";
 import { toast } from "@/hooks/use-toast";
 import apiService from "../api/apiService";
 import { HttpResponse, LoginSchema, UserSchema } from "../types/api";
+import { Loader } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -134,7 +135,7 @@ export default function Login() {
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign in"}
+                {isLoading ? <Loader className="animate-spin" /> : "Sign in"}
               </Button>
 
               <div className="text-center text-sm text-muted-foreground">

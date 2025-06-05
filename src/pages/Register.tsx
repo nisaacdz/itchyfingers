@@ -17,6 +17,7 @@ import { useAuthStore } from "../store/authStore";
 import { toast } from "@/hooks/use-toast";
 import axiosInstance from "../api/apiService";
 import { HttpResponse, LoginSchema } from "../types/api";
+import { Loader } from "lucide-react";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -137,7 +138,7 @@ export default function Register() {
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Create account"}
+                {isLoading ? <Loader className="animate-spin" /> : "Create account"}
               </Button>
 
               <div className="text-center text-sm text-muted-foreground">
