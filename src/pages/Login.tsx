@@ -121,6 +121,16 @@ export default function Login() {
                   disabled={isLoading}
                 />
               </div>
+
+              <div className="flex items-center justify-between text-sm">
+                <div />
+                <Link
+                  to="/auth/forgot-password"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <Button type="submit" className="w-full" disabled={isLoading}>

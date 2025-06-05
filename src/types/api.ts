@@ -65,25 +65,25 @@ export interface SocketResponse<T> {
   message?: string;
 }
 
-export interface TypeArgs {
+export type TypeArgs = {
   character: string;
   timestamp: number;
-}
+};
 
-export interface LoginSchema {
+export type LoginSchema = {
   user: UserSchema;
   tokens: {
     access: string;
     refresh: string;
   };
-}
+};
 
-export interface PaginatedData<T> {
+export type PaginatedData<T> = {
   data: T[];
   limit: number;
   page: number;
   total: number;
-}
+};
 
 export interface ApiResponse<T> {
   success: boolean;

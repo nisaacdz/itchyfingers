@@ -36,7 +36,7 @@ const App = () => {
               <Route path="/auth/login" element={<Login />} />
               <Route path="/auth/register" element={<Register />} />
               <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-              <Route path="/auth/reset-password/:token" element={<ResetPassword />} />
+              <Route path="/auth/reset-password" element={<ResetPassword />} />
               <Route path="/tournaments" element={<TournamentLobby />} />
               <Route path="/tournament/:id" element={<Tournament />} />
               <Route path="*" element={<NotFound />} />
