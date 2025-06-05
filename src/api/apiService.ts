@@ -28,9 +28,11 @@ class ApiService {
     // Handle 401 errors (optionally refresh token here)
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => {
-        if (response.data.tokens) {
-          const accessToken = response.data.tokens.access;
-          const refreshToken = response.data.tokens.refresh;
+        if (response.data?.data?.tokens) {
+          const accessToken = response.data.data.tokens.access;
+          const refreshToken = response.data.data.tokens.refresh;
+
+          console.log("received new tokens:", response.data?.data?.tokens);
 
           this.setTokens(accessToken, refreshToken);
         }
