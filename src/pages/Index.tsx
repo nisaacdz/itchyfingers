@@ -37,7 +37,7 @@ export default function Index() {
                 </Button>
               </Link>
               {!isAuthenticated && (
-                <Link to="/register">
+                <Link to="/auth/register">
                   <Button
                     variant="outline"
                     size="lg"

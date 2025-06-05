@@ -160,7 +160,7 @@ export default function Register() {
 
               <div className="text-center text-sm text-muted-foreground">
                 Already have an account?{" "}
-                <Link to="/login" className="text-primary hover:underline">
+                <Link to="/auth/login" className="text-primary hover:underline">
                   Sign in
                 </Link>
               </div>

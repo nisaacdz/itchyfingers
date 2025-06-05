@@ -42,7 +42,7 @@ class ApiService {
           // Remove tokens on 401
           this.clearTokens();
           if (typeof window !== "undefined") {
-            window.location.href = "/login";
+            window.location.href = "/auth/login";
           }
         }
         return Promise.reject(error);

@@ -11,6 +11,8 @@ import Register from "./pages/Register";
 import Tournament from "./pages/Tournament";
 import TournamentLobby from "./pages/TournamentLobby";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -31,8 +33,10 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+              <Route path="/auth/login" element={<Login />} />
+              <Route path="/auth/register" element={<Register />} />
+              <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+              <Route path="/auth/reset-password/:token" element={<ResetPassword />} />
               <Route path="/tournaments" element={<TournamentLobby />} />
               <Route path="/tournament/:id" element={<Tournament />} />
               <Route path="*" element={<NotFound />} />

@@ -82,10 +82,10 @@ export function Navbar() {
             </DropdownMenu>
           ) : (
             <div className="flex items-center space-x-2">
-              <Link to="/login">
+              <Link to="/auth/login">
                 <Button variant="ghost">Log in</Button>
               </Link>
-              <Link to="/register">
+              <Link to="/auth/register">
                 <Button>Sign up</Button>
               </Link>
             </div>
