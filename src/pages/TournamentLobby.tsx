@@ -32,6 +32,19 @@ import {
 } from "@/components/ui/select";
 import { CreateTournamentDialog } from "./CreateTournament";
 
+function getTimeLeft(scheduledFor: string) {
+  const now = new Date();
+  const scheduledDate = new Date(scheduledFor);
+  const diff = scheduledDate.getTime() - now.getTime();
+  if (diff <= 0) return null;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  return `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
+
 export default function TournamentLobby() {
   const [tournaments, setTournaments] = useState<PaginatedData<TournamentUpcomingSchema> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,8 +62,6 @@ export default function TournamentLobby() {
         HttpResponse<PaginatedData<TournamentUpcomingSchema>>
       >(`/tournaments?page=${pageNum}&limit=${pageSize}`);
 
-      console.log("Tournaments is ", response.data.data)
-      
       if (response.data.success) {
         setTournaments(response.data.data);
       } else {
@@ -67,32 +78,14 @@ export default function TournamentLobby() {
     fetchTournaments(page);
   }, [page, fetchTournaments]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "waiting":
-        return "default";
-      case "active":
-        return "destructive";
-      case "completed":
-        return "secondary";
-      default:
-        return "outline";
-    }
-  };
-
-  // Helper function to determine tournament status based on scheduled_for
-  const getTournamentStatus = (scheduledFor: string): "waiting" | "active" | "completed" => {
-    const now = new Date();
-    const scheduledDate = new Date(scheduledFor);
-    
-    if (scheduledDate > now) {
-      return "waiting";
-    } else {
-      // For simplicity, assume tournaments are active if scheduled time has passed
-      // You might want to add more logic here based on your backend implementation
-      return "active";
-    }
-  };
+  // Add a state to force re-render every second for countdown
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick((tick) => tick + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const totalPages = tournaments ? Math.ceil(tournaments.total / pageSize) : 0;
 
@@ -117,7 +110,7 @@ export default function TournamentLobby() {
             <Button className="text-lg" onClick={() => setDialogOpen(true)}>
               Create Tournament
             </Button>
-            <CreateTournamentDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+            <CreateTournamentDialog open={dialogOpen} onOpenChange={setDialogOpen} onCreateSuccess={() => fetchTournaments()} />
           </>
         </div>
 
@@ -156,7 +149,7 @@ export default function TournamentLobby() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {tournaments.data.map((tournament) => {
-              const status = getTournamentStatus(tournament.scheduled_for);
+              const timeLeft = getTimeLeft(tournament.scheduled_for);
               return (
                 <Card
                   key={tournament.id}
@@ -165,9 +158,7 @@ export default function TournamentLobby() {
                   <CardHeader>
                     <div className="flex justify-between items-start mb-2">
                       <CardTitle className="text-xl">{tournament.title}</CardTitle>
-                      <Badge variant={getStatusColor(status)}>
-                        {status}
-                      </Badge>
+                      <Badge variant="default">Open</Badge>
                     </div>
                     <CardDescription className="line-clamp-2">
                       Created by {tournament.created_by.username}
@@ -183,22 +174,14 @@ export default function TournamentLobby() {
                       </div>
 
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Status:</span>
-                        <span className="capitalize">{status}</span>
-                      </div>
-
-                      <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Privacy:</span>
                         <span className="capitalize">{tournament.privacy}</span>
                       </div>
 
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Scheduled:</span>
+                        <span className="text-muted-foreground">Starts in:</span>
                         <span>
-                          {format(
-                            new Date(tournament.scheduled_for),
-                            "MMM dd, HH:mm",
-                          )}
+                          {timeLeft ? timeLeft : "Started"}
                         </span>
                       </div>
 
@@ -206,13 +189,8 @@ export default function TournamentLobby() {
                         <Link to={`/tournament/${tournament.id}`}>
                           <Button
                             className="w-full"
-                            disabled={status === "completed"}
                           >
-                            {status === "completed"
-                              ? "Tournament Ended"
-                              : status === "active"
-                                ? "Join Now"
-                                : "Join Tournament"}
+                            Join Tournament
                           </Button>
                         </Link>
                       </div>
