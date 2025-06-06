@@ -13,6 +13,17 @@ export interface ClientSchema {
   updated_at: string;
 }
 
+/*
+correct api types the TournamentSchema below is wrong, it should be like this:
+pub struct TournamentSession {
+    pub id: String,
+    pub scheduled_for: DateTime<Utc>,
+    pub started_at: Option<DateTime<Utc>>,
+    pub ended_at: Option<DateTime<Utc>>,
+    pub text: Option<String>,
+    pub current: i32,// represents the number of people
+}
+*/
 export interface TournamentSchema {
   id: string;
   name: string;
@@ -24,19 +35,7 @@ export interface TournamentSchema {
   updated_at: string;
   scheduled_start?: string;
 }
-/*
-correct api types
-pub struct TournamentUpcomingSchema {
-    pub id: String,
-    pub title: String,
-    pub created_at: DateTimeUtc,
-    pub created_by: UserSchema,
-    pub scheduled_for: DateTimeUtc,
-    pub joined: i32,
-    pub privacy: TournamentPrivacy,
-    pub text_options: Option<TextOptions>,
-}
-*/
+
 export interface TournamentUpcomingSchema {
   id: string;
   title: string;
