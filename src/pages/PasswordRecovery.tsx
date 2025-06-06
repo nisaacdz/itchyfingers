@@ -68,17 +68,21 @@ export default function PasswordRecovery() {
       if (response.data.success) {
         toast({
           title: "Check your email",
-          description: response.data.message || "An OTP has been sent to your email.",
+          description:
+            response.data.message || "An OTP has been sent to your email.",
         });
         setFormStep("resetPassword"); // Move to the next step
         // Optionally, set a temporary success message for this step if needed
         // setSuccessMessage("An OTP has been sent. Please check your email and enter it below.");
       } else {
-        setError(response.data.message || "Failed to send password reset email.");
+        setError(
+          response.data.message || "Failed to send password reset email.",
+        );
         toast({
-            title: "Error",
-            description: response.data.message || "Failed to send password reset email.",
-            variant: "destructive",
+          title: "Error",
+          description:
+            response.data.message || "Failed to send password reset email.",
+          variant: "destructive",
         });
       }
     } catch (err: any) {
@@ -126,14 +130,21 @@ export default function PasswordRecovery() {
         setPasswordResetComplete(true); // Set flag for final success UI
         toast({
           title: "Password Reset Successful",
-          description: response.data.message || "You can now log in with your new password.",
+          description:
+            response.data.message ||
+            "You can now log in with your new password.",
         });
         setTimeout(() => navigate("/auth/login"), 3000);
       } else {
-        setError(response.data.message || "Failed to reset password. Invalid OTP or other error.");
+        setError(
+          response.data.message ||
+            "Failed to reset password. Invalid OTP or other error.",
+        );
         toast({
           title: "Reset Failed",
-          description: response.data.message || "Failed to reset password. Invalid OTP or other error.",
+          description:
+            response.data.message ||
+            "Failed to reset password. Invalid OTP or other error.",
           variant: "destructive",
         });
       }
@@ -193,8 +204,16 @@ export default function PasswordRecovery() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full" disabled={isLoading || !email}>
-            {isLoading ? <Loader className="animate-spin" /> : "Send Reset Instructions"}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading || !email}
+          >
+            {isLoading ? (
+              <Loader className="animate-spin" />
+            ) : (
+              "Send Reset Instructions"
+            )}
           </Button>
           <div className="text-center text-sm text-muted-foreground">
             Remember your password?{" "}
@@ -214,8 +233,8 @@ export default function PasswordRecovery() {
           Reset Your Password
         </CardTitle>
         <CardDescription className="text-center">
-          An OTP has been sent to <strong>{email}</strong>.
-          Enter it below along with your new password.
+          An OTP has been sent to <strong>{email}</strong>. Enter it below along
+          with your new password.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -225,11 +244,12 @@ export default function PasswordRecovery() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          {successMessage && passwordResetComplete && ( // Only show final success message
-            <Alert variant="default">
-              <AlertDescription>{successMessage}</AlertDescription>
-            </Alert>
-          )}
+          {successMessage &&
+            passwordResetComplete && ( // Only show final success message
+              <Alert variant="default">
+                <AlertDescription>{successMessage}</AlertDescription>
+              </Alert>
+            )}
           {!passwordResetComplete && (
             <>
               <div className="space-y-2">
@@ -289,7 +309,11 @@ export default function PasswordRecovery() {
                 newPassword !== confirmNewPassword
               }
             >
-              {isLoading ? <Loader className="animate-spin" /> : "Reset Password"}
+              {isLoading ? (
+                <Loader className="animate-spin" />
+              ) : (
+                "Reset Password"
+              )}
             </Button>
           )}
           {passwordResetComplete && (
@@ -299,26 +323,29 @@ export default function PasswordRecovery() {
           )}
           <div className="text-center text-sm text-muted-foreground">
             {!passwordResetComplete && (
-                 <button
-                    type="button"
-                    onClick={() => {
-                        setFormStep("enterEmail");
-                        // Optionally clear email if you want them to re-enter,
-                        // or keep it pre-filled. For now, let's keep it.
-                        // setEmail(""); 
-                        setOtp("");
-                        setNewPassword("");
-                        setConfirmNewPassword("");
-                    }}
-                    className="text-primary hover:underline"
-                >
-                    Entered wrong email? Start Over
-                </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormStep("enterEmail");
+                  // Optionally clear email if you want them to re-enter,
+                  // or keep it pre-filled. For now, let's keep it.
+                  // setEmail("");
+                  setOtp("");
+                  setNewPassword("");
+                  setConfirmNewPassword("");
+                }}
+                className="text-primary hover:underline"
+              >
+                Entered wrong email? Start Over
+              </button>
             )}
             {passwordResetComplete && (
-                 <span>Need help?{" "}
-                 <Link to="/support" className="text-primary hover:underline">Contact Support</Link>
-                 </span>
+              <span>
+                Need help?{" "}
+                <Link to="/support" className="text-primary hover:underline">
+                  Contact Support
+                </Link>
+              </span>
             )}
           </div>
         </CardFooter>

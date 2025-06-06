@@ -13,7 +13,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
 import axiosInstance from "../api/apiService";
-import { HttpResponse, TournamentUpcomingSchema, PaginatedData } from "../types/api";
+import {
+  HttpResponse,
+  TournamentUpcomingSchema,
+  PaginatedData,
+} from "../types/api";
 import { format } from "date-fns";
 import {
   Pagination,
@@ -46,7 +50,8 @@ function getTimeLeft(scheduledFor: string) {
 }
 
 export default function TournamentLobby() {
-  const [tournaments, setTournaments] = useState<PaginatedData<TournamentUpcomingSchema> | null>(null);
+  const [tournaments, setTournaments] =
+    useState<PaginatedData<TournamentUpcomingSchema> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -54,25 +59,28 @@ export default function TournamentLobby() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { user } = useAuthStore();
 
-  const fetchTournaments = useCallback(async (pageNum = 1) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await axiosInstance.get<
-        HttpResponse<PaginatedData<TournamentUpcomingSchema>>
-      >(`/tournaments?page=${pageNum}&limit=${pageSize}`);
+  const fetchTournaments = useCallback(
+    async (pageNum = 1) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await axiosInstance.get<
+          HttpResponse<PaginatedData<TournamentUpcomingSchema>>
+        >(`/tournaments?page=${pageNum}&limit=${pageSize}`);
 
-      if (response.data.success) {
-        setTournaments(response.data.data);
-      } else {
-        setError("Failed to load tournaments");
+        if (response.data.success) {
+          setTournaments(response.data.data);
+        } else {
+          setError("Failed to load tournaments");
+        }
+      } catch (err: any) {
+        setError(err.response?.data?.message || "Failed to load tournaments");
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to load tournaments");
-    } finally {
-      setLoading(false);
-    }
-  }, [pageSize]);
+    },
+    [pageSize],
+  );
 
   useEffect(() => {
     fetchTournaments(page);
@@ -110,7 +118,11 @@ export default function TournamentLobby() {
             <Button className="text-lg" onClick={() => setDialogOpen(true)}>
               Create Tournament
             </Button>
-            <CreateTournamentDialog open={dialogOpen} onOpenChange={setDialogOpen} onCreateSuccess={() => fetchTournaments()} />
+            <CreateTournamentDialog
+              open={dialogOpen}
+              onOpenChange={setDialogOpen}
+              onCreateSuccess={() => fetchTournaments()}
+            />
           </>
         </div>
 
@@ -157,7 +169,9 @@ export default function TournamentLobby() {
                 >
                   <CardHeader>
                     <div className="flex justify-between items-start mb-2">
-                      <CardTitle className="text-xl">{tournament.title}</CardTitle>
+                      <CardTitle className="text-xl">
+                        {tournament.title}
+                      </CardTitle>
                       <Badge variant="default">Open</Badge>
                     </div>
                     <CardDescription className="line-clamp-2">
@@ -179,19 +193,15 @@ export default function TournamentLobby() {
                       </div>
 
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Starts in:</span>
-                        <span>
-                          {timeLeft ? timeLeft : "Started"}
+                        <span className="text-muted-foreground">
+                          Starts in:
                         </span>
+                        <span>{timeLeft ? timeLeft : "Started"}</span>
                       </div>
 
                       <div className="pt-4">
                         <Link to={`/tournament/${tournament.id}`}>
-                          <Button
-                            className="w-full"
-                          >
-                            Join Tournament
-                          </Button>
+                          <Button className="w-full">Join Tournament</Button>
                         </Link>
                       </div>
                     </div>
@@ -208,8 +218,13 @@ export default function TournamentLobby() {
               Refresh Tournaments
             </Button>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Items per page:</span>
-              <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+              <span className="text-sm text-muted-foreground">
+                Items per page:
+              </span>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={handlePageSizeChange}
+              >
                 <SelectTrigger className="w-20">
                   <SelectValue />
                 </SelectTrigger>

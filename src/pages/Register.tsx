@@ -138,7 +138,11 @@ export default function Register() {
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? <Loader className="animate-spin" /> : "Create account"}
+                {isLoading ? (
+                  <Loader className="animate-spin" />
+                ) : (
+                  "Create account"
+                )}
               </Button>
 
               <div className="text-center text-sm text-muted-foreground">
