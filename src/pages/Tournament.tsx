@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -10,49 +10,210 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Navbar } from "../components/Navbar";
-import { useTournamentStore } from "../store/tournamentStore";
+import {
+  useTournamentStore,
+  selectMyParticipantData,
+  selectAllParticipantsArray, 
+  selectOtherParticipantsArray
+} from "../store/tournamentStore";
 import { useAuthStore } from "../store/authStore";
 import axiosInstance from "../api/apiService";
-import { HttpResponse, TournamentSchema } from "../types/api";
+import socketService from "../api/socketService"; 
+import {
+  HttpResponse,
+  TournamentSchema,
+  TournamentSession,
+  TournamentUpdateSchema,
+  TypingSessionSchema,
+  ClientSchema, // Updated to use the corrected ClientSchema
+  ApiResponse,
+} from "../types/api";
+import { TypingInterface } from "../components/TypingInterface"; 
+import { useToast } from "@/hooks/use-toast"; 
 
 export default function Tournament() {
-  const { id } = useParams<{ id: string }>();
+  const { id: tournamentId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const {
     currentTournament,
-    participants,
+    liveTournamentSession,
+    // participants, // This is a Record; use selectors for arrays
     setCurrentTournament,
+    setLiveTournamentSession,
+    setParticipants, 
+    updateParticipant,
+    removeParticipant,
     setLoading,
     loading,
+    resetCurrentTournament,
   } = useTournamentStore();
-  const { user } = useAuthStore();
+
+  const { client: authClient } = useAuthStore(); 
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (id) {
-      fetchTournament(id);
-    }
-  }, [id]);
+  const myParticipantData = useTournamentStore((state) =>
+    selectMyParticipantData(state, authClient?.id)
+  );
+  const otherParticipantsArray = useTournamentStore((state) => 
+    selectOtherParticipantsArray(state, authClient?.id)
+  );
+  const allParticipantsArray = useTournamentStore(selectAllParticipantsArray);
 
-  const fetchTournament = async (tournamentId: string) => {
-    try {
-      setLoading(true);
-      const response = await axiosInstance.get<HttpResponse<TournamentSchema>>(
-        `/tournaments/${tournamentId}`,
-      );
-
-      if (response.data.success && response.data.data) {
-        setCurrentTournament(response.data.data);
-      } else {
-        setError(response.data.message || "Failed to load tournament");
+  const fetchTournament = useCallback(
+    async (id: string) => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get<HttpResponse<TournamentSchema>>(
+          `/tournaments/${id}`,
+        );
+        if (response.data.success && response.data.data) {
+          setCurrentTournament(response.data.data);
+          setError(null); 
+        } else {
+          setError(response.data.message || "Failed to load tournament");
+          toast({
+            title: "Error",
+            description: response.data.message || "Failed to load tournament",
+            variant: "destructive",
+          });
+        }
+      } catch (err: any) {
+        const errorMessage =
+          err.response?.data?.message ||
+          "An unexpected error occurred while fetching tournament details.";
+        setError(errorMessage);
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to load tournament");
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [setLoading, setCurrentTournament, toast],
+  );
 
-  if (loading) {
+  useEffect(() => {
+    if (tournamentId) {
+      fetchTournament(tournamentId);
+      socketService
+        .connect(tournamentId)
+        .then(() => {
+          console.log("Socket connected for tournament:", tournamentId);
+          toast({ title: "Connected", description: "Joined tournament room." });
+        })
+        .catch((err) => {
+          console.error("Socket connection error:", err);
+          setError("Failed to connect to tournament room.");
+          toast({
+            title: "Connection Error",
+            description: "Could not connect to the tournament room.",
+            variant: "destructive",
+          });
+        });
+    } else {
+      navigate("/tournaments"); 
+    }
+
+    socketService.onJoinResponse((data: ApiResponse<null>) => {
+      if (data.success) {
+        toast({ title: "Joined", description: data.message });
+      } else {
+        toast({
+          title: "Join Error",
+          description: data.message,
+          variant: "destructive",
+        });
+        setError(data.message);
+      }
+    });
+
+    socketService.onTournamentStart((data: TournamentSession) => {
+      console.log("Tournament started:", data);
+      setLiveTournamentSession(data);
+      const updated_tournament: TournamentSchema = { ...currentTournament, text: data.text || currentTournament.text, status: "active" };
+      setCurrentTournament(updated_tournament);
+      toast({ title: "Tournament Started!", description: "The race is on!" });
+    });
+
+    socketService.onTournamentUpdate((data: TournamentUpdateSchema) => {
+      console.log("Tournament update:", data);
+      setLiveTournamentSession(data.tournament);
+      setParticipants(data.participants); // setParticipants expects an array
+      if (currentTournament && data.tournament.id === currentTournament.id) {
+        const updated_tournament: TournamentSchema = { ...currentTournament, text: data.tournament.text || currentTournament.text, status: data.tournament.ended_at ? "completed" : data.tournament.started_at ? "active" : "waiting" };
+        setCurrentTournament(updated_tournament);
+      }
+    });
+
+    socketService.onTypingUpdate((response: ApiResponse<TypingSessionSchema>) => {
+      if (response.success && response.data) {
+        updateParticipant(response.data);
+      } else {
+        console.warn("Typing update issue:", response.message);
+      }
+    });
+
+    socketService.onUserLeft((data: ClientSchema) => { // Corrected to ClientSchema
+      console.log("User left:", data);
+      removeParticipant(data.id);
+      toast({ description: `${data.user?.username || "A participant"} left.` });
+    });
+
+    socketService.onLeaveResponse((data: ApiResponse<null>) => {
+      if (data.success) {
+        toast({ title: "Left Tournament", description: data.message });
+      } else {
+        toast({
+          title: "Error Leaving",
+          description: data.message,
+          variant: "destructive",
+        });
+      }
+    });
+
+    socketService.onTypingError((data: ApiResponse<null>) => {
+      toast({
+        title: "Typing Error",
+        description: data.message,
+        variant: "destructive",
+      });
+    });
+    
+    socketService.onTournamentEnd(() => {
+        toast({ title: "Tournament Ended", description: "The tournament has concluded." });
+        
+        const updatedSession: TournamentSession | null = liveTournamentSession ? { ...liveTournamentSession, ended_at: new Date().toISOString() } : null;
+        setLiveTournamentSession(updatedSession);
+        
+        const updatedTournament: TournamentSchema | null = currentTournament ? { ...currentTournament, status: "completed" } : null;
+        setCurrentTournament(updatedTournament);
+    });
+
+    return () => {
+      socketService.emitLeaveTournament(); 
+      socketService.disconnect();
+      resetCurrentTournament(); 
+      console.log("Socket disconnected and listeners removed for tournament:", tournamentId);
+    };
+  }, [
+    tournamentId,
+    fetchTournament,
+    // setLoading, // setLoading is part of fetchTournament closure
+    setCurrentTournament,
+    setLiveTournamentSession,
+    setParticipants,
+    updateParticipant,
+    removeParticipant,
+    resetCurrentTournament,
+    navigate,
+    toast,
+    currentTournament, // currentTournament is a dependency for onTournamentUpdate logic
+  ]);
+
+  if (loading && !currentTournament) { 
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -80,6 +241,8 @@ export default function Tournament() {
       </div>
     );
   }
+
+  console.log(currentTournament, "Current Tournament Data");
 
   if (!currentTournament) {
     return (
@@ -112,64 +275,94 @@ export default function Tournament() {
           <div className="flex gap-4 mb-4">
             <Badge
               variant={
-                currentTournament.status === "active" ? "default" : "secondary"
+                liveTournamentSession?.started_at && !liveTournamentSession?.ended_at
+                  ? "default" 
+                  : currentTournament.status === "active" ? "default" 
+                  : "secondary"
               }
             >
-              {currentTournament.status}
+              {liveTournamentSession?.started_at && !liveTournamentSession?.ended_at
+                ? "Active"
+                : liveTournamentSession?.ended_at
+                ? "Completed"
+                : "Room"}
             </Badge>
             <Badge variant="outline">
               Max Players: {currentTournament.max_participants}
             </Badge>
+            {liveTournamentSession?.scheduled_for && (
+              <Badge variant="outline">
+                Starts: {new Date(liveTournamentSession.scheduled_for).toLocaleString()}
+              </Badge>
+            )}
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Tournament Text */}
-          <Card>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Text to Type</CardTitle>
+              <CardDescription>
+                {liveTournamentSession?.started_at && !liveTournamentSession?.ended_at
+                  ? "The race is on!"
+                  : liveTournamentSession?.ended_at
+                  ? "Race has ended."
+                  : "Waiting for the tournament to start..."}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="p-4 bg-muted rounded-lg">
-                <p className="text-lg leading-relaxed">
-                  {currentTournament.text || "Loading tournament text..."}
-                </p>
-              </div>
+              <TypingInterface />
             </CardContent>
           </Card>
 
-          {/* Participants */}
-          <Card>
+          <Card className="lg:col-span-1">
             <CardHeader>
-              <CardTitle>Participants ({participants.length})</CardTitle>
+              <CardTitle>Participants ({allParticipantsArray.length})</CardTitle> 
               <CardDescription>Live participant progress</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {participants.length === 0 ? (
-                  <p className="text-muted-foreground">No participants yet</p>
+                {allParticipantsArray.length === 0 ? (
+                  <p className="text-muted-foreground">No participants yet. Waiting for players to join...</p>
                 ) : (
-                  participants.map((participant) => (
-                    <div key={participant.client.id} className="space-y-2">
+                  allParticipantsArray.map((participant) => (
+                    <div
+                      key={participant.client.id}
+                      className="space-y-2 p-2 rounded-md hover:bg-muted/50 transition-colors"
+                    >
                       <div className="flex justify-between items-center">
-                        <span className="font-medium">
+                        <span
+                          className={`font-medium ${participant.client.id === authClient?.id ? 'text-primary' : ''}`}>
                           {participant.client.user
                             ? participant.client.user.username
-                            : "Anonymous"}
+                            : `Anonymous (${participant.client.id.substring(0,6)})`}
+                          {participant.client.id === authClient?.id && " (You)"}
                         </span>
                         <div className="flex gap-2 text-sm text-muted-foreground">
-                          <span>{participant.current_speed} WPM</span>
-                          <span>{participant.current_accuracy}% acc</span>
+                          <span>{participant.current_speed.toFixed(0)} WPM</span>
+                          <span>{participant.current_accuracy.toFixed(1)}%</span>
                         </div>
                       </div>
                       <Progress
                         value={
-                          (participant.current_position /
-                            (currentTournament.text?.length || 1)) *
+                          (participant.correct_position / 
+                            (liveTournamentSession?.text?.length || currentTournament.text?.length || 1)) *
                           100
                         }
                         className="h-2"
+                        indicatorClassName={participant.client.id === authClient?.id ? "bg-primary" : "bg-secondary"}
                       />
+                       {participant.current_position !== participant.correct_position && (
+                         <Progress
+                            value={
+                            (participant.current_position /
+                                (liveTournamentSession?.text?.length || currentTournament.text?.length || 1)) *
+                            100
+                            }
+                            className="h-1 mt-1 opacity-50"
+                            /* indicatorClassName="bg-destructive" */
+                         />
+                       )}
                     </div>
                   ))
                 )}
@@ -177,23 +370,6 @@ export default function Tournament() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Typing Interface (placeholder for now) */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Typing Interface</CardTitle>
-            <CardDescription>
-              Start typing when the tournament begins
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="p-8 border-2 border-dashed border-muted-foreground/25 rounded-lg text-center">
-              <p className="text-muted-foreground">
-                Typing interface will be implemented here
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

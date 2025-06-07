@@ -1,83 +1,118 @@
 import { create } from "zustand";
+import { devtools, persist } from "zustand/middleware";
 import {
   TournamentSchema,
   TypingSessionSchema,
-  StandingEntry,
+  TournamentSession,
+  ClientSchema, // Ensured this is the correct, updated ClientSchema
 } from "../types/api";
 
 interface TournamentState {
+  tournaments: TournamentSchema[];
   currentTournament: TournamentSchema | null;
-  participants: TypingSessionSchema[];
-  standings: StandingEntry[];
-  isConnected: boolean;
+  liveTournamentSession: TournamentSession | null;
+  participants: Record<string, TypingSessionSchema>; // Changed to Record
   loading: boolean;
   error: string | null;
 }
 
+// Define actions separately for better organization if needed, or inline as before
 interface TournamentActions {
+  setTournaments: (tournaments: TournamentSchema[]) => void;
   setCurrentTournament: (tournament: TournamentSchema | null) => void;
-  setParticipants: (participants: TypingSessionSchema[]) => void;
-  updateParticipant: (participant: TypingSessionSchema) => void;
-  setStandings: (standings: StandingEntry[]) => void;
-  setConnected: (connected: boolean) => void;
+  setLiveTournamentSession: (session: TournamentSession | null) => void;
+  setParticipants: (participantsArray: TypingSessionSchema[]) => void;
+  updateParticipant: (updatedParticipant: TypingSessionSchema) => void;
+  removeParticipant: (clientId: string) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
-  clearError: () => void;
-  reset: () => void;
+  resetCurrentTournament: () => void;
+  // addParticipant: (participant: TypingSessionSchema) => void; // If direct add is still needed
 }
 
-export const useTournamentStore = create<TournamentState & TournamentActions>(
-  (set, get) => ({
-    currentTournament: null,
-    participants: [],
-    standings: [],
-    isConnected: false,
-    loading: false,
-    error: null,
-
-    setCurrentTournament: (tournament) =>
-      set((state) => ({ ...state, currentTournament: tournament })),
-
-    setParticipants: (participants) =>
-      set((state) => ({ ...state, participants })),
-
-    updateParticipant: (participant) =>
-      set((state) => {
-        const existingIndex = state.participants.findIndex(
-          (p) => p.user.id === participant.user.id,
-        );
-
-        if (existingIndex >= 0) {
-          const newParticipants = [...state.participants];
-          newParticipants[existingIndex] = participant;
-          return { ...state, participants: newParticipants };
-        } else {
-          return {
-            ...state,
-            participants: [...state.participants, participant],
-          };
-        }
-      }),
-
-    setStandings: (standings) => set((state) => ({ ...state, standings })),
-
-    setConnected: (connected) =>
-      set((state) => ({ ...state, isConnected: connected })),
-
-    setLoading: (loading) => set((state) => ({ ...state, loading })),
-
-    setError: (error) => set((state) => ({ ...state, error })),
-
-    clearError: () => set((state) => ({ ...state, error: null })),
-
-    reset: () =>
-      set({
+export const useTournamentStore = create<TournamentState & TournamentActions>()(
+  devtools(
+    persist(
+      (set) => ({
+        tournaments: [],
         currentTournament: null,
-        participants: [],
-        standings: [],
-        isConnected: false,
+        liveTournamentSession: null,
+        participants: {},
         loading: false,
         error: null,
-      }),
-  }),
+
+        setTournaments: (tournaments) => set({ tournaments, loading: false, error: null }),
+        setCurrentTournament: (tournament) =>
+          set({ currentTournament: tournament, loading: false, error: null }),
+        setLiveTournamentSession: (session) =>
+          set({ liveTournamentSession: session }),
+        
+        setParticipants: (participantsArray) => 
+          set({
+            participants: participantsArray.reduce((acc, p) => {
+              acc[p.client.id] = p;
+              return acc;
+            }, {} as Record<string, TypingSessionSchema>)
+          }),
+        
+        updateParticipant: (updatedParticipant) =>
+          set((state) => ({
+            participants: {
+              ...state.participants,
+              [updatedParticipant.client.id]: updatedParticipant,
+            },
+          })),
+
+        removeParticipant: (clientId) =>
+          set((state) => {
+            const newParticipants = { ...state.participants };
+            delete newParticipants[clientId];
+            return { participants: newParticipants };
+          }),
+        
+        setLoading: (loading) => set({ loading }),
+        setError: (error) => set({ error, loading: false }),
+        resetCurrentTournament: () =>
+          set({
+            currentTournament: null,
+            liveTournamentSession: null,
+            participants: {},
+            error: null,
+          }),
+      }) satisfies TournamentState & TournamentActions, // Ensures all actions and state are covered
+      {
+        name: "tournament-storage",
+        partialize: (state) => ({
+          tournaments: state.tournaments,
+          currentTournament: state.currentTournament,
+          // Persisting participants might be okay, but liveTournamentSession is volatile
+          // participants: state.participants, 
+        }),
+      },
+    ),
+  ),
 );
+
+// Selector to get the current user's participant data
+export const selectMyParticipantData = (
+  state: TournamentState,
+  authClientId: string | undefined,
+): TypingSessionSchema | undefined => {
+  if (!authClientId) return undefined;
+  return state.participants[authClientId];
+};
+
+// Selector to get other participants as an array
+export const selectOtherParticipantsArray = (
+  state: TournamentState,
+  myAuthClientId: string | undefined,
+): TypingSessionSchema[] => {
+  return Object.values(state.participants).filter(
+    (p) => p.client.id !== myAuthClientId
+  );
+};
+
+// Selector to get all participants as an array
+export const selectAllParticipantsArray = (state: TournamentState): TypingSessionSchema[] => {
+  return Object.values(state.participants);
+};

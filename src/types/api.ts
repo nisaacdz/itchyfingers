@@ -1,30 +1,18 @@
-export interface UserSchema {
+export type UserSchema = {
   id: number;
   username: string;
   email: string;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface ClientSchema {
+export type ClientSchema = {
   id: string;
   user: UserSchema | null;
-  created_at: string;
-  updated_at: string;
-}
+  updated: string;
+};
 
-/*
-correct api types the TournamentSchema below is wrong, it should be like this:
-pub struct TournamentSession {
-    pub id: String,
-    pub scheduled_for: DateTime<Utc>,
-    pub started_at: Option<DateTime<Utc>>,
-    pub ended_at: Option<DateTime<Utc>>,
-    pub text: Option<String>,
-    pub current: i32,// represents the number of people
-}
-*/
-export interface TournamentSchema {
+export type TournamentSchema = {
   id: string;
   name: string;
   description: string;
@@ -34,9 +22,24 @@ export interface TournamentSchema {
   created_at: string;
   updated_at: string;
   scheduled_start?: string;
-}
+};
 
-export interface TournamentUpcomingSchema {
+export type ApiResponse<T> = {
+  success: boolean;
+  message: string;
+  data?: T | null;
+  error_code?: string | null;
+};
+
+export type TournamentSession = {
+  id: string;
+  started_at?: string | null;
+  ended_at?: string | null;
+  scheduled_for: string;
+  text?: string | null;
+};
+
+export type TournamentUpcomingSchema = {
   id: string;
   title: string;
   created_at: string;
@@ -45,28 +48,34 @@ export interface TournamentUpcomingSchema {
   joined: number;
   privacy: string;
   text_options?: any;
-}
+};
 
-export interface TypingSessionSchema {
-  id: string;
-  tournament_id: string;
+export type TypingSessionSchema = {
   client: ClientSchema;
+  tournament_id: string;
   current_position: number;
+  correct_position: number;
+  total_keystrokes: number;
   current_speed: number;
   current_accuracy: number;
-  created_at: string;
-  updated_at: string;
-}
+  started_at?: string | null;
+  ended_at?: string | null;
+  last_event_at: string;
+};
 
-export interface SocketResponse<T> {
+export type TournamentUpdateSchema = {
+  tournament: TournamentSession;
+  participants: TypingSessionSchema[];
+};
+
+export type SocketResponse<T> = {
   success: boolean;
   data: T | null;
   message?: string;
-}
+};
 
 export type TypeArgs = {
   character: string;
-  timestamp: number;
 };
 
 export type LoginSchema = {
@@ -84,8 +93,8 @@ export type PaginatedData<T> = {
   total: number;
 };
 
-export interface HttpResponse<T> {
+export type HttpResponse<T> = {
   success: boolean;
   data: T | null;
   message?: string;
-}
+};
