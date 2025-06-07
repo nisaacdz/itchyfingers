@@ -19,8 +19,18 @@ interface TournamentState {
 // Define actions separately for better organization if needed, or inline as before
 interface TournamentActions {
   setTournaments: (tournaments: TournamentSchema[]) => void;
-  setCurrentTournament: (tournament: TournamentSchema | null) => void;
-  setLiveTournamentSession: (session: TournamentSession | null) => void;
+  setCurrentTournament: (
+    tournamentOrUpdater:
+      | TournamentSchema
+      | null
+      | ((prevState: TournamentSchema | null) => TournamentSchema | null),
+  ) => void;
+  setLiveTournamentSession: (
+    sessionOrUpdater:
+      | TournamentSession
+      | null
+      | ((prevState: TournamentSession | null) => TournamentSession | null),
+  ) => void;
   setParticipants: (participantsArray: TypingSessionSchema[]) => void;
   updateParticipant: (updatedParticipant: TypingSessionSchema) => void;
   removeParticipant: (clientId: string) => void;
@@ -37,15 +47,28 @@ export const useTournamentStore = create<TournamentState & TournamentActions>()(
         tournaments: [],
         currentTournament: null,
         liveTournamentSession: null,
-        participants: {},
+        participants: {}, // Initialize as empty object
         loading: false,
         error: null,
 
         setTournaments: (tournaments) => set({ tournaments, loading: false, error: null }),
-        setCurrentTournament: (tournament) =>
-          set({ currentTournament: tournament, loading: false, error: null }),
-        setLiveTournamentSession: (session) =>
-          set({ liveTournamentSession: session }),
+        setCurrentTournament: (tournamentOrUpdater) =>
+          set((state) => ({
+            currentTournament:
+              typeof tournamentOrUpdater === "function"
+                ? tournamentOrUpdater(state.currentTournament)
+                : tournamentOrUpdater,
+            // Consider if loading/error should be reset here too
+            // loading: false, 
+            // error: null,
+          })),
+        setLiveTournamentSession: (sessionOrUpdater) =>
+          set((state) => ({
+            liveTournamentSession:
+              typeof sessionOrUpdater === "function"
+                ? sessionOrUpdater(state.liveTournamentSession)
+                : sessionOrUpdater,
+          })),
         
         setParticipants: (participantsArray) => 
           set({

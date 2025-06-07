@@ -52,14 +52,6 @@ export default function Tournament() {
   const { client: authClient } = useAuthStore(); 
   const [error, setError] = useState<string | null>(null);
 
-  const myParticipantData = useTournamentStore((state) =>
-    selectMyParticipantData(state, authClient?.id)
-  );
-  const otherParticipantsArray = useTournamentStore((state) => 
-    selectOtherParticipantsArray(state, authClient?.id)
-  );
-  const allParticipantsArray = useTournamentStore(selectAllParticipantsArray);
-
   const fetchTournament = useCallback(
     async (id: string) => {
       try {
@@ -95,6 +87,7 @@ export default function Tournament() {
     [setLoading, setCurrentTournament, toast],
   );
 
+  // Initial fetch and socket connection management
   useEffect(() => {
     if (tournamentId) {
       fetchTournament(tournamentId);
@@ -114,9 +107,19 @@ export default function Tournament() {
           });
         });
     } else {
-      navigate("/tournaments"); 
+      navigate("/tournaments");
     }
 
+    return () => {
+      socketService.emitLeaveTournament();
+      socketService.disconnect();
+      resetCurrentTournament();
+      console.log("Socket disconnected and listeners removed for tournament:", tournamentId);
+    };
+  }, [tournamentId, fetchTournament, navigate, resetCurrentTournament, toast]); // Removed store setters
+
+  // Socket event listeners
+  useEffect(() => {
     socketService.onJoinResponse((data: ApiResponse<null>) => {
       if (data.success) {
         toast({ title: "Joined", description: data.message });
@@ -126,39 +129,65 @@ export default function Tournament() {
           description: data.message,
           variant: "destructive",
         });
-        setError(data.message);
+        setError(data.message); // setError is a local state setter, fine here
       }
     });
 
     socketService.onTournamentStart((data: TournamentSession) => {
       console.log("Tournament started:", data);
-      setLiveTournamentSession(data);
-      const updated_tournament: TournamentSchema = { ...currentTournament, text: data.text || currentTournament.text, status: "active" };
-      setCurrentTournament(updated_tournament);
+      setLiveTournamentSession(data); // Set the live session details
+
+      // Update the status and potentially text of the already fetched currentTournament
+      setCurrentTournament(prevCurrentTournament => {
+        if (prevCurrentTournament) {
+          return {
+            ...prevCurrentTournament,
+            text: data.text ?? prevCurrentTournament.text, // Prefer event text if available
+            status: "active",
+          };
+        }
+        // If fetchTournament hasn't completed, prevCurrentTournament will be null.
+        // In this case, we don't create a new TournamentSchema from TournamentSession.
+        // The UI will rely on liveTournamentSession for active game details.
+        return prevCurrentTournament; 
+      });
+
       toast({ title: "Tournament Started!", description: "The race is on!" });
     });
 
     socketService.onTournamentUpdate((data: TournamentUpdateSchema) => {
       console.log("Tournament update:", data);
-      setLiveTournamentSession(data.tournament);
-      setParticipants(data.participants); // setParticipants expects an array
-      if (currentTournament && data.tournament.id === currentTournament.id) {
-        const updated_tournament: TournamentSchema = { ...currentTournament, text: data.tournament.text || currentTournament.text, status: data.tournament.ended_at ? "completed" : data.tournament.started_at ? "active" : "waiting" };
-        setCurrentTournament(updated_tournament);
-      }
+      setLiveTournamentSession(data.tournament); // Update live session details
+      setParticipants(data.participants);       // Update participants list
+
+      // Update the status and text of the already fetched currentTournament if it matches
+      setCurrentTournament(prevCurrentTournament => {
+        if (prevCurrentTournament && data.tournament.id === prevCurrentTournament.id) {
+          return {
+            ...prevCurrentTournament,
+            text: data.tournament.text ?? prevCurrentTournament.text, // Prefer event text
+            status: data.tournament.ended_at
+              ? "completed"
+              : data.tournament.started_at
+              ? "active"
+              : prevCurrentTournament.status, // Fallback to existing status
+          };
+        }
+        return prevCurrentTournament; // No change if ID doesn't match or no prev tournament
+      });
     });
 
     socketService.onTypingUpdate((response: ApiResponse<TypingSessionSchema>) => {
       if (response.success && response.data) {
-        updateParticipant(response.data);
+        updateParticipant(response.data); // This action should be stable
       } else {
         console.warn("Typing update issue:", response.message);
       }
     });
 
-    socketService.onUserLeft((data: ClientSchema) => { // Corrected to ClientSchema
+    socketService.onUserLeft((data: ClientSchema) => {
       console.log("User left:", data);
-      removeParticipant(data.id);
+      removeParticipant(data.id); // This action should be stable
       toast({ description: `${data.user?.username || "A participant"} left.` });
     });
 
@@ -184,34 +213,31 @@ export default function Tournament() {
     
     socketService.onTournamentEnd(() => {
         toast({ title: "Tournament Ended", description: "The tournament has concluded." });
-        
-        const updatedSession: TournamentSession | null = liveTournamentSession ? { ...liveTournamentSession, ended_at: new Date().toISOString() } : null;
-        setLiveTournamentSession(updatedSession);
-        
-        const updatedTournament: TournamentSchema | null = currentTournament ? { ...currentTournament, status: "completed" } : null;
-        setCurrentTournament(updatedTournament);
+        setLiveTournamentSession(prevSession => 
+            prevSession ? { ...prevSession, ended_at: new Date().toISOString() } : null
+        );
+        setCurrentTournament(prevCurrentTournament => {
+            if (!prevCurrentTournament) return null; 
+            return { ...prevCurrentTournament, status: "completed" };
+        });
     });
 
+    // Cleanup for these listeners is handled by the main disconnect in the first useEffect
+    // If these listeners were to be added/removed more dynamically, they'd need their own cleanup.
     return () => {
-      socketService.emitLeaveTournament(); 
-      socketService.disconnect();
-      resetCurrentTournament(); 
-      console.log("Socket disconnected and listeners removed for tournament:", tournamentId);
-    };
-  }, [
-    tournamentId,
-    fetchTournament,
-    // setLoading, // setLoading is part of fetchTournament closure
-    setCurrentTournament,
-    setLiveTournamentSession,
-    setParticipants,
-    updateParticipant,
-    removeParticipant,
-    resetCurrentTournament,
-    navigate,
-    toast,
-    currentTournament, // currentTournament is a dependency for onTournamentUpdate logic
-  ]);
+        // Optionally, unregister specific listeners if necessary, though socketService.disconnect() usually handles all.
+        // socketService.off('onJoinResponse'); // etc. for all listeners if granular control is needed.
+    }
+
+  }, [setCurrentTournament, setLiveTournamentSession, setParticipants, updateParticipant, removeParticipant, toast]); // Dependencies are stable store setters and toast
+
+  const myParticipantData = useTournamentStore((state) =>
+    selectMyParticipantData(state, authClient?.id)
+  );
+  const otherParticipantsArray = useTournamentStore((state) => 
+    selectOtherParticipantsArray(state, authClient?.id)
+  );
+  const allParticipantsArray = useTournamentStore(selectAllParticipantsArray);
 
   if (loading && !currentTournament) { 
     return (
@@ -350,7 +376,7 @@ export default function Tournament() {
                           100
                         }
                         className="h-2"
-                        indicatorClassName={participant.client.id === authClient?.id ? "bg-primary" : "bg-secondary"}
+                        // indicatorClassName={participant.client.id === authClient?.id ? "bg-primary" : "bg-secondary"}
                       />
                        {participant.current_position !== participant.correct_position && (
                          <Progress
