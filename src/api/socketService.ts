@@ -1,109 +1,158 @@
 import { io, Socket } from "socket.io-client";
-import { TypeArgs, TypingSessionSchema, SocketResponse } from "../types/api";
+import {
+  ApiResponse,
+  TournamentSession,
+  TournamentUpdateSchema,
+  ClientSchema,
+  TypingSessionSchema,
+  TypeArgs,
+} from "@/types/api";
 
-class SocketService {
-  private socket: Socket | null = null;
-  private currentTournamentId: string | null = null;
+const ACCESS_TOKEN_KEY =
+  import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
+const REFRESH_TOKEN_KEY =
+  import.meta.env.VITE_REFRESH_TOKEN_KEY || "refresh_token";
 
-  connect(tournamentId: string): Promise<void> {
+type JoinResponsePayload = ApiResponse<null>;
+type LeaveResponsePayload = ApiResponse<null>;
+type TypingErrorPayload = ApiResponse<null>;
+type TypingUpdatePayload = ApiResponse<TypingSessionSchema>;
+
+interface ServerToClientEvents {
+  "join:response": (payload: JoinResponsePayload) => void;
+  "tournament:start": (payload: TournamentSession) => void;
+  "tournament:update": (payload: TournamentUpdateSchema) => void;
+  "user:left": (payload: ClientSchema) => void;
+  "leave:response": (payload: LeaveResponsePayload) => void;
+  "typing:update": (payload: TypingUpdatePayload) => void;
+  "typing:error": (payload: TypingErrorPayload) => void;
+  connect: () => void;
+  disconnect: (reason: Socket.DisconnectReason) => void;
+  connect_error: (error: Error) => void;
+}
+
+interface ClientToServerEvents {
+  "type-character": (args: TypeArgs) => void;
+  "leave-tournament": () => void;
+}
+
+export class SocketService {
+  private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null =
+    null;
+  private tournamentId: string | null = null;
+
+  private getSocketBaseUrl(): string {
+    return import.meta.env.VITE_SOCKET_BASE_URL || "http://localhost:8000";
+  }
+
+  public connect(tournamentId: string): Promise<void> {
+    if (
+      this.socket &&
+      this.socket.connected &&
+      this.tournamentId === tournamentId
+    ) {
+      console.log("Socket already connected to this tournament.");
+      return Promise.resolve();
+    }
+
+    if (this.socket) {
+      this.disconnect(); // Disconnect from previous tournament if any
+    }
+
+    this.tournamentId = tournamentId;
+    const baseUrl = this.getSocketBaseUrl();
+    const namespaceUrl = `${baseUrl}/tournament/${tournamentId}`;
+
+    console.log(`Attempting to connect to WebSocket: ${namespaceUrl}`);
+
+    const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+
+    const extraHeaders = {
+      "X-Requested-With": "XMLHttpRequest",
+      Authorization: accessToken ? `Bearer ${accessToken}` : "",
+    };
+
+    this.socket = io(namespaceUrl, {
+      transports: ["websocket"],
+      autoConnect: false, // We'll call connect explicitly
+      reconnectionAttempts: 5,
+      reconnectionDelay: 3000,
+      extraHeaders,
+    });
+
     return new Promise((resolve, reject) => {
-      try {
-        // Disconnect existing connection
-        this.disconnect();
+      this.socket?.once("connect", () => {
+        console.log("Socket connected successfully to", namespaceUrl);
+        resolve();
+      });
 
-        const baseUrl =
-          import.meta.env.VITE_SOCKET_BASE_URL || "http://localhost:8000";
-        this.socket = io(`${baseUrl}/tournament/${tournamentId}`, {
-          transports: ["websocket"],
-          autoConnect: true,
-        });
-
-        this.currentTournamentId = tournamentId;
-
-        this.socket.on("connect", () => {
-          console.log(`Connected to tournament ${tournamentId}`);
-          resolve();
-        });
-
-        this.socket.on("connect_error", (error) => {
-          console.error("Socket connection error:", error);
-          reject(error);
-        });
-
-        this.socket.on("disconnect", (reason) => {
-          console.log("Socket disconnected:", reason);
-        });
-      } catch (error) {
+      this.socket?.once("connect_error", (error) => {
+        console.error("Socket connection error:", error);
+        this.socket = null; // Clear socket instance on connection failure
         reject(error);
-      }
+      });
+
+      this.socket?.connect();
     });
   }
 
-  disconnect(): void {
+  public disconnect(): void {
     if (this.socket) {
+      console.log("Disconnecting socket...");
       this.socket.disconnect();
       this.socket = null;
-      this.currentTournamentId = null;
+      this.tournamentId = null;
     }
   }
 
-  // Emit typing character
-  emitTypeCharacter(args: TypeArgs): void {
-    if (this.socket?.connected) {
-      this.socket.emit("type-character", args);
-    }
-  }
-
-  // Subscribe to typing updates
-  onTypingUpdate(
-    callback: (data: SocketResponse<TypingSessionSchema>) => void,
-  ): void {
-    if (this.socket) {
-      this.socket.on("typing:update", callback);
-    }
-  }
-
-  // Subscribe to tournament events
-  onTournamentStart(callback: () => void): void {
-    if (this.socket) {
-      this.socket.on("tournament:start", callback);
-    }
-  }
-
-  onTournamentEnd(callback: () => void): void {
-    if (this.socket) {
-      this.socket.on("tournament:end", callback);
-    }
-  }
-
-  onParticipantJoin(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.on("participant:join", callback);
-    }
-  }
-
-  onParticipantLeave(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.on("participant:leave", callback);
-    }
-  }
-
-  // Remove all event listeners
-  removeAllListeners(): void {
-    if (this.socket) {
-      this.socket.removeAllListeners();
-    }
-  }
-
-  // Get connection status
-  get isConnected(): boolean {
+  public isConnected(): boolean {
     return this.socket?.connected || false;
   }
 
-  get tournamentId(): string | null {
-    return this.currentTournamentId;
+  // --- Event Emitters (Client-to-Server) ---
+  public emitTypeCharacter(character: string): void {
+    if (!this.socket) {
+      console.warn("Socket not connected. Cannot emit type-character.");
+      return;
+    }
+    this.socket.emit("type-character", { character });
+  }
+
+  public emitLeaveTournament(): void {
+    if (!this.socket) {
+      console.warn("Socket not connected. Cannot emit leave-tournament.");
+      return;
+    }
+    this.socket.emit("leave-tournament");
+  }
+
+  public on<Event extends keyof ServerToClientEvents>(
+    event: Event,
+    listener: ServerToClientEvents[Event],
+  ): void {
+    if (!this.socket) {
+      console.warn(`Socket not initialized. Cannot listen to ${event}.`);
+      return;
+    }
+    // @ts-expect-error Type is actually valid
+    this.socket.on(event, listener);
+  }
+
+  public off<Event extends keyof ServerToClientEvents>(
+    event: Event,
+    listener?: ServerToClientEvents[Event],
+  ): void {
+    if (!this.socket) {
+      console.warn(`Socket not initialized. Cannot unlisten from ${event}.`);
+      return;
+    }
+    if (listener) {
+      // @ts-expect-error Type is actually valid
+      this.socket.off(event, listener);
+    } else {
+      this.socket.off(event);
+    }
   }
 }
 
 export const socketService = new SocketService();
-export default socketService;

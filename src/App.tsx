@@ -12,6 +12,7 @@ import Tournament from "./pages/Tournament";
 import TournamentLobby from "./pages/TournamentLobby";
 import NotFound from "./pages/NotFound";
 import PasswordRecovery from "./pages/PasswordRecovery";
+import { AuthProvider } from "./context/AuthContext";
 
 const queryClient = new QueryClient();
 
@@ -29,20 +30,25 @@ const App = () => {
         <div className="min-h-screen bg-background text-foreground transition-colors">
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth/login" element={<Login />} />
-              <Route path="/auth/register" element={<Register />} />
-              <Route
-                path="/auth/password-recovery"
-                element={<PasswordRecovery />}
-              />
-              <Route path="/tournaments" element={<TournamentLobby />} />
-              <Route path="/tournament/:id" element={<Tournament />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <AuthProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth/login" element={<Login />} />
+                <Route path="/auth/register" element={<Register />} />
+                <Route
+                  path="/auth/password-recovery"
+                  element={<PasswordRecovery />}
+                />
+                <Route path="/tournaments" element={<TournamentLobby />} />
+                <Route
+                  path="/tournaments/:tournamentId"
+                  element={<Tournament />}
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
         </div>
       </TooltipProvider>
     </QueryClientProvider>

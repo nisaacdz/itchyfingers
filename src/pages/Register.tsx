@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
-import { useAuthStore } from "../store/authStore";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import axiosInstance from "../api/apiService";
+import axiosInstance from "../api/httpService";
 import { HttpResponse, LoginSchema } from "../types/api";
 import { Loader } from "lucide-react";
 
@@ -26,14 +26,14 @@ export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { setUser, isAuthenticated } = useAuthStore();
+  const { client, reload } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (client.user) {
       navigate("/");
     }
-  }, [isAuthenticated, navigate]);
+  }, [client.user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,11 +56,11 @@ export default function Register() {
       );
 
       if (response.data.success) {
-        setUser(response.data.data.user);
         toast({
           title: "Account created!",
           description: "Your account has been created successfully.",
         });
+        await reload();
         navigate("/");
       } else {
         setError(response.data.message || "Registration failed");

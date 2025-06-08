@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
-import { useAuthStore } from "../store/authStore";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import apiService from "../api/apiService";
+import httpService from "../api/httpService";
 import { HttpResponse, LoginSchema, UserSchema } from "../types/api";
 import { Loader } from "lucide-react";
 
@@ -25,14 +25,14 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { setUser, isAuthenticated } = useAuthStore();
+  const { client, reload } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (client.user) {
       navigate("/");
     }
-  }, [isAuthenticated, navigate]);
+  }, [client.user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +40,7 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await apiService.post<HttpResponse<LoginSchema>>(
+      const response = await httpService.post<HttpResponse<LoginSchema>>(
         "/auth/login",
         {
           email,
@@ -49,11 +49,12 @@ export default function Login() {
       );
 
       if (response.data.success) {
-        setUser(response.data.data.user);
         toast({
           title: "Welcome back!",
           description: "You have been logged in successfully.",
         });
+
+        await reload();
 
         // Redirect to returnTo route or home
         const returnTo = sessionStorage.getItem("returnTo");
