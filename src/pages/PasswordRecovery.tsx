@@ -15,7 +15,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar"; // Assuming this path is correct for the new location
 import { toast } from "@/hooks/use-toast";
-import apiService from "../api/apiService";
+import httpService from "../api/httpService";
 import { HttpResponse } from "../types/api"; // Assuming this path is correct
 import {
   InputOTP,
@@ -60,7 +60,7 @@ export default function PasswordRecovery() {
     setSuccessMessage("");
 
     try {
-      const response = await apiService.post<HttpResponse<null>>(
+      const response = await httpService.post<HttpResponse<null>>(
         "/auth/forgot-password",
         { email },
       );
@@ -118,7 +118,7 @@ export default function PasswordRecovery() {
 
     try {
       // IMPORTANT: The backend needs the email for the reset password step too.
-      const response = await apiService.post<HttpResponse<null>>(
+      const response = await httpService.post<HttpResponse<null>>(
         `/auth/reset-password`,
         { email, password: newPassword, otp }, // Send email along with otp and newPassword
       );

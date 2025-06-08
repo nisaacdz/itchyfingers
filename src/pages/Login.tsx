@@ -15,7 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
 import { toast } from "@/hooks/use-toast";
-import apiService from "../api/apiService";
+import httpService from "../api/httpService";
 import { HttpResponse, LoginSchema, UserSchema } from "../types/api";
 import { Loader } from "lucide-react";
 
@@ -40,7 +40,7 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await apiService.post<HttpResponse<LoginSchema>>(
+      const response = await httpService.post<HttpResponse<LoginSchema>>(
         "/auth/login",
         {
           email,

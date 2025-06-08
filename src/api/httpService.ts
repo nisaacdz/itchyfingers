@@ -3,7 +3,7 @@ import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
 
-class ApiService {
+class HttpService {
   private instance: AxiosInstance;
 
   constructor() {
@@ -84,8 +84,8 @@ class ApiService {
   // }
 }
 
-// Create an instance of the ApiService
-export const apiService = new ApiService();
+// Create an instance of the HttpService
+export const httpService = new HttpService();
 
 // Export the instance as default for convenience, or just the named export
-export default apiService;
+export default httpService;

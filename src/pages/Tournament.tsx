@@ -12,7 +12,7 @@ import {
   // Selectors are used within child components or not needed at this top level anymore
 } from "../store/tournamentStore"; // Adjust path
 // import { useAuthStore } from "../store/authStore"; // authClient used in ParticipantsPanel
-import axiosInstance from "../api/apiService"; // Adjust path
+import axiosInstance from "../api/httpService"; // Adjust path
 import socketService from "../api/socketService"; // Adjust path
 import {
   HttpResponse,

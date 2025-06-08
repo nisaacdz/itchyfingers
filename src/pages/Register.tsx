@@ -15,7 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
 import { toast } from "@/hooks/use-toast";
-import axiosInstance from "../api/apiService";
+import axiosInstance from "../api/httpService";
 import { HttpResponse, LoginSchema } from "../types/api";
 import { Loader } from "lucide-react";
 

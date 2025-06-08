@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
 import { useAuthStore } from "../store/authStore";
-import axiosInstance from "../api/apiService";
+import axiosInstance from "../api/httpService";
 import {
   HttpResponse,
   TournamentUpcomingSchema,
