@@ -29,6 +29,8 @@ export const useTournamentStaticData = (tournamentId: string | undefined): UseTo
         `/tournaments/${tournamentId}`
       );
 
+      console.log("Tournament static data response:", response);
+
       if (response.data.success && response.data.data) {
         setTournament(response.data.data);
       } else {

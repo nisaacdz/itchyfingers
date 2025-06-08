@@ -14,7 +14,7 @@ import { ErrorMessage } from './ErrorMessage';
 
 export const TournamentRoomOrchestrator = () => {
   const { tournamentId } = useParams<{ tournamentId: string }>();
-  const authHookResult = useAuth(); // { client: ClientSchema | null, isLoading: boolean }
+  const authHookResult = useAuth();
 
   const {
     tournament: staticTournamentInfo,

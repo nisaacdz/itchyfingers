@@ -200,7 +200,7 @@ export default function TournamentLobby() {
                       </div>
 
                       <div className="pt-4">
-                        <Link to={`/tournament/${tournament.id}`}>
+                        <Link to={`/tournaments/${tournament.id}`}>
                           <Button className="w-full">Join Tournament</Button>
                         </Link>
                       </div>
