@@ -162,9 +162,7 @@ export const useTournamentRealtime = ({
 
     // At this point, static data is loaded, auth is resolved (we have currentAuthClient), and we have a tournamentId.
     updateState({ socketStatus: 'connecting', gamePhase: 'lobby' }); // Tentatively set to lobby
-    const token = localStorage.getItem("accessToken");
-
-    socketService.connect(tournamentId, token)
+    socketService.connect(tournamentId)
       .then(() => {
         updateState({ socketStatus: 'connected' });
         // Game phase will be further refined by join:response and tournament:update

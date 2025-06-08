@@ -63,7 +63,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {error ? <ErrorMessage title="Authentication Error" message={error} /> : children}
+      {/* {error ? <ErrorMessage title="Authentication Error" message={error} /> : children} */}
+      {children}
     </AuthContext.Provider>
   );
 };

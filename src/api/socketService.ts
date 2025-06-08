@@ -8,6 +8,9 @@ import {
   TypeArgs,
 } from '@/types/api';
 
+const ACCESS_TOKEN_KEY = import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
+const REFRESH_TOKEN_KEY = import.meta.env.VITE_REFRESH_TOKEN_KEY || "refresh_token";
+
 type JoinResponsePayload = ApiResponse<null>;
 type LeaveResponsePayload = ApiResponse<null>;
 type TypingErrorPayload = ApiResponse<null>;
@@ -39,8 +42,7 @@ export class SocketService {
     return import.meta.env.VITE_SOCKET_BASE_URL || 'http://localhost:8000';
   }
 
-  // No token management here; token is passed in
-  public connect(tournamentId: string, accessToken: string | null): Promise<void> {
+  public connect(tournamentId: string): Promise<void> {
     if (this.socket && this.socket.connected && this.tournamentId === tournamentId) {
       console.log('Socket already connected to this tournament.');
       return Promise.resolve();
@@ -56,9 +58,11 @@ export class SocketService {
 
     console.log(`Attempting to connect to WebSocket: ${namespaceUrl}`);
 
-    const extraHeaders: { [key: string]: string } = {};
-    if (accessToken) {
-      extraHeaders['Authorization'] = `Bearer ${accessToken}`;
+    const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+
+    const extraHeaders = {
+      'X-Requested-With': 'XMLHttpRequest',
+      'Authorization': accessToken ? `Bearer ${accessToken}` : '',
     }
 
     this.socket = io(namespaceUrl, {
@@ -123,6 +127,7 @@ export class SocketService {
       console.warn(`Socket not initialized. Cannot listen to ${event}.`);
       return;
     }
+    // @ts-expect-error Type is actually valid
     this.socket.on(event, listener);
   }
 
@@ -135,6 +140,7 @@ export class SocketService {
       return;
     }
     if (listener) {
+      // @ts-expect-error Type is actually valid
       this.socket.off(event, listener);
     } else {
       this.socket.off(event);

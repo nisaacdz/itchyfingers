@@ -9,10 +9,10 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Navbar } from "../components/Navbar";
-import { useAuthStore } from "../store/authStore";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Index() {
-  const { isAuthenticated, user } = useAuthStore();
+  const { client } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
@@ -36,7 +36,7 @@ export default function Index() {
                   Join Tournament
                 </Button>
               </Link>
-              {!isAuthenticated && (
+              {client && !client.user && (
                 <Link to="/auth/register">
                   <Button
                     variant="outline"
@@ -49,11 +49,11 @@ export default function Index() {
               )}
             </div>
 
-            {isAuthenticated && user && (
+            {client?.user && (
               <div className="mt-8 p-4 bg-accent/50 rounded-lg border">
                 <p className="text-lg">
                   Welcome back,{" "}
-                  <span className="font-semibold">{user.username}</span>! Ready
+                  <span className="font-semibold">{client.user.username}</span>! Ready
                   to compete?
                 </p>
               </div>
