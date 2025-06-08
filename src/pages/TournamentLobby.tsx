@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navbar } from "../components/Navbar";
-import { useAuthStore } from "../store/authStore";
+import { useAuth } from "@/hooks/useAuth";
 import axiosInstance from "../api/httpService";
 import {
   HttpResponse,
@@ -57,7 +57,7 @@ export default function TournamentLobby() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(9);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { user } = useAuthStore();
+  const { client } = useAuth();
 
   const fetchTournaments = useCallback(
     async (pageNum = 1) => {

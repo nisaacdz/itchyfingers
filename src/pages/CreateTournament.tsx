@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuthStore } from "@/store/authStore";
 import httpService from "@/api/httpService";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -29,9 +28,7 @@ export function CreateTournamentDialog({
   onOpenChange,
   onCreateSuccess,
 }: CreateTournamentDialogProps) {
-  const { isAuthenticated } = useAuthStore();
   const [title, setTitle] = useState("");
-  // Prefill with now + 5 minutes, formatted for datetime-local
   const defaultScheduledFor = DateTime.now()
     .plus({ minutes: 5 })
     .toFormat("yyyy-MM-dd'T'HH:mm");
@@ -98,72 +95,66 @@ export function CreateTournamentDialog({
         <DialogHeader>
           <DialogTitle>Create Tournament</DialogTitle>
         </DialogHeader>
-        {!isAuthenticated ? (
-          <div className="text-center py-8">
-            You must be logged in to create a tournament.
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              disabled={isLoading}
+              placeholder="Tournament Title"
+            />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                disabled={isLoading}
-                placeholder="Tournament Title"
-              />
-            </div>
-            <div>
-              <Label htmlFor="scheduledFor">Scheduled For</Label>
-              <Input
-                id="scheduledFor"
-                type="datetime-local"
-                value={scheduledFor}
-                min={defaultScheduledFor}
-                onChange={(e) => setScheduledFor(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
-            <div>
-              <Label>Text Options</Label>
-              <div className="flex gap-4 mt-2">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="specialChars"
-                    checked={includeSpecialChars}
-                    onCheckedChange={(checked) =>
-                      setIncludeSpecialChars(!!checked)
-                    }
-                  />
-                  <Label htmlFor="specialChars">Special Characters</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="uppercase"
-                    checked={includeUppercase}
-                    onCheckedChange={(checked) =>
-                      setIncludeUppercase(!!checked)
-                    }
-                  />
-                  <Label htmlFor="uppercase">Uppercase Letters</Label>
-                </div>
+          <div>
+            <Label htmlFor="scheduledFor">Scheduled For</Label>
+            <Input
+              id="scheduledFor"
+              type="datetime-local"
+              value={scheduledFor}
+              min={defaultScheduledFor}
+              onChange={(e) => setScheduledFor(e.target.value)}
+              required
+              disabled={isLoading}
+            />
+          </div>
+          <div>
+            <Label>Text Options</Label>
+            <div className="flex gap-4 mt-2">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="specialChars"
+                  checked={includeSpecialChars}
+                  onCheckedChange={(checked) =>
+                    setIncludeSpecialChars(!!checked)
+                  }
+                />
+                <Label htmlFor="specialChars">Special Characters</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="uppercase"
+                  checked={includeUppercase}
+                  onCheckedChange={(checked) =>
+                    setIncludeUppercase(!!checked)
+                  }
+                />
+                <Label htmlFor="uppercase">Uppercase Letters</Label>
               </div>
             </div>
-            {error && <div className="text-destructive text-sm">{error}</div>}
-            <DialogFooter>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <Loader className="animate-spin" />
-                ) : (
-                  "Create Tournament"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        )}
+          </div>
+          {error && <div className="text-destructive text-sm">{error}</div>}
+          <DialogFooter>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <Loader className="animate-spin" />
+              ) : (
+                "Create Tournament"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
