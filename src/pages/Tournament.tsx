@@ -15,7 +15,8 @@ const TournamentPage = () => {
   return (
     <>
       <TournamentRoomOrchestrator />
-      <Toaster /> {/* Ensures toasts are available throughout the tournament experience */}
+      <Toaster />{" "}
+      {/* Ensures toasts are available throughout the tournament experience */}
     </>
   );
 };

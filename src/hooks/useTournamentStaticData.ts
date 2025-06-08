@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { httpService } from '@/api/httpService';
-import { TournamentSchema, HttpResponse } from '@/types/api';
+import { useState, useEffect, useCallback } from "react";
+import { httpService } from "@/api/httpService";
+import { TournamentSchema, HttpResponse } from "@/types/api";
 
 interface UseTournamentStaticDataReturn {
   tournament: TournamentSchema | null;
@@ -9,7 +9,9 @@ interface UseTournamentStaticDataReturn {
   refetch: () => void;
 }
 
-export const useTournamentStaticData = (tournamentId: string | undefined): UseTournamentStaticDataReturn => {
+export const useTournamentStaticData = (
+  tournamentId: string | undefined,
+): UseTournamentStaticDataReturn => {
   const [tournament, setTournament] = useState<TournamentSchema | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export const useTournamentStaticData = (tournamentId: string | undefined): UseTo
     setError(null);
     try {
       const response = await httpService.get<HttpResponse<TournamentSchema>>(
-        `/tournaments/${tournamentId}`
+        `/tournaments/${tournamentId}`,
       );
 
       console.log("Tournament static data response:", response);
@@ -34,12 +36,17 @@ export const useTournamentStaticData = (tournamentId: string | undefined): UseTo
       if (response.data.success && response.data.data) {
         setTournament(response.data.data);
       } else {
-        setError(response.data.message || 'Failed to fetch tournament details.');
+        setError(
+          response.data.message || "Failed to fetch tournament details.",
+        );
         setTournament(null);
       }
     } catch (err: any) {
       console.error("Error fetching tournament static data:", err);
-      const errorMessage = err.response?.data?.message || err.message || 'An unknown error occurred.';
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "An unknown error occurred.";
       setError(errorMessage);
       setTournament(null);
     } finally {
@@ -50,9 +57,9 @@ export const useTournamentStaticData = (tournamentId: string | undefined): UseTo
   useEffect(() => {
     // Only fetch if tournamentId is present
     if (tournamentId) {
-        fetchData();
+      fetchData();
     } else {
-        setIsLoading(false); // If no tournamentId, not loading.
+      setIsLoading(false); // If no tournamentId, not loading.
     }
   }, [fetchData, tournamentId]); // Add tournamentId to dependencies
 

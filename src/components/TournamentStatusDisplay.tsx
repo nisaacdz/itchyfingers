@@ -25,7 +25,9 @@ export default function TournamentStatusDisplay({
     content = error;
   } else if (notFound) {
     title = "Not Found";
-    content = message || "The tournament you're looking for doesn't exist or could not be loaded.";
+    content =
+      message ||
+      "The tournament you're looking for doesn't exist or could not be loaded.";
   } else {
     return null; // Should not happen if used correctly
   }
@@ -39,7 +41,9 @@ export default function TournamentStatusDisplay({
         ) : (
           <Card className="max-w-md mx-auto">
             <CardHeader>
-              <CardTitle className={error ? "text-red-500" : ""}>{title}</CardTitle>
+              <CardTitle className={error ? "text-red-500" : ""}>
+                {title}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p>{content}</p>

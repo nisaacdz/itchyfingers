@@ -1,17 +1,20 @@
-import React from 'react';
-import { TypingSessionSchema, TournamentSchema } from '../types/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { TypingSessionSchema, TournamentSchema } from "../types/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface StatsBoardProps {
   currentParticipant: TypingSessionSchema | undefined; // The current user's typing session
   textLength: number;
-  tournamentStatus: TournamentSchema['status'];
+  tournamentStatus: TournamentSchema["status"];
   onLeaveTournament: () => void;
   // onRestart?: () => void; // If restart functionality is needed
 }
 
-const StatsDisplay: React.FC<{ label: string; value: string | number }> = ({ label, value }) => (
+const StatsDisplay: React.FC<{ label: string; value: string | number }> = ({
+  label,
+  value,
+}) => (
   <div className="flex flex-col items-center p-3 bg-muted rounded-lg">
     <span className="text-sm text-muted-foreground">{label}</span>
     <span className="text-2xl font-bold text-foreground">{value}</span>
@@ -24,11 +27,12 @@ const StatsBoard: React.FC<StatsBoardProps> = ({
   tournamentStatus,
   onLeaveTournament,
 }) => {
-  const wpm = currentParticipant?.current_speed.toFixed(0) || '0';
-  const accuracy = currentParticipant?.current_accuracy.toFixed(0) || '0';
-  const progress = textLength > 0 && currentParticipant
-    ? ((currentParticipant.current_position / textLength) * 100).toFixed(0)
-    : '0';
+  const wpm = currentParticipant?.current_speed.toFixed(0) || "0";
+  const accuracy = currentParticipant?.current_accuracy.toFixed(0) || "0";
+  const progress =
+    textLength > 0 && currentParticipant
+      ? ((currentParticipant.current_position / textLength) * 100).toFixed(0)
+      : "0";
 
   return (
     <Card>
@@ -46,16 +50,20 @@ const StatsBoard: React.FC<StatsBoardProps> = ({
         {/* <Progress value={parseFloat(progress)} className="w-full h-2" /> */}
 
         <div className="mt-4 flex flex-col space-y-2">
-          {tournamentStatus === 'active' && (
+          {tournamentStatus === "active" && (
             <Button variant="outline" onClick={onLeaveTournament}>
               Leave Tournament
             </Button>
           )}
-          {tournamentStatus === 'completed' && (
-            <p className="text-center text-green-500 font-semibold">Tournament Completed!</p>
+          {tournamentStatus === "completed" && (
+            <p className="text-center text-green-500 font-semibold">
+              Tournament Completed!
+            </p>
           )}
-           {tournamentStatus === 'waiting' && (
-            <p className="text-center text-blue-500 font-semibold">Waiting for tournament to start...</p>
+          {tournamentStatus === "waiting" && (
+            <p className="text-center text-blue-500 font-semibold">
+              Waiting for tournament to start...
+            </p>
           )}
           {/* Add other actions like restart if applicable */}
         </div>

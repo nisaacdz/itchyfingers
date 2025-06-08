@@ -1,7 +1,7 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { httpService } from '../api/httpService';
-import { ClientSchema, HttpResponse } from '../types/api';
-import { ErrorMessage } from '@/components/ErrorMessage';
+import React, { createContext, useState, useEffect, ReactNode } from "react";
+import { httpService } from "../api/httpService";
+import { ClientSchema, HttpResponse } from "../types/api";
+import { ErrorMessage } from "@/components/ErrorMessage";
 
 export interface AuthContextType {
   client: ClientSchema | null;
@@ -13,7 +13,9 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined,
+);
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [client, setClient] = useState<ClientSchema | null>(null);
@@ -22,18 +24,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const fetchUserData = async (): Promise<void> => {
     try {
-      const response = await httpService.get<HttpResponse<ClientSchema>>('/auth/me');
+      const response =
+        await httpService.get<HttpResponse<ClientSchema>>("/auth/me");
 
       if (response.data.success) {
         setClient(response.data.data);
       } else {
         setClient(null);
-        setError(response.data.message || 'Failed to fetch user data');
+        setError(response.data.message || "Failed to fetch user data");
       }
     } catch (error) {
-      console.error('Failed to fetch user data:', error);
+      console.error("Failed to fetch user data:", error);
       setClient(null);
-      setError(error.message || 'Failed to fetch user data');
+      setError(error.message || "Failed to fetch user data");
     }
   };
   const reload = async (): Promise<void> => {
@@ -46,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         await fetchUserData();
       } catch (error) {
-        console.error('Auth initialization failed:', error);
+        console.error("Auth initialization failed:", error);
       } finally {
         setIsLoading(false);
       }
@@ -68,4 +71,3 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-

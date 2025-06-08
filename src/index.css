@@ -100,7 +100,6 @@
   }
 }
 
-
 /* Added layer */
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -110,7 +109,7 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #4A5568;
+  background: #4a5568;
   border-radius: 3px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {

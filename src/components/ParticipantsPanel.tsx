@@ -15,18 +15,24 @@ import { TournamentSchema, TournamentSession } from "@/types/api";
 
 interface ParticipantsPanelProps {
   // Pass these if not subscribing directly in this component, or for calculation
-   liveTournamentSession: TournamentSession | null;
-   currentTournament: TournamentSchema | null; // For text length fallback
+  liveTournamentSession: TournamentSession | null;
+  currentTournament: TournamentSchema | null; // For text length fallback
 }
 
-export default function ParticipantsPanel({ liveTournamentSession, currentTournament }: ParticipantsPanelProps) {
+export default function ParticipantsPanel({
+  liveTournamentSession,
+  currentTournament,
+}: ParticipantsPanelProps) {
   const allParticipantsArray = useTournamentStore(selectAllParticipantsArray);
   const { client: authClient } = useAuthStore();
 
-  const textLength = liveTournamentSession?.text?.length || currentTournament?.text?.length || 1;
+  const textLength =
+    liveTournamentSession?.text?.length || currentTournament?.text?.length || 1;
 
   return (
-    <Card className="lg:col-span-1"> {/* This class depends on the parent grid */}
+    <Card className="lg:col-span-1">
+      {" "}
+      {/* This class depends on the parent grid */}
       <CardHeader>
         <CardTitle>Participants ({allParticipantsArray.length})</CardTitle>
         <CardDescription>Live participant progress</CardDescription>

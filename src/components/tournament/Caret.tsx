@@ -1,7 +1,7 @@
 // @/components/tournament/elements/Caret.tsx
-import React, { memo } from 'react';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import React, { memo } from "react";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface CaretProps {
   id: string; // Unique ID, e.g., client.id
@@ -26,49 +26,53 @@ export const Caret = memo(
     };
 
     const caretStyle: React.CSSProperties = {
-      position: 'absolute',
+      position: "absolute",
       top: `${position.top}px`,
       left: `${position.left}px`,
       height: `${height}px`,
-      width: '2px', // Standard caret width
-      backgroundColor: color || (isCurrentUser ? 'rgb(56 189 248)' : 'rgba(100, 116, 139, 0.7)'), // Default: sky-500 for user, slate-500 for others
+      width: "2px", // Standard caret width
+      backgroundColor:
+        color ||
+        (isCurrentUser ? "rgb(56 189 248)" : "rgba(100, 116, 139, 0.7)"), // Default: sky-500 for user, slate-500 for others
       zIndex: 10,
-      borderRadius: '1px',
+      borderRadius: "1px",
       // Using transform for smoother sub-pixel positioning if available via 'left'
       // transform: `translate3d(${position.left}px, ${position.top}px, 0)`,
     };
 
     // User label styling
     const labelStyle: React.CSSProperties = {
-        position: 'absolute',
-        top: `${position.top - (height * 0.8)}px`, // Position above the caret
-        left: `${position.left + 5}px`, // Slightly to the right
-        fontSize: '10px',
-        padding: '1px 3px',
-        borderRadius: '3px',
-        backgroundColor: isCurrentUser ? 'rgba(56, 189, 248, 0.8)' : 'rgba(100, 116, 139, 0.6)',
-        color: 'white',
-        whiteSpace: 'nowrap',
-        zIndex: 11, // Above caret
-        opacity: isCurrentUser ? 0.9 : 0.6,
-        pointerEvents: 'none',
-        transform: 'translateX(-50%)', // Center label if possible, might need adjustment
+      position: "absolute",
+      top: `${position.top - height * 0.8}px`, // Position above the caret
+      left: `${position.left + 5}px`, // Slightly to the right
+      fontSize: "10px",
+      padding: "1px 3px",
+      borderRadius: "3px",
+      backgroundColor: isCurrentUser
+        ? "rgba(56, 189, 248, 0.8)"
+        : "rgba(100, 116, 139, 0.6)",
+      color: "white",
+      whiteSpace: "nowrap",
+      zIndex: 11, // Above caret
+      opacity: isCurrentUser ? 0.9 : 0.6,
+      pointerEvents: "none",
+      transform: "translateX(-50%)", // Center label if possible, might need adjustment
     };
-
 
     return (
       <>
-        {displayName && !isCurrentUser && ( // Only show names for other users, and if provided
+        {displayName &&
+          !isCurrentUser && ( // Only show names for other users, and if provided
             <motion.div
-                key={`${id}-label`}
-                style={labelStyle}
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: isCurrentUser ? 0.9 : 0.6, y: 0 }}
-                transition={{ duration: 0.2 }}
+              key={`${id}-label`}
+              style={labelStyle}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: isCurrentUser ? 0.9 : 0.6, y: 0 }}
+              transition={{ duration: 0.2 }}
             >
-                {displayName}
+              {displayName}
             </motion.div>
-        )}
+          )}
         <motion.div
           key={`${id}-caret`} // Important for framer-motion to track elements if list changes
           style={caretStyle}
@@ -79,7 +83,7 @@ export const Caret = memo(
         />
       </>
     );
-  }
+  },
 );
 
 Caret.displayName = "Caret";

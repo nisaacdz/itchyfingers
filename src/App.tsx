@@ -41,7 +41,10 @@ const App = () => {
                   element={<PasswordRecovery />}
                 />
                 <Route path="/tournaments" element={<TournamentLobby />} />
-                <Route path="/tournaments/:tournamentId" element={<Tournament />} />
+                <Route
+                  path="/tournaments/:tournamentId"
+                  element={<Tournament />}
+                />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

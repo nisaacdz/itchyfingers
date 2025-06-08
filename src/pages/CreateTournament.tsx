@@ -136,9 +136,7 @@ export function CreateTournamentDialog({
                 <Checkbox
                   id="uppercase"
                   checked={includeUppercase}
-                  onCheckedChange={(checked) =>
-                    setIncludeUppercase(!!checked)
-                  }
+                  onCheckedChange={(checked) => setIncludeUppercase(!!checked)}
                 />
                 <Label htmlFor="uppercase">Uppercase Letters</Label>
               </div>

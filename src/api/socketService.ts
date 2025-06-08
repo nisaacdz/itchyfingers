@@ -1,4 +1,4 @@
-import { io, Socket } from 'socket.io-client';
+import { io, Socket } from "socket.io-client";
 import {
   ApiResponse,
   TournamentSession,
@@ -6,10 +6,12 @@ import {
   ClientSchema,
   TypingSessionSchema,
   TypeArgs,
-} from '@/types/api';
+} from "@/types/api";
 
-const ACCESS_TOKEN_KEY = import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
-const REFRESH_TOKEN_KEY = import.meta.env.VITE_REFRESH_TOKEN_KEY || "refresh_token";
+const ACCESS_TOKEN_KEY =
+  import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
+const REFRESH_TOKEN_KEY =
+  import.meta.env.VITE_REFRESH_TOKEN_KEY || "refresh_token";
 
 type JoinResponsePayload = ApiResponse<null>;
 type LeaveResponsePayload = ApiResponse<null>;
@@ -17,34 +19,39 @@ type TypingErrorPayload = ApiResponse<null>;
 type TypingUpdatePayload = ApiResponse<TypingSessionSchema>;
 
 interface ServerToClientEvents {
-  'join:response': (payload: JoinResponsePayload) => void;
-  'tournament:start': (payload: TournamentSession) => void;
-  'tournament:update': (payload: TournamentUpdateSchema) => void;
-  'user:left': (payload: ClientSchema) => void;
-  'leave:response': (payload: LeaveResponsePayload) => void;
-  'typing:update': (payload: TypingUpdatePayload) => void;
-  'typing:error': (payload: TypingErrorPayload) => void;
+  "join:response": (payload: JoinResponsePayload) => void;
+  "tournament:start": (payload: TournamentSession) => void;
+  "tournament:update": (payload: TournamentUpdateSchema) => void;
+  "user:left": (payload: ClientSchema) => void;
+  "leave:response": (payload: LeaveResponsePayload) => void;
+  "typing:update": (payload: TypingUpdatePayload) => void;
+  "typing:error": (payload: TypingErrorPayload) => void;
   connect: () => void;
   disconnect: (reason: Socket.DisconnectReason) => void;
   connect_error: (error: Error) => void;
 }
 
 interface ClientToServerEvents {
-  'type-character': (args: TypeArgs) => void;
-  'leave-tournament': () => void;
+  "type-character": (args: TypeArgs) => void;
+  "leave-tournament": () => void;
 }
 
 export class SocketService {
-  private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
+  private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null =
+    null;
   private tournamentId: string | null = null;
 
   private getSocketBaseUrl(): string {
-    return import.meta.env.VITE_SOCKET_BASE_URL || 'http://localhost:8000';
+    return import.meta.env.VITE_SOCKET_BASE_URL || "http://localhost:8000";
   }
 
   public connect(tournamentId: string): Promise<void> {
-    if (this.socket && this.socket.connected && this.tournamentId === tournamentId) {
-      console.log('Socket already connected to this tournament.');
+    if (
+      this.socket &&
+      this.socket.connected &&
+      this.tournamentId === tournamentId
+    ) {
+      console.log("Socket already connected to this tournament.");
       return Promise.resolve();
     }
 
@@ -61,12 +68,12 @@ export class SocketService {
     const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
 
     const extraHeaders = {
-      'X-Requested-With': 'XMLHttpRequest',
-      'Authorization': accessToken ? `Bearer ${accessToken}` : '',
-    }
+      "X-Requested-With": "XMLHttpRequest",
+      Authorization: accessToken ? `Bearer ${accessToken}` : "",
+    };
 
     this.socket = io(namespaceUrl, {
-      transports: ['websocket'],
+      transports: ["websocket"],
       autoConnect: false, // We'll call connect explicitly
       reconnectionAttempts: 5,
       reconnectionDelay: 3000,
@@ -74,13 +81,13 @@ export class SocketService {
     });
 
     return new Promise((resolve, reject) => {
-      this.socket?.once('connect', () => {
-        console.log('Socket connected successfully to', namespaceUrl);
+      this.socket?.once("connect", () => {
+        console.log("Socket connected successfully to", namespaceUrl);
         resolve();
       });
 
-      this.socket?.once('connect_error', (error) => {
-        console.error('Socket connection error:', error);
+      this.socket?.once("connect_error", (error) => {
+        console.error("Socket connection error:", error);
         this.socket = null; // Clear socket instance on connection failure
         reject(error);
       });
@@ -91,7 +98,7 @@ export class SocketService {
 
   public disconnect(): void {
     if (this.socket) {
-      console.log('Disconnecting socket...');
+      console.log("Disconnecting socket...");
       this.socket.disconnect();
       this.socket = null;
       this.tournamentId = null;
@@ -105,18 +112,18 @@ export class SocketService {
   // --- Event Emitters (Client-to-Server) ---
   public emitTypeCharacter(character: string): void {
     if (!this.socket) {
-      console.warn('Socket not connected. Cannot emit type-character.');
+      console.warn("Socket not connected. Cannot emit type-character.");
       return;
     }
-    this.socket.emit('type-character', { character });
+    this.socket.emit("type-character", { character });
   }
 
   public emitLeaveTournament(): void {
     if (!this.socket) {
-      console.warn('Socket not connected. Cannot emit leave-tournament.');
+      console.warn("Socket not connected. Cannot emit leave-tournament.");
       return;
     }
-    this.socket.emit('leave-tournament');
+    this.socket.emit("leave-tournament");
   }
 
   public on<Event extends keyof ServerToClientEvents>(

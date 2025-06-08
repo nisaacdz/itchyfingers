@@ -1,5 +1,5 @@
 // @/components/tournament/layout/MainContentLayout.tsx
-import React from 'react';
+import React from "react";
 
 interface MainContentLayoutProps {
   statsSlot: React.ReactNode;
@@ -16,7 +16,9 @@ export const MainContentLayout = ({
     <main className="flex-grow grid grid-cols-1 md:grid-cols-12 gap-4 p-3 md:p-4 overflow-hidden">
       {/* Left Column: Stats & Participants */}
       <aside className="md:col-span-3 flex flex-col gap-4 overflow-y-auto custom-scrollbar pr-1">
-        <div className="bg-slate-800/60 p-4 rounded-lg shadow-md backdrop-blur-sm">{statsSlot}</div>
+        <div className="bg-slate-800/60 p-4 rounded-lg shadow-md backdrop-blur-sm">
+          {statsSlot}
+        </div>
         <div className="bg-slate-800/60 p-4 rounded-lg shadow-md backdrop-blur-sm flex-grow min-h-[200px]">
           {participantsSlot}
         </div>

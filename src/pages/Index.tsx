@@ -53,8 +53,8 @@ export default function Index() {
               <div className="mt-8 p-4 bg-accent/50 rounded-lg border">
                 <p className="text-lg">
                   Welcome back,{" "}
-                  <span className="font-semibold">{client.user.username}</span>! Ready
-                  to compete?
+                  <span className="font-semibold">{client.user.username}</span>!
+                  Ready to compete?
                 </p>
               </div>
             )}

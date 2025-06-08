@@ -1,5 +1,5 @@
-import { AlertTriangle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Optional: wrap in a card for more emphasis
+import { AlertTriangle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Optional: wrap in a card for more emphasis
 
 interface ErrorMessageProps {
   title?: string;
@@ -19,7 +19,10 @@ export const ErrorMessage = ({
   }
 
   return (
-    <Card className={`border-destructive bg-destructive/10 text-destructive ${className}`} role="alert">
+    <Card
+      className={`border-destructive bg-destructive/10 text-destructive ${className}`}
+      role="alert"
+    >
       <CardHeader className="flex flex-row items-center space-x-2 pb-2 pt-3">
         {showIcon && <AlertTriangle className="h-5 w-5" />}
         <CardTitle className="text-base font-semibold">{title}</CardTitle>

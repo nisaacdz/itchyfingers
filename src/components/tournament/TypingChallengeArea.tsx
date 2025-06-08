@@ -1,10 +1,13 @@
-import { TournamentRealtimeState, GamePhase } from '@/hooks/useTournamentRealtime';
-import { ClientSchema } from '@/types/api';
-import { PreGameLobby } from './PreGameLobby';
-import { CountdownTimer } from './CountdownTimer';
-import { PostGameSummary } from './PostGameSummary';
-import { TypingArena } from './TypingArena';
-import { LoadingIndicator } from '../LoadingIndicator';
+import {
+  TournamentRealtimeState,
+  GamePhase,
+} from "@/hooks/useTournamentRealtime";
+import { ClientSchema } from "@/types/api";
+import { PreGameLobby } from "./PreGameLobby";
+import { CountdownTimer } from "./CountdownTimer";
+import { PostGameSummary } from "./PostGameSummary";
+import { TypingArena } from "./TypingArena";
+import { LoadingIndicator } from "../LoadingIndicator";
 
 interface TypingChallengeAreaProps {
   realtimeState: TournamentRealtimeState;
@@ -24,28 +27,36 @@ export const TypingChallengeArea = ({
     participants,
     currentUserTypingSession,
     lastSocketError, // For displaying context-specific errors
-    socketStatus
+    socketStatus,
   } = realtimeState;
 
   // Handle critical error states that might not be caught by Orchestrator's top-level checks
-  if (gamePhase === 'error_socket' && lastSocketError) {
-    return <div className="text-center text-red-400"><p>Connection Issue: {lastSocketError}</p><p>Please try refreshing.</p></div>;
+  if (gamePhase === "error_socket" && lastSocketError) {
+    return (
+      <div className="text-center text-red-400">
+        <p>Connection Issue: {lastSocketError}</p>
+        <p>Please try refreshing.</p>
+      </div>
+    );
   }
-  if (gamePhase === 'initializing' && socketStatus !== 'error') {
+  if (gamePhase === "initializing" && socketStatus !== "error") {
     return <LoadingIndicator text="Preparing challenge..." />;
   }
 
   switch (gamePhase) {
-    case 'lobby':
+    case "lobby":
       return <PreGameLobby tournamentSession={tournamentSession} />;
-    case 'countdown':
+    case "countdown":
       return tournamentSession?.scheduled_for ? (
         <CountdownTimer scheduledFor={tournamentSession.scheduled_for} />
       ) : (
-        <PreGameLobby message="Waiting for start signal..." tournamentSession={tournamentSession} />
+        <PreGameLobby
+          message="Waiting for start signal..."
+          tournamentSession={tournamentSession}
+        />
       );
-    case 'active':
-    case 'user_completed': // User still sees the arena even if they finished, until tournament_over
+    case "active":
+    case "user_completed": // User still sees the arena even if they finished, until tournament_over
       if (!typingText || !authClient || !currentUserTypingSession) {
         return <LoadingIndicator text="Loading typing text..." />;
       }
@@ -59,9 +70,16 @@ export const TypingChallengeArea = ({
           gamePhase={gamePhase} // Pass gamePhase to TypingArena
         />
       );
-    case 'tournament_over':
-      return <PostGameSummary participants={participants} currentAuthClientId={authClient?.id || null} />;
+    case "tournament_over":
+      return (
+        <PostGameSummary
+          participants={participants}
+          currentAuthClientId={authClient?.id || null}
+        />
+      );
     default:
-      return <LoadingIndicator text={`Loading view for phase: ${gamePhase}...`} />;
+      return (
+        <LoadingIndicator text={`Loading view for phase: ${gamePhase}...`} />
+      );
   }
 };

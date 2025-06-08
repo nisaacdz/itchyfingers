@@ -23,18 +23,22 @@ export function computeAbsolutePosition(
   // If charIndex is 0, position is at the start of the paragraph
   if (charIndex === 0) {
     const rect = paragraphNode.getBoundingClientRect();
-    const containerRect = paragraphNode.offsetParent?.getBoundingClientRect() || { top: 0, left: 0 };
+    const containerRect =
+      paragraphNode.offsetParent?.getBoundingClientRect() || {
+        top: 0,
+        left: 0,
+      };
     // Get padding of the paragraph itself to offset
     const computedStyle = window.getComputedStyle(paragraphNode);
     const paddingTop = parseFloat(computedStyle.paddingTop);
     const paddingLeft = parseFloat(computedStyle.paddingLeft);
 
     return {
-        top: rect.top - containerRect.top + paddingTop,
-        left: rect.left - containerRect.left + paddingLeft,
+      top: rect.top - containerRect.top + paddingTop,
+      left: rect.left - containerRect.left + paddingLeft,
     };
   }
-  
+
   const textNodes = getAllTextNodes(paragraphNode);
   let cumulativeLength = 0;
   let targetNode: Text | null = null;
@@ -53,29 +57,37 @@ export function computeAbsolutePosition(
   // Handle case where charIndex might be at the very end (after the last character)
   // which means it's effectively at the end of the last text node.
   if (!targetNode && charIndex === cumulativeLength && textNodes.length > 0) {
-      targetNode = textNodes[textNodes.length - 1];
-      offsetInNode = targetNode.textContent?.length || 0;
+    targetNode = textNodes[textNodes.length - 1];
+    offsetInNode = targetNode.textContent?.length || 0;
   }
-
 
   if (!targetNode) {
     // If charIndex is beyond the text content, try to position at the end of the last known character
     // This might happen if current_position temporarily exceeds text length during fast typing.
     // Default to end of paragraph if no text nodes or other issues.
     if (textNodes.length > 0) {
-        targetNode = textNodes[textNodes.length - 1];
-        offsetInNode = targetNode.textContent?.length || 0;
+      targetNode = textNodes[textNodes.length - 1];
+      offsetInNode = targetNode.textContent?.length || 0;
     } else {
-        // Fallback for an empty paragraph or other edge cases
-        const rect = paragraphNode.getBoundingClientRect();
-        const containerRect = paragraphNode.offsetParent?.getBoundingClientRect() || { top: 0, left: 0 };
-        return {
-            top: rect.top - containerRect.top,
-            left: rect.left - containerRect.left + (paragraphNode.textContent?.length || 0 > 0 ? paragraphNode.offsetWidth : 0), // Approx end
+      // Fallback for an empty paragraph or other edge cases
+      const rect = paragraphNode.getBoundingClientRect();
+      const containerRect =
+        paragraphNode.offsetParent?.getBoundingClientRect() || {
+          top: 0,
+          left: 0,
         };
+      return {
+        top: rect.top - containerRect.top,
+        left:
+          rect.left -
+          containerRect.left +
+          (paragraphNode.textContent?.length || 0 > 0
+            ? paragraphNode.offsetWidth
+            : 0), // Approx end
+      };
     }
   }
-  
+
   const range = document.createRange();
   // Ensure offsetInNode is within the bounds of the targetNode's text content
   const clampedOffset = Math.max(0, Math.min(offsetInNode, targetNode.length));
@@ -84,11 +96,14 @@ export function computeAbsolutePosition(
     range.setStart(targetNode, clampedOffset);
     range.collapse(true); // Collapse to the start point
   } catch (e) {
-    console.error("Error setting range for caret position:", e, {charIndex, nodeLength: targetNode.length, clampedOffset});
+    console.error("Error setting range for caret position:", e, {
+      charIndex,
+      nodeLength: targetNode.length,
+      clampedOffset,
+    });
     // Fallback if range setting fails, e.g. position at the start of the paragraph.
-    return { top: 0, left: 0};
+    return { top: 0, left: 0 };
   }
-
 
   const rect = range.getBoundingClientRect();
   const containerRect = paragraphNode.offsetParent?.getBoundingClientRect() || {
@@ -136,18 +151,18 @@ function getAllTextNodes(node: Node): Text[] {
  * @param charHeight - The approximate height (line height) of a character.
  */
 export function createWhiteSpaceErrorHighlightStyle(
-    position: { top: number; left: number },
-    charWidth: number,
-    charHeight: number
-  ): React.CSSProperties {
-    return {
-      position: 'absolute',
-      top: `${position.top}px`,
-      left: `${position.left}px`,
-      width: `${charWidth}px`,
-      height: `${charHeight}px`,
-      backgroundColor: 'rgba(255, 0, 0, 0.3)', // Example: semi-transparent red
-      borderRadius: '2px',
-      zIndex: 5, // Below carets but above text
-    };
+  position: { top: number; left: number },
+  charWidth: number,
+  charHeight: number,
+): React.CSSProperties {
+  return {
+    position: "absolute",
+    top: `${position.top}px`,
+    left: `${position.left}px`,
+    width: `${charWidth}px`,
+    height: `${charHeight}px`,
+    backgroundColor: "rgba(255, 0, 0, 0.3)", // Example: semi-transparent red
+    borderRadius: "2px",
+    zIndex: 5, // Below carets but above text
+  };
 }
