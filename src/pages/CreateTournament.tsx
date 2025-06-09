@@ -78,7 +78,6 @@ export function CreateTournamentDialog({
         });
         onOpenChange(false);
         onCreateSuccess(response.data.data.id);
-        console.log("Tournament created:", response.data.data.id);
       } else {
         setError(response.data.message || "Failed to create tournament.");
       }
