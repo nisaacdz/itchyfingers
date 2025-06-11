@@ -61,7 +61,7 @@ export class SocketService {
 
     this.tournamentId = tournamentId;
     const baseUrl = this.getSocketBaseUrl();
-    const namespaceUrl = `${baseUrl}/tournament/${tournamentId}`;
+    const namespaceUrl = `${baseUrl}/comp`;
 
     console.log(`Attempting to connect to WebSocket: ${namespaceUrl}`);
 
@@ -78,6 +78,9 @@ export class SocketService {
       reconnectionAttempts: 5,
       reconnectionDelay: 3000,
       extraHeaders,
+      query: {
+        id: tournamentId,
+      }
     });
 
     return new Promise((resolve, reject) => {
