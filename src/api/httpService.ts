@@ -4,7 +4,8 @@ const ACCESS_TOKEN_KEY =
   import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
 const REFRESH_TOKEN_KEY =
   import.meta.env.VITE_REFRESH_TOKEN_KEY || "refresh_token";
-
+const CLIENT_ID_KEY =
+  import.meta.env.VITE_CLIENT_ID_KEY || "client_id";
 class HttpService {
   private instance: AxiosInstance;
 
@@ -22,6 +23,10 @@ class HttpService {
         if (token) {
           config.headers["Authorization"] = `Bearer ${token}`;
         }
+        const clientId = sessionStorage.getItem(CLIENT_ID_KEY);
+        if (clientId) {
+          config.headers["X-Client-ID"] = clientId;
+        }
         return config;
       },
       (error) => Promise.reject(error),
@@ -35,6 +40,11 @@ class HttpService {
           const refreshToken = response.data.data.tokens.refresh;
 
           this.setTokens(accessToken, refreshToken);
+        }
+
+        const clientId = response.headers["x-client-id"];
+        if (clientId) {
+          sessionStorage.setItem(CLIENT_ID_KEY, clientId as string);
         }
 
         return response;

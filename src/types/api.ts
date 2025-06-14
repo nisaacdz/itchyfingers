@@ -12,31 +12,44 @@ export type ClientSchema = {
   updated: string;
 };
 
+/*
+pub struct TournamentSchema {
+    pub id: String,
+    pub title: String,
+    pub created_at: DateTimeUtc,
+    pub created_by: i32,
+    pub scheduled_for: DateTimeUtc,
+    pub joined: i32,
+    pub privacy: TournamentPrivacy,
+    pub text_options: Option<TextOptions>, -- you can ignore this for now
+    pub text_id: Option<i32>, -- ignore this
+}
+*/
+
 export type TournamentSchema = {
   id: string;
-  name: string;
-  description: string;
-  text: string;
-  max_participants: number;
-  status: "waiting" | "active" | "completed";
+  title: string;
   created_at: string;
-  updated_at: string;
-  scheduled_start?: string;
+  crated_by: string;
+  scheduled_for: string;
+  description: string;
+  text_options: unknown,
+  privacy: string;
+  joined: number,
 };
 
-export type ApiResponse<T> = {
+export type WsResponse<T> = {
   success: boolean;
   message: string;
-  data?: T | null;
-  error_code?: string | null;
+  data: T | null;
 };
 
 export type TournamentSession = {
   id: string;
-  started_at?: string | null;
-  ended_at?: string | null;
+  started_at: string | null;
+  ended_at: string | null;
   scheduled_for: string;
-  text?: string | null;
+  text: string;
 };
 
 export type TournamentUpcomingSchema = {
@@ -71,7 +84,7 @@ export type TournamentUpdateSchema = {
 export type SocketResponse<T> = {
   success: boolean;
   data: T | null;
-  message?: string;
+  message: string;
 };
 
 export type TypeArgs = {
@@ -96,5 +109,5 @@ export type PaginatedData<T> = {
 export type HttpResponse<T> = {
   success: boolean;
   data: T | null;
-  message?: string;
+  message: string;
 };

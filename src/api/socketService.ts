@@ -1,33 +1,33 @@
-import { io, Socket } from "socket.io-client";
+// @/api/socketService.ts
+import { io, Socket as SocketIoClientSocket } from "socket.io-client"; // Renamed Socket from socket.io-client
 import {
-  ApiResponse,
   TournamentSession,
   TournamentUpdateSchema,
   ClientSchema,
   TypingSessionSchema,
   TypeArgs,
-} from "@/types/api";
+  WsResponse, // Using WsResponse
+} from "@/types/api"; // Assuming your types are in "@/types/api"
 
-const ACCESS_TOKEN_KEY =
-  import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
-const REFRESH_TOKEN_KEY =
-  import.meta.env.VITE_REFRESH_TOKEN_KEY || "refresh_token";
+const ACCESS_TOKEN_KEY = import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
 
-type JoinResponsePayload = ApiResponse<null>;
-type LeaveResponsePayload = ApiResponse<null>;
-type TypingErrorPayload = ApiResponse<null>;
-type TypingUpdatePayload = ApiResponse<TypingSessionSchema>;
+// Payload types using WsResponse
+type JoinResponsePayload = WsResponse<null>;
+type LeaveResponsePayload = WsResponse<null>;
+type TypingErrorPayload = WsResponse<null>; // Assuming server sends WsResponse for errors too
+type TypingUpdatePayload = WsResponse<TypingSessionSchema>; // Individual typing update
 
 interface ServerToClientEvents {
   "join:response": (payload: JoinResponsePayload) => void;
-  "tournament:start": (payload: TournamentSession) => void;
-  "tournament:update": (payload: TournamentUpdateSchema) => void;
-  "user:left": (payload: ClientSchema) => void;
+  "tournament:start": (payload: TournamentSession) => void; // Server might send raw TournamentSession
+  "tournament:update": (payload: TournamentUpdateSchema) => void; // Server sends this structured update
+  "user:left": (payload: ClientSchema) => void; // Server might send raw ClientSchema
   "leave:response": (payload: LeaveResponsePayload) => void;
   "typing:update": (payload: TypingUpdatePayload) => void;
   "typing:error": (payload: TypingErrorPayload) => void;
+  // Standard socket.io events
   connect: () => void;
-  disconnect: (reason: Socket.DisconnectReason) => void;
+  disconnect: (reason: SocketIoClientSocket.DisconnectReason) => void;
   connect_error: (error: Error) => void;
 }
 
@@ -37,61 +37,59 @@ interface ClientToServerEvents {
 }
 
 export class SocketService {
-  private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null =
-    null;
-  private tournamentId: string | null = null;
+  private socket: SocketIoClientSocket<ServerToClientEvents, ClientToServerEvents> | null = null;
+  private currentTournamentId: string | null = null; // Renamed for clarity
 
   private getSocketBaseUrl(): string {
     return import.meta.env.VITE_SOCKET_BASE_URL || "http://localhost:8000";
   }
 
   public connect(tournamentId: string): Promise<void> {
-    if (
-      this.socket &&
-      this.socket.connected &&
-      this.tournamentId === tournamentId
-    ) {
-      console.log("Socket already connected to this tournament.");
+    if (this.socket && this.socket.connected && this.currentTournamentId === tournamentId) {
+      console.log("SocketService: Already connected to this tournament.");
       return Promise.resolve();
     }
 
     if (this.socket) {
-      this.disconnect(); // Disconnect from previous tournament if any
+      console.log("SocketService: Disconnecting from previous tournament or connection attempt.");
+      this.disconnect();
     }
 
-    this.tournamentId = tournamentId;
+    this.currentTournamentId = tournamentId;
     const baseUrl = this.getSocketBaseUrl();
-    const namespaceUrl = `${baseUrl}/comp`;
+    const namespaceUrl = `${baseUrl}/comp`; // Assuming "/comp" is your namespace
 
-    console.log(`Attempting to connect to WebSocket: ${namespaceUrl}`);
+    console.log(`SocketService: Attempting to connect to WebSocket: ${namespaceUrl} for tournament ${tournamentId}`);
 
     const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-
-    const extraHeaders = {
+    const extraHeaders: Record<string, string> = {
       "X-Requested-With": "XMLHttpRequest",
-      Authorization: accessToken ? `Bearer ${accessToken}` : "",
     };
+    if (accessToken) {
+      extraHeaders.Authorization = `Bearer ${accessToken}`;
+    }
 
     this.socket = io(namespaceUrl, {
       transports: ["websocket"],
-      autoConnect: false, // We'll call connect explicitly
-      reconnectionAttempts: 5,
-      reconnectionDelay: 3000,
+      autoConnect: false, // We call connect explicitly
+      reconnectionAttempts: 3, // Sensible default
+      reconnectionDelay: 2000,
       extraHeaders,
       query: {
-        id: tournamentId,
-      }
+        id: tournamentId, // Server uses this to identify the tournament context
+      },
     });
 
     return new Promise((resolve, reject) => {
       this.socket?.once("connect", () => {
-        console.log("Socket connected successfully to", namespaceUrl);
+        console.log(`SocketService: Successfully connected to ${namespaceUrl}. Socket ID: ${this.socket?.id}`);
         resolve();
       });
 
       this.socket?.once("connect_error", (error) => {
-        console.error("Socket connection error:", error);
-        this.socket = null; // Clear socket instance on connection failure
+        console.error("SocketService: Connection error:", error);
+        this.socket = null; // Clear socket on fatal connection error
+        this.currentTournamentId = null;
         reject(error);
       });
 
@@ -101,10 +99,10 @@ export class SocketService {
 
   public disconnect(): void {
     if (this.socket) {
-      console.log("Disconnecting socket...");
+      console.log("SocketService: Disconnecting socket...");
       this.socket.disconnect();
       this.socket = null;
-      this.tournamentId = null;
+      this.currentTournamentId = null;
     }
   }
 
@@ -112,18 +110,17 @@ export class SocketService {
     return this.socket?.connected || false;
   }
 
-  // --- Event Emitters (Client-to-Server) ---
   public emitTypeCharacter(character: string): void {
-    if (!this.socket) {
-      console.warn("Socket not connected. Cannot emit type-character.");
+    if (!this.socket || !this.socket.connected) {
+      console.warn("SocketService: Not connected. Cannot emit type-character.");
       return;
     }
     this.socket.emit("type-character", { character });
   }
 
   public emitLeaveTournament(): void {
-    if (!this.socket) {
-      console.warn("Socket not connected. Cannot emit leave-tournament.");
+    if (!this.socket || !this.socket.connected) {
+      console.warn("SocketService: Not connected. Cannot emit leave-tournament.");
       return;
     }
     this.socket.emit("leave-tournament");
@@ -134,7 +131,8 @@ export class SocketService {
     listener: ServerToClientEvents[Event],
   ): void {
     if (!this.socket) {
-      console.warn(`Socket not initialized. Cannot listen to ${event}.`);
+      // This warning is fine if listeners are attempted to be added before connect() is called
+      console.warn(`SocketService: Socket not initialized. Cannot listen to ${event}.`);
       return;
     }
     // @ts-expect-error Type is actually valid
@@ -146,14 +144,15 @@ export class SocketService {
     listener?: ServerToClientEvents[Event],
   ): void {
     if (!this.socket) {
-      console.warn(`Socket not initialized. Cannot unlisten from ${event}.`);
+      // This warning is fine if listeners are attempted to be removed when socket is already null
+      // console.warn(`SocketService: Socket not initialized. Cannot unlisten from ${event}.`);
       return;
     }
     if (listener) {
       // @ts-expect-error Type is actually valid
       this.socket.off(event, listener);
     } else {
-      this.socket.off(event);
+      this.socket.off(event); // Remove all listeners for this event
     }
   }
 }

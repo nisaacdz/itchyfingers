@@ -1,461 +1,328 @@
-// @/hooks/useTournamentRealtime.ts
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { socketService } from "@/api/socketService";
 import {
   TournamentSession,
-  TournamentUpdateSchema,
-  ClientSchema, // For current authenticated client from useAuth
   TypingSessionSchema,
-  ApiResponse,
-  TournamentSchema, // For initial static info
+  ClientSchema,
+  TournamentUpdateSchema,
+  WsResponse,
 } from "@/types/api";
 import { useToast } from "@/components/ui/use-toast";
-import { Socket } from "socket.io-client"; // For type hint on disconnect reason
+import { Socket as SocketIoClientSocket } from "socket.io-client";
 
-// Define specific event payload types for clarity from socketService.ts
-type JoinResponsePayload = ApiResponse<null>;
-type LeaveResponsePayload = ApiResponse<null>;
-type TypingErrorPayload = ApiResponse<null>;
-type TypingUpdatePayload = ApiResponse<TypingSessionSchema>;
+type JoinResponsePayload = WsResponse<null>;
+type LeaveResponsePayload = WsResponse<null>;
+type TypingErrorPayload = WsResponse<null>;
+type TypingUpdatePayload = WsResponse<TypingSessionSchema>;
 
-export type GamePhase =
-  | "initializing" // Waiting for static data and auth data
-  | "error_static_data" // Failed to load TournamentSchema
-  | "error_auth" // Auth data is invalid (e.g., client is null after auth loading)
-  | "error_socket" // WebSocket connection or join failed
-  | "lobby" // Connected, tournament not yet started or in countdown
-  | "countdown" // Tournament scheduled_for is in near future
-  | "active" // Tournament started, user is typing
-  | "user_completed" // Current user finished, tournament might still be active
-  | "tournament_over"; // Tournament session has ended_at
-
-export interface TournamentRealtimeState {
+export interface TournamentRealtimeMinimalState {
   tournamentSession: TournamentSession | null;
   participants: Record<string, TypingSessionSchema>;
-  currentUserTypingSession: TypingSessionSchema | null;
   socketStatus: "idle" | "connecting" | "connected" | "disconnected" | "error";
-  gamePhase: GamePhase;
   lastSocketError: string | null;
-  typingText: string | null;
 }
 
-const initialRealtimeState: TournamentRealtimeState = {
+const initialRealtimeState: TournamentRealtimeMinimalState = {
   tournamentSession: null,
   participants: {},
-  currentUserTypingSession: null,
   socketStatus: "idle",
-  gamePhase: "initializing",
   lastSocketError: null,
-  typingText: null,
 };
 
 interface UseTournamentRealtimeProps {
   tournamentId: string | undefined; // From useParams
-  initialTournamentStaticInfo: TournamentSchema | null; // From useTournamentStaticData
-  isStaticLoading: boolean; // From useTournamentStaticData
-  staticError: string | null; // From useTournamentStaticData
-  authHookResult: { client: ClientSchema | null; isLoading: boolean }; // Direct from useAuth()
+  // initialTournamentStaticInfo: TournamentSchema | null; // No longer passed to hook, orchestrator holds it
+  isStaticDataLoading: boolean; // From useTournamentStaticData (renamed for clarity)
+  staticDataError: string | null; // From useTournamentStaticData (renamed for clarity)
+  authClient: ClientSchema | null; // Direct client object
+  isAuthLoading: boolean;
 }
 
-interface UseTournamentRealtimeReturn extends TournamentRealtimeState {
+// What the hook returns
+interface UseTournamentRealtimeReturn extends TournamentRealtimeMinimalState {
   sendTypeCharacter: (character: string) => void;
   sendLeaveTournament: () => void;
 }
 
 export const useTournamentRealtime = ({
   tournamentId,
-  initialTournamentStaticInfo,
-  isStaticLoading,
-  staticError,
-  authHookResult,
+  isStaticDataLoading,
+  staticDataError,
+  authClient,
+  isAuthLoading,
 }: UseTournamentRealtimeProps): UseTournamentRealtimeReturn => {
   const [state, setState] =
-    useState<TournamentRealtimeState>(initialRealtimeState);
+    useState<TournamentRealtimeMinimalState>(initialRealtimeState);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const currentAuthClient = authHookResult.client;
-  const isAuthLoading = authHookResult.isLoading;
+  // Using a ref for handlers to avoid re-registering listeners unnecessarily
+  // The handlers themselves will be updated in a separate effect.
+  const eventHandlersRef = useRef({
+    handleJoinResponse: (payload: JoinResponsePayload) => {},
+    handleTournamentStart: (sessionData: TournamentSession) => {},
+    handleTournamentUpdate: (updateData: TournamentUpdateSchema) => {},
+    handleUserLeft: (clientWhoLeft: ClientSchema) => {},
+    handleLeaveResponse: (payload: LeaveResponsePayload) => {},
+    handleTypingUpdate: (payload: TypingUpdatePayload) => {},
+    handleTypingError: (payload: TypingErrorPayload) => {},
+    handleSocketConnect: () => {},
+    handleSocketDisconnect: (reason: SocketIoClientSocket.DisconnectReason) => {},
+    handleSocketConnectError: (error: Error) => {},
+  });
 
-  const updateState = useCallback(
-    (updates: Partial<TournamentRealtimeState>) => {
-      setState((prev) => ({ ...prev, ...updates }));
-    },
-    [],
-  );
-
-  const deriveCurrentGamePhase = useCallback(
-    (
-      currentSocketStatus: TournamentRealtimeState["socketStatus"],
-      session: TournamentSession | null,
-      participantsList: Record<string, TypingSessionSchema>,
-      authClientIdFromHook: string | null, // currentAuthClient.id
-    ): GamePhase => {
-      // Prioritize error states
-      if (staticError) return "error_static_data";
-      if (!isAuthLoading && !authClientIdFromHook) return "error_auth"; // Auth finished loading, but no client ID
-      if (currentSocketStatus === "error") return "error_socket";
-
-      // Initializing if critical data is still loading
-      if (isStaticLoading || isAuthLoading) return "initializing";
-      if (
-        currentSocketStatus === "idle" ||
-        currentSocketStatus === "connecting"
-      ) {
-        // If static and auth data are ready, but socket is still connecting
-        return "lobby"; // Or a more specific "connecting_socket" phase
-      }
-
-      if (!session) {
-        return "lobby"; // Socket connected, but no session info yet (e.g., waiting for first tournament:update)
-      }
-
-      if (session.ended_at) {
-        return "tournament_over";
-      }
-
-      if (session.started_at) {
-        const userSession = authClientIdFromHook
-          ? participantsList[authClientIdFromHook]
-          : null;
-        if (
-          userSession?.ended_at ||
-          (session.text &&
-            userSession?.correct_position === session.text.length)
-        ) {
-          return "user_completed";
-        }
-        return "active";
-      }
-
-      if (session.scheduled_for) {
-        const scheduledTime = new Date(session.scheduled_for).getTime();
-        const now = Date.now();
-        // Example: Countdown starts 5 minutes before.
-        const countdownWindowMs = 5 * 60 * 1000;
-        if (scheduledTime > now && scheduledTime <= now + countdownWindowMs) {
-          return "countdown";
-        }
-      }
-      return "lobby"; // Default state after connection and before start/countdown
-    },
-    [isStaticLoading, staticError, isAuthLoading], // Add all relevant dependencies
-  );
-
-  // Effect to update gamePhase based on initial loading states and errors
+  // Effect to define/update the actual handler logic
   useEffect(() => {
-    const newPhase = deriveCurrentGamePhase(
-      state.socketStatus,
-      state.tournamentSession,
-      state.participants,
-      currentAuthClient?.id || null,
-    );
-    if (newPhase !== state.gamePhase) {
-      updateState({ gamePhase: newPhase });
-    }
-  }, [
-    isStaticLoading,
-    staticError,
-    isAuthLoading,
-    currentAuthClient, // Auth related
-    state.socketStatus,
-    state.tournamentSession,
-    state.participants, // Realtime state
-    deriveCurrentGamePhase,
-    updateState,
-    state.gamePhase, // Hook utilities
-  ]);
+    eventHandlersRef.current.handleJoinResponse = (payload: JoinResponsePayload) => {
+      console.log("Socket Event: join:response", payload);
+      if (!payload.success) {
+        setState(prev => ({
+            ...prev,
+            lastSocketError: payload.message || "Failed to join tournament room.",
+            socketStatus: "error", // Or "disconnected" if server implies this
+        }));
+        toast({ title: "Join Failed", description: payload.message || "Could not join.", variant: "destructive" });
+        // Consider if socketService.disconnect() is needed here if server rejects join.
+      }
+      // On success, expect a tournament:update or tournament:start shortly.
+    };
 
-  // Effect for WebSocket connection and event handling
+    eventHandlersRef.current.handleTournamentStart = (sessionData: TournamentSession) => {
+      console.log("Socket Event: tournament:start", sessionData);
+      setState(prev => ({
+        ...prev,
+        tournamentSession: sessionData,
+        participants: {}, // Reset participants on new start? Or does update handle it?
+        lastSocketError: null,
+      }));
+      if (sessionData.text) {
+        toast({ title: "Tournament Started!", description: "Let the typing begin!" });
+      }
+    };
+
+    eventHandlersRef.current.handleTournamentUpdate = (updateData: TournamentUpdateSchema) => {
+      console.log("Socket Event: tournament:update", updateData);
+      setState(prev => {
+        const newParticipantsMap: Record<string, TypingSessionSchema> = {};
+        updateData.participants.forEach((p) => {
+          newParticipantsMap[p.client.id] = p;
+        });
+        return {
+          ...prev,
+          tournamentSession: updateData.tournament,
+          participants: newParticipantsMap,
+          lastSocketError: null,
+        };
+      });
+    };
+
+    eventHandlersRef.current.handleUserLeft = (clientWhoLeft: ClientSchema) => {
+      console.log("Socket Event: user:left", clientWhoLeft);
+      toast({ description: `${clientWhoLeft.user?.username || "User"} left.` });
+      // participants list is updated by tournament:update, so no direct state change here needed typically.
+    };
+
+    eventHandlersRef.current.handleLeaveResponse = (payload: LeaveResponsePayload) => {
+      console.log("Socket Event: leave:response", payload);
+      if (payload.success) {
+        toast({ title: "Left Tournament", description: "You have successfully left." });
+        // socketService.disconnect(); // Already disconnected by emitting leave, or server will disconnect.
+        navigate("/tournaments"); // Navigate after confirmation
+      } else {
+        toast({ title: "Error Leaving", description: payload.message || "Could not leave.", variant: "destructive" });
+      }
+    };
+
+    eventHandlersRef.current.handleTypingUpdate = (payload: TypingUpdatePayload) => {
+      console.log("Socket Event: typing:update", payload);
+      if (payload.success && payload.data) {
+        const updatedParticipant = payload.data;
+        setState(prev => ({
+          ...prev,
+          participants: {
+            ...prev.participants,
+            [updatedParticipant.client.id]: updatedParticipant,
+          },
+        }));
+      }
+    };
+
+    eventHandlersRef.current.handleTypingError = (payload: TypingErrorPayload) => {
+      console.error("Socket Event: typing:error", payload);
+      toast({ title: "Typing Error", description: payload.message || "An input error occurred.", variant: "destructive" });
+      setState(prev => ({ ...prev, lastSocketError: payload.message }));
+    };
+
+    eventHandlersRef.current.handleSocketConnect = () => {
+      console.log("Socket Event: Native 'connect' (or reconnect)");
+      setState(prev => ({ ...prev, socketStatus: "connected", lastSocketError: null }));
+    };
+
+    eventHandlersRef.current.handleSocketDisconnect = (reason: SocketIoClientSocket.DisconnectReason) => {
+      console.warn("Socket Event: Native 'disconnect'", reason);
+      setState(prev => ({
+        ...prev,
+        socketStatus: "disconnected",
+        lastSocketError: `Disconnected: ${reason}`,
+      }));
+      // Toast for hard disconnects, socket.io client handles reconnection attempts for others.
+      if (reason === "io server disconnect" || reason === "io client disconnect") {
+        toast({ title: "Disconnected", description: `Connection lost: ${reason}`, variant: "destructive" });
+      }
+    };
+
+    eventHandlersRef.current.handleSocketConnectError = (error: Error) => {
+      console.error("Socket Event: Native 'connect_error'", error);
+      setState(prev => ({
+        ...prev,
+        socketStatus: "error", // Or "disconnected" if it's a final failure
+        lastSocketError: error.message || "Connection establishment error.",
+      }));
+    };
+  }, [toast, navigate]); // Dependencies for the handler logic (stable ones)
+
+  // Effect for WebSocket Connection/Disconnection Management
   useEffect(() => {
     // Pre-conditions for attempting socket connection:
-    if (
-      isStaticLoading ||
-      staticError ||
-      isAuthLoading ||
-      !currentAuthClient ||
-      !tournamentId ||
-      !initialTournamentStaticInfo
-    ) {
-      // If any pre-condition fails after initial loading phase, set appropriate error phase.
-      if (!isStaticLoading && staticError)
-        updateState({
-          gamePhase: "error_static_data",
-          lastSocketError: staticError,
-        });
-      else if (!isAuthLoading && !currentAuthClient)
-        updateState({
-          gamePhase: "error_auth",
-          lastSocketError: "User information is not available.",
-        });
-      // Other conditions (like !tournamentId) should ideally be caught by page structure or routing
+    if (isStaticDataLoading || isAuthLoading) {
+      // If still loading critical prerequisites, ensure we are in 'idle' or 'initializing'
+      // This prevents trying to connect prematurely.
+      if (state.socketStatus !== "idle" && state.socketStatus !== "connecting") {
+         setState(prev => ({ ...prev, socketStatus: "idle", lastSocketError: "Waiting for data/auth..."}));
+      }
       return;
     }
 
-    // At this point, static data is loaded, auth is resolved (we have currentAuthClient), and we have a tournamentId.
-    updateState({ socketStatus: "connecting", gamePhase: "lobby" }); // Tentatively set to lobby
+    if (staticDataError) {
+      setState(prev => ({ ...prev, socketStatus: "error", lastSocketError: `Static data error: ${staticDataError}` }));
+      return;
+    }
+    if (!authClient) {
+      setState(prev => ({ ...prev, socketStatus: "error", lastSocketError: "Authentication required." }));
+      return;
+    }
+    if (!tournamentId) {
+      setState(prev => ({ ...prev, socketStatus: "error", lastSocketError: "Tournament ID missing." }));
+      return;
+    }
+
+    // All prerequisites met, proceed with connection
+    console.log(`useTournamentRealtime: Prerequisites met. Attempting to connect for tournament: ${tournamentId}`);
+    setState(prev => ({ ...prev, socketStatus: "connecting", lastSocketError: null }));
+
     socketService
       .connect(tournamentId)
       .then(() => {
-        updateState({ socketStatus: "connected" });
-        // Game phase will be further refined by join:response and tournament:update
+        // The 'connect' event handler via eventHandlersRef will set status to "connected"
+        console.log("useTournamentRealtime: socketService.connect() promise resolved.");
+        // No direct setState here for "connected"; let the 'connect' event handler do it.
       })
       .catch((error: Error) => {
-        console.error(
-          "useTournamentRealtime: Failed to connect socket:",
-          error,
-        );
-        updateState({
+        console.error("useTournamentRealtime: Failed to connect socket via promise:", error);
+        setState(prev => ({
+          ...prev,
           socketStatus: "error",
           lastSocketError: error.message || "Failed to connect to tournament.",
-          gamePhase: "error_socket",
-        });
+        }));
         toast({
           title: "Connection Error",
-          description: "Could not connect to the tournament server.",
+          description: error.message || "Could not connect to the tournament server.",
           variant: "destructive",
         });
       });
-
-    // --- WebSocket Event Handlers ---
-    const handleJoinResponse = (payload: JoinResponsePayload) => {
-      console.log("socket: join:response", payload);
-      if (!payload.success) {
-        updateState({
-          lastSocketError: payload.message || "Failed to join tournament room.",
-          gamePhase: "error_socket", // Treat join failure as a socket error for simplicity
-          socketStatus: "error",
-        });
-        toast({
-          title: "Join Failed",
-          description: payload.message || "Could not join.",
-          variant: "destructive",
-        });
-        socketService.disconnect();
-      } else {
-        // Successfully joined, awaiting tournament:update or tournament:start
-        // Game phase will be derived correctly based on incoming data.
-        // toast({ title: "Joined Room", description: "Waiting for the tournament." });
-      }
-    };
-
-    const handleTournamentStart = (sessionData: TournamentSession) => {
-      console.log("socket: tournament:start", sessionData);
-      const newTypingText = sessionData.text || state.typingText;
-      setState((prev) => ({
-        ...prev,
-        tournamentSession: sessionData,
-        typingText: newTypingText,
-        gamePhase: deriveCurrentGamePhase(
-          "connected",
-          sessionData,
-          prev.participants,
-          currentAuthClient.id,
-        ),
-        lastSocketError: null,
-      }));
-      if (newTypingText) {
-        toast({
-          title: "Tournament Started!",
-          description: "Let the typing begin!",
-        });
-      }
-    };
-
-    const handleTournamentUpdate = (updateData: TournamentUpdateSchema) => {
-      console.log("socket: tournament:update", updateData);
-      const newParticipantsMap: Record<string, TypingSessionSchema> = {};
-      updateData.participants.forEach((p) => {
-        newParticipantsMap[p.client.id] = p;
-      });
-
-      const currentUserSession = currentAuthClient
-        ? newParticipantsMap[currentAuthClient.id]
-        : null;
-      const newTypingText = updateData.tournament.text || state.typingText;
-
-      setState((prev) => ({
-        ...prev,
-        tournamentSession: updateData.tournament,
-        participants: newParticipantsMap,
-        currentUserTypingSession: currentUserSession,
-        typingText: newTypingText,
-        gamePhase: deriveCurrentGamePhase(
-          "connected",
-          updateData.tournament,
-          newParticipantsMap,
-          currentAuthClient.id,
-        ),
-        lastSocketError: null,
-      }));
-    };
-
-    const handleUserLeft = (clientWhoLeft: ClientSchema) => {
-      console.log("socket: user:left", clientWhoLeft);
-      toast({
-        description: `${clientWhoLeft.user?.username || "Anonymous"} (${clientWhoLeft.id.substring(0, 6)}) has left.`,
-      });
-      // Participant list is updated by tournament:update
-    };
-
-    const handleLeaveResponse = (payload: LeaveResponsePayload) => {
-      console.log("socket: leave:response", payload);
-      if (payload.success) {
-        toast({
-          title: "Left Tournament",
-          description: "You have successfully left.",
-        });
-        socketService.disconnect();
-        navigate("/tournaments");
-      } else {
-        toast({
-          title: "Error Leaving",
-          description: payload.message || "Could not leave.",
-          variant: "destructive",
-        });
-      }
-    };
-
-    const handleTypingUpdate = (payload: TypingUpdatePayload) => {
-      // This provides more granular updates for a single participant.
-      // Useful if tournament:update is batched or less frequent.
-      if (payload.success && payload.data) {
-        const updatedParticipant = payload.data;
-        setState((prev) => {
-          const newParticipants = {
-            ...prev.participants,
-            [updatedParticipant.client.id]: updatedParticipant,
-          };
-          const newCurrentUserTypingSession =
-            currentAuthClient?.id === updatedParticipant.client.id
-              ? updatedParticipant
-              : prev.currentUserTypingSession;
-
-          return {
-            ...prev,
-            participants: newParticipants,
-            currentUserTypingSession: newCurrentUserTypingSession,
-            // Re-derive gamePhase if this update could change it (e.g., user finishing)
-            gamePhase: deriveCurrentGamePhase(
-              prev.socketStatus,
-              prev.tournamentSession,
-              newParticipants,
-              currentAuthClient.id,
-            ),
-          };
-        });
-      }
-    };
-
-    const handleTypingError = (payload: TypingErrorPayload) => {
-      console.error("socket: typing:error", payload);
-      toast({
-        title: "Typing Error",
-        description: payload.message || "An input error occurred.",
-        variant: "destructive",
-      });
-      updateState({ lastSocketError: payload.message });
-    };
-
-    const handleDisconnect = (reason: Socket.DisconnectReason) => {
-      console.warn("Socket disconnected:", reason);
-      // If server initiated, it's a hard disconnect. Otherwise, socket.io client might try to reconnect.
-      const isHardDisconnect =
-        reason === "io server disconnect" || reason === "io client disconnect";
-      updateState({
-        socketStatus: "disconnected",
-        lastSocketError: `Disconnected: ${reason}`,
-        gamePhase: isHardDisconnect ? "error_socket" : state.gamePhase, // Maintain phase if reconnecting
-      });
-      if (isHardDisconnect) {
-        toast({
-          title: "Disconnected",
-          description: `Connection lost: ${reason}`,
-          variant: "destructive",
-        });
-      }
-    };
-
-    const handleConnectError = (error: Error) => {
-      console.error("Socket connect_error:", error);
-      updateState({
-        socketStatus: "error",
-        lastSocketError: error.message || "Connection establishment error.",
-        gamePhase: "error_socket",
-      });
-    };
-
-    // Register listeners
-    socketService.on("join:response", handleJoinResponse);
-    socketService.on("tournament:start", handleTournamentStart);
-    socketService.on("tournament:update", handleTournamentUpdate);
-    socketService.on("user:left", handleUserLeft);
-    socketService.on("leave:response", handleLeaveResponse);
-    socketService.on("typing:update", handleTypingUpdate);
-    socketService.on("typing:error", handleTypingError);
-    socketService.on("disconnect", handleDisconnect);
-    socketService.on("connect_error", handleConnectError);
 
     return () => {
-      // Unregister listeners and disconnect
-      console.log(
-        "useTournamentRealtime: Cleaning up socket listeners and disconnecting.",
-      );
-      socketService.off("join:response", handleJoinResponse);
-      socketService.off("tournament:start", handleTournamentStart);
-      socketService.off("tournament:update", handleTournamentUpdate);
-      socketService.off("user:left", handleUserLeft);
-      socketService.off("leave:response", handleLeaveResponse);
-      socketService.off("typing:update", handleTypingUpdate);
-      socketService.off("typing:error", handleTypingError);
-      socketService.off("disconnect", handleDisconnect);
-      socketService.off("connect_error", handleConnectError);
+      console.log("useTournamentRealtime: Connection effect cleanup. Disconnecting socket.");
       socketService.disconnect();
-      // Reset to a clean state, or maintain some info if navigating away briefly
-      // For a full leave, reset might be appropriate.
-      // updateState(initialRealtimeState); // Or a subset for persistence if needed
-      updateState({ socketStatus: "idle" }); // Indicate socket is no longer active
+      // Reset state on disconnect? Or just socketStatus?
+      // Setting to idle signifies the connection attempt controlled by this effect is over.
+      setState(prev => ({ ...prev, socketStatus: "idle" }));
     };
   }, [
     tournamentId,
-    initialTournamentStaticInfo,
-    isStaticLoading,
-    staticError,
+    authClient,
+    staticDataError,
     isAuthLoading,
-    currentAuthClient,
-    state.gamePhase,
-    updateState,
     toast,
-    navigate,
-    deriveCurrentGamePhase,
-    state.typingText, // Utilities and state dependencies
   ]);
 
-  // Actions to be called by components
+  // Effect for Registering/Unregistering Socket Event Listeners
+  useEffect(() => {
+    // Listeners should only be active if a connection is established or being established
+    // and the socket instance in socketService is expected to be valid.
+    if (state.socketStatus !== "connected" && state.socketStatus !== "connecting") {
+      // If not connected or connecting, ensure no listeners are attempted to be set.
+      // Cleanup for listeners happens in the return function of this effect
+      // when socketStatus changes FROM a state where listeners were set.
+      return;
+    }
+
+    console.log(`useTournamentRealtime: Socket status is '${state.socketStatus}'. (Re)Registering listeners.`);
+
+    const getHandler = <K extends keyof typeof eventHandlersRef.current>(key: K) => 
+        (...args: Parameters<typeof eventHandlersRef.current[K]>) => {
+            return eventHandlersRef.current[key](...args);
+        };
+        
+    const localOnConnect = getHandler('handleSocketConnect');
+    const localOnDisconnect = getHandler('handleSocketDisconnect');
+    const localOnConnectError = getHandler('handleSocketConnectError');
+    const localOnJoinResponse = getHandler('handleJoinResponse');
+    const localOnTournamentStart = getHandler('handleTournamentStart');
+    const localOnTournamentUpdate = getHandler('handleTournamentUpdate');
+    const localOnUserLeft = getHandler('handleUserLeft');
+    const localOnLeaveResponse = getHandler('handleLeaveResponse');
+    const localOnTypingUpdate = getHandler('handleTypingUpdate');
+    const localOnTypingError = getHandler('handleTypingError');
+
+    // Register listeners using the refs
+    socketService.on("connect", localOnConnect);
+    socketService.on("disconnect", localOnDisconnect);
+    socketService.on("connect_error", localOnConnectError);
+    socketService.on("join:response", localOnJoinResponse);
+    socketService.on("tournament:start", localOnTournamentStart);
+    socketService.on("tournament:update", localOnTournamentUpdate);
+    socketService.on("user:left", localOnUserLeft);
+    socketService.on("leave:response", localOnLeaveResponse);
+    socketService.on("typing:update", localOnTypingUpdate);
+    socketService.on("typing:error", localOnTypingError);
+
+    return () => {
+      console.log("useTournamentRealtime: Listener effect cleanup. Unregistering listeners.");
+      socketService.off("connect", localOnConnect);
+      socketService.off("disconnect", localOnDisconnect);
+      socketService.off("connect_error", localOnConnectError);
+      socketService.off("join:response", localOnJoinResponse);
+      socketService.off("tournament:start", localOnTournamentStart);
+      socketService.off("tournament:update", localOnTournamentUpdate);
+      socketService.off("user:left", localOnUserLeft);
+      socketService.off("leave:response", localOnLeaveResponse);
+      socketService.off("typing:update", localOnTypingUpdate);
+      socketService.off("typing:error", localOnTypingError);
+    };
+  }, [state.socketStatus]); // Re-run only when socketStatus changes
+
+
   const sendTypeCharacter = useCallback(
     (character: string) => {
-      // Only send if active and socket is connected
-      if (state.gamePhase === "active" && state.socketStatus === "connected") {
+      if (state.socketStatus === "connected") { // Check derived gamePhase in component
         socketService.emitTypeCharacter(character);
+      } else {
+        console.warn("Cannot sendTypeCharacter: Socket not connected.");
       }
     },
-    [state.gamePhase, state.socketStatus],
+    [state.socketStatus],
   );
 
   const sendLeaveTournament = useCallback(() => {
     if (state.socketStatus === "connected") {
       socketService.emitLeaveTournament();
     } else {
-      // If not connected, perhaps just navigate away
-      toast({
-        title: "Not Connected",
-        description: "Cannot send leave request.",
-        variant: "destructive",
-      });
-      navigate("/tournaments");
+      console.warn("Cannot sendLeaveTournament: Socket not connected. Navigating away.");
+      navigate("/tournaments"); // Or show toast
     }
-  }, [state.socketStatus, navigate, toast]);
+  }, [state.socketStatus, navigate]);
 
   return { ...state, sendTypeCharacter, sendLeaveTournament };
 };
