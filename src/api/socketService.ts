@@ -1,4 +1,4 @@
-import { JoinSuccessPayload, WsFailurePayload } from "@/types/api";
+import { AllSuccessPayload, CheckSuccessPayload, DataSuccessPayload, JoinSuccessPayload, LeaveSuccessPayload, MemberJoinedPayload, MemberLeftPayload, MeSuccessPayload, TypeEventPayload, UpdateAllPayload, UpdateDataPayload, UpdateMePayload, WsFailurePayload } from "@/types/api";
 import { io, Socket as SocketIoClientSocket } from "socket.io-client"; // Renamed Socket from socket.io-client
 
 const ACCESS_TOKEN_KEY = import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
@@ -11,6 +11,26 @@ export type ConnectOptions = {
   onDisconnect: (reason: string) => void;
   onJoinFailure: (payload: WsFailurePayload) => void;
   onConnectError: (error: Error) => void;
+}
+
+type RealtimeUpdateEvents = {
+  "update:data": (payload: UpdateDataPayload) => void;
+  "update:all": (payload: UpdateAllPayload) => void;
+  "update:me": (payload: UpdateMePayload) => void;
+  "member:joined": (payload: MemberJoinedPayload) => void;
+  "member:left": (payload: MemberLeftPayload) => void;
+};
+
+type PollableEvents = {
+  "leave": { success: LeaveSuccessPayload } | { failure: WsFailurePayload };
+  "me": { success: MeSuccessPayload } | { failure: WsFailurePayload };
+  "all": { success: AllSuccessPayload } | { failure: WsFailurePayload };
+  "data": { success: DataSuccessPayload } | { failure: WsFailurePayload };
+  "check": { success: CheckSuccessPayload } | { failure: WsFailurePayload };
+}
+
+type EmitOnlyEvents = {
+  "type": TypeEventPayload;
 }
 
 export class SocketService {
@@ -65,10 +85,8 @@ export class SocketService {
     this.registerConnectionListeners();
 
     this.socket?.on("reconnect_attempt", () => {
-      this.registerConnectionListeners()
-
-      // listen to successful reconnect? but how to make it not forever remain listening.
-      // we want only listen to reconnect_success
+      this.registerConnectionListeners();
+      console.log(`SocketService: Attempting to reconnect to WebSocket: ${namespaceUrl} for tournament ${options.tournamentId}`);
     });
 
     this.socket?.on("disconnect", this.options?.onDisconnect);
@@ -120,30 +138,73 @@ export class SocketService {
     return this.socket?.connected || false;
   }
 
-  public on(
-    event: string,
-    listener: (payload: unknown) => void,
+  public on<E extends keyof RealtimeUpdateEvents>(
+    event: E,
+    listener: RealtimeUpdateEvents[E]
   ): void {
     if (!this.socket) {
       console.warn(`SocketService: Socket not initialized. Cannot listen to ${event}.`);
       return;
     }
+    //@ts-expect-error type is actually valid
     this.socket.on(event, listener);
   }
 
-  public off(
-    event: string,
-    listener?: (payload: unknown) => void,
+  public off<E extends keyof RealtimeUpdateEvents>(
+    event: E,
   ): void {
     if (!this.socket) {
       console.warn(`SocketService: Socket not initialized. Cannot unlisten from ${event}.`);
       return;
     }
-    if (listener) {
-      this.socket.off(event, listener);
-    } else {
-      this.socket.off(event);
+  }
+
+  public async fire<E extends keyof PollableEvents>(
+    event: E): Promise<PollableEvents[E]> {
+    if (!this.socket) {
+      console.warn(`SocketService: Socket not initialized. Cannot fire ${event}.`);
+      return Promise.reject(new Error(`Socket not initialized. Cannot fire ${event}.`));
     }
+
+    return new Promise((resolve, reject) => {
+      const socket = this.socket;
+      const successEvent = `${event}:success`;
+      const failureEvent = `${event}:failure`;
+
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        reject(new Error(`Timeout waiting for response to "${event}"`));
+      }, 10000);
+
+      const cleanup = () => {
+        socket.off(successEvent, onSuccess);
+        socket.off(failureEvent, onFailure);
+        clearTimeout(timeoutId);
+      };
+
+      const onSuccess = (payload) => {
+        cleanup();
+        resolve({ success: payload } as PollableEvents[E]);
+      };
+
+      const onFailure = (payload: WsFailurePayload) => {
+        cleanup();
+        resolve({ failure: payload } as PollableEvents[E]);
+      };
+
+      socket.once(successEvent, onSuccess);
+      socket.once(failureEvent, onFailure);
+
+      socket.emit(event);
+    });
+  }
+
+  public emit<E extends keyof EmitOnlyEvents>(event: E, payload: EmitOnlyEvents[E]): void {
+    if (!this.socket) {
+      console.warn(`SocketService: Socket not initialized. Cannot emit ${event}.`);
+      return;
+    }
+    this.socket.emit(event, payload);
   }
 }
 
