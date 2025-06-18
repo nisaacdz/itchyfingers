@@ -103,7 +103,7 @@ export default function TournamentLobby() {
         } else {
           setError(response.data.message || "Failed to load tournaments");
         }
-      } catch (err: any) {
+      } catch (err) {
         setError(
           err.response?.data?.message ||
           "An error occurred while fetching tournaments"
@@ -156,8 +156,6 @@ export default function TournamentLobby() {
   const handleSpectateTournament = (tournamentId: string) => {
     navigate(`/tournaments/${tournamentId}?spectator=true`);
   };
-
-  
 
   console.log(tournaments);
 

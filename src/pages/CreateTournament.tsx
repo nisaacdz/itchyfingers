@@ -103,7 +103,7 @@ export function CreateTournamentDialog({
       } else {
         setError(response.data.message || "Failed to create tournament.");
       }
-    } catch (err: any) {
+    } catch (err) {
       setError(err.response?.data?.message || "An error occurred.");
     } finally {
       setIsLoading(false);

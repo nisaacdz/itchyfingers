@@ -109,9 +109,11 @@ export type UpdateAllPayload = {
 
 export type DataSuccessPayload = TournamentData;
 
-export type UpdateDataPayload = Partial<
-  Omit<TournamentData, "id" | "createdAt" | "createdBy">
->;
+export type UpdateDataPayload = {
+  updates: Partial<
+    Omit<TournamentData, "id" | "createdAt" | "createdBy">
+  >;
+}
 
 export type CheckSuccessPayload = {
   status: TournamentStatus;
