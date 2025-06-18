@@ -1,5 +1,5 @@
 import React from "react";
-import { TypingSessionSchema, TournamentSchema } from "../types/api";
+import { ParticipantData, TournamentData } from "../types/api";
 import { Progress } from "@/components/ui/progress"; // Assuming shadcn/ui progress component
 import {
   Card,
@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/card";
 
 interface ParticipantsBoardProps {
-  participants: TypingSessionSchema[];
-  currentTournament: TournamentSchema | null;
-  clientId: string | null; // To highlight the current user
+  participants: ParticipantData[];
+  currentTournament: TournamentData | null;
+  clientId: string | null;
 }
 
 const ParticipantsBoard: React.FC<ParticipantsBoardProps> = ({
@@ -26,13 +26,13 @@ const ParticipantsBoard: React.FC<ParticipantsBoardProps> = ({
 
   const sortedParticipants = [...participants].sort((a, b) => {
     // Sort by position (desc), then speed (desc), then accuracy (desc)
-    if (b.current_position !== a.current_position) {
-      return b.current_position - a.current_position;
+    if (b.currentPosition !== a.currentPosition) {
+      return b.currentPosition - a.currentPosition;
     }
-    if (b.current_speed !== a.current_speed) {
-      return b.current_speed - a.current_speed;
+    if (b.currentSpeed !== a.currentSpeed) {
+      return b.currentSpeed - a.currentSpeed;
     }
-    return b.current_accuracy - a.current_accuracy;
+    return b.currentAccuracy - a.currentAccuracy;
   });
 
   return (
@@ -49,7 +49,7 @@ const ParticipantsBoard: React.FC<ParticipantsBoardProps> = ({
             sortedParticipants.map((participant) => {
               const isCurrentUser = participant.client.id === clientId;
               const progressPercentage = currentTournament.text?.length
-                ? (participant.current_position /
+                ? (participant.currentPosition /
                     currentTournament.text.length) *
                   100
                 : 0;
@@ -67,9 +67,9 @@ const ParticipantsBoard: React.FC<ParticipantsBoardProps> = ({
                       {isCurrentUser && " (You)"}
                     </span>
                     <div className="flex gap-3 text-sm text-muted-foreground">
-                      <span>{participant.current_speed.toFixed(0)} WPM</span>
+                      <span>{participant.currentSpeed.toFixed(0)} WPM</span>
                       <span>
-                        {participant.current_accuracy.toFixed(0)}% Acc
+                        {participant.currentAccuracy.toFixed(0)}% Acc
                       </span>
                     </div>
                   </div>

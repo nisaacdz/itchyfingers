@@ -7,11 +7,11 @@ import {
   CardTitle,
 } from "@/components/ui/card"; // Assuming path
 import { TypingInterface } from "./TypingInterface"; // Assuming path
-import { TournamentSession, TournamentSchema } from "@/types/api"; // Adjust path
+import { TournamentSession, TournamentData } from "@/types/api"; // Adjust path
 
 interface TypingChallengeAreaProps {
   liveSession: TournamentSession | null;
-  // currentTournament: TournamentSchema | null; // Potentially for fallback text if liveSession.text is not available
+  // currentTournament: TournamentData | null; // Potentially for fallback text if liveSession.text is not available
 }
 
 export default function TypingChallengeArea({

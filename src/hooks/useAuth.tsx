@@ -1,7 +1,7 @@
-import React, { createContext, useState, useEffect, ReactNode } from "react";
-import { httpService } from "../api/httpService";
-import { ClientSchema, HttpResponse } from "../types/api";
-import { ErrorMessage } from "@/components/ErrorMessage";
+/* eslint-disable react-refresh/only-export-components */
+import httpService from "@/api/httpService";
+import { ClientSchema, HttpResponse } from "@/types/api";
+import { ReactNode, useContext, useEffect, useState, createContext } from "react";
 
 export interface AuthContextType {
   client: ClientSchema | null;
@@ -71,3 +71,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
+
+export default AuthContext;

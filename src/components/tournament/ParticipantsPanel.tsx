@@ -1,11 +1,11 @@
-import { TypingSessionSchema, ClientSchema } from "@/types/api";
+import { ParticipantData, ClientSchema } from "@/types/api";
 import { GamePhase } from "@/hooks/useTournamentRealtime";
 import { ParticipantItem } from "@/components/tournament/ParticipantItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users } from "lucide-react";
 
 interface ParticipantsPanelProps {
-  participants: Record<string, TypingSessionSchema>;
+  participants: Record<string, ParticipantData>;
   currentAuthClientId: string | null;
   gamePhase: GamePhase;
   totalTextLength: number;

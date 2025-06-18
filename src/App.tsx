@@ -12,7 +12,7 @@ import Tournament from "./pages/Tournament";
 import TournamentLobby from "./pages/TournamentLobby";
 import NotFound from "./pages/NotFound";
 import PasswordRecovery from "./pages/PasswordRecovery";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./hooks/useAuth";
 
 const queryClient = new QueryClient();
 

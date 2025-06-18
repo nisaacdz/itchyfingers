@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { TypingSessionSchema, ClientSchema } from "@/types/api";
+import { ParticipantData, ClientSchema } from "@/types/api";
 import { GamePhase } from "@/hooks/useTournamentRealtime";
 import { TextRenderer } from "./TextRenderer";
 import { Caret } from "./Caret";
@@ -18,9 +18,9 @@ import { CheckCircle2 } from "lucide-react";
 
 interface TypingArenaProps {
   text: string;
-  allParticipants: Record<string, TypingSessionSchema>;
+  allParticipants: Record<string, ParticipantData>;
   currentUserAuthId: string; // The authenticated user's client.id
-  currentUserSession: TypingSessionSchema;
+  currentUserSession: ParticipantData;
   onCharTyped: (char: string) => void;
   gamePhase: GamePhase;
 }

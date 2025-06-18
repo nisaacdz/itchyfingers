@@ -3,7 +3,7 @@ import { CreateTournament } from "@/types/forms";
 import {
   TournamentInfo,
   TournamentFilter,
-  PaginatedData,
+  Pagination,
   Participant,
   User,
   UserTournament,
@@ -24,7 +24,7 @@ export async function allTournaments(
   limit: number,
   filter?: TournamentFilter,
 ) {
-  return await Api.get<PaginatedData<Tournament>>(`/tournaments`, {
+  return await Api.get<Pagination<Tournament>>(`/tournaments`, {
     params: {
       page,
       limit,
@@ -64,7 +64,7 @@ export async function getUserTournaments(
   pageSize: number,
   filter?: UserTournamentFilter,
 ) {
-  return await Api.get<PaginatedData<UserTournament>>(
+  return await Api.get<Pagination<UserTournament>>(
     `/users/${userId}/challenges`,
     {
       params: {
@@ -117,7 +117,7 @@ export async function fetchUserTournaments(
   pageSize: number,
   filter?: UserTournamentFilter,
 ) {
-  return await Api.get<PaginatedData<UserTournament>>(
+  return await Api.get<Pagination<UserTournament>>(
     `/users/${userId}/challenges`,
     {
       params: {

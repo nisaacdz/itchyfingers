@@ -1,5 +1,5 @@
 // @/components/tournament/elements/GamePhaseDisplay/PostGameSummary.tsx
-import { TypingSessionSchema } from "@/types/api";
+import { ParticipantData } from "@/types/api";
 import {
   Table,
   TableBody,
@@ -15,7 +15,7 @@ import { Award, Medal, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PostGameSummaryProps {
-  participants: Record<string, TypingSessionSchema>;
+  participants: Record<string, ParticipantData>;
   currentAuthClientId: string | null;
 }
 

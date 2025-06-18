@@ -1,12 +1,12 @@
 import React from "react";
-import { TypingSessionSchema, TournamentSchema } from "../types/api";
+import { ParticipantData, TournamentData } from "../types/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface StatsBoardProps {
-  currentParticipant: TypingSessionSchema | undefined; // The current user's typing session
+  currentParticipant: ParticipantData | undefined; // The current user's typing session
   textLength: number;
-  tournamentStatus: TournamentSchema["status"];
+  tournamentStatus: TournamentData["status"];
   onLeaveTournament: () => void;
   // onRestart?: () => void; // If restart functionality is needed
 }

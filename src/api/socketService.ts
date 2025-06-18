@@ -1,100 +1,110 @@
-// @/api/socketService.ts
+import { JoinSuccessPayload, WsFailurePayload } from "@/types/api";
 import { io, Socket as SocketIoClientSocket } from "socket.io-client"; // Renamed Socket from socket.io-client
-import {
-  TournamentSession,
-  TournamentUpdateSchema,
-  ClientSchema,
-  TypingSessionSchema,
-  TypeArgs,
-  WsResponse, // Using WsResponse
-} from "@/types/api"; // Assuming your types are in "@/types/api"
 
 const ACCESS_TOKEN_KEY = import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
+const CLIENT_ID_KEY = import.meta.env.VITE_CLIENT_ID_KEY || "client_id";
 
-// Payload types using WsResponse
-type JoinResponsePayload = WsResponse<null>;
-type LeaveResponsePayload = WsResponse<null>;
-type TypingErrorPayload = WsResponse<null>; // Assuming server sends WsResponse for errors too
-type TypingUpdatePayload = WsResponse<TypingSessionSchema>; // Individual typing update
-
-interface ServerToClientEvents {
-  "join:response": (payload: JoinResponsePayload) => void;
-  "tournament:start": (payload: TournamentSession) => void; // Server might send raw TournamentSession
-  "tournament:update": (payload: TournamentUpdateSchema) => void; // Server sends this structured update
-  "user:left": (payload: ClientSchema) => void; // Server might send raw ClientSchema
-  "leave:response": (payload: LeaveResponsePayload) => void;
-  "typing:update": (payload: TypingUpdatePayload) => void;
-  "typing:error": (payload: TypingErrorPayload) => void;
-  // Standard socket.io events
-  connect: () => void;
-  disconnect: (reason: SocketIoClientSocket.DisconnectReason) => void;
-  connect_error: (error: Error) => void;
-}
-
-interface ClientToServerEvents {
-  "type-character": (args: TypeArgs) => void;
-  "leave-tournament": () => void;
+export type ConnectOptions = {
+  tournamentId: string;
+  spectator?: boolean;
+  onJoinSuccess: (payload: JoinSuccessPayload) => void;
+  onDisconnect: (reason: string) => void;
+  onJoinFailure: (payload: WsFailurePayload) => void;
+  onConnectError: (error: Error) => void;
 }
 
 export class SocketService {
-  private socket: SocketIoClientSocket<ServerToClientEvents, ClientToServerEvents> | null = null;
-  private currentTournamentId: string | null = null; // Renamed for clarity
+  private socket: SocketIoClientSocket | null = null;
+  private options: ConnectOptions | null = null;
 
   private getSocketBaseUrl(): string {
     return import.meta.env.VITE_SOCKET_BASE_URL || "http://localhost:8000";
   }
 
-  public connect(tournamentId: string): Promise<void> {
-    if (this.socket && this.socket.connected && this.currentTournamentId === tournamentId) {
+  public connect(options: ConnectOptions): Promise<void> {
+    if (this.socket && this.socket.connected && this.options?.tournamentId === options.tournamentId) {
       console.log("SocketService: Already connected to this tournament.");
+      console.error("Why are you trying to connect again?");
       return Promise.resolve();
     }
 
+    this.options = options;
+
     if (this.socket) {
-      console.log("SocketService: Disconnecting from previous tournament or connection attempt.");
+      console.log("SocketService: Disconnecting from previous tournament.");
       this.disconnect();
     }
 
-    this.currentTournamentId = tournamentId;
     const baseUrl = this.getSocketBaseUrl();
-    const namespaceUrl = `${baseUrl}/comp`; // Assuming "/comp" is your namespace
-
-    console.log(`SocketService: Attempting to connect to WebSocket: ${namespaceUrl} for tournament ${tournamentId}`);
+    const namespaceUrl = `${baseUrl}/`;
 
     const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-    const extraHeaders: Record<string, string> = {
+    const clientId = sessionStorage.getItem(CLIENT_ID_KEY);
+    const extraHeaders = {
       "X-Requested-With": "XMLHttpRequest",
+      ...(clientId ? { "X-Client-ID": clientId } : {}),
+      ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : {})
     };
-    if (accessToken) {
-      extraHeaders.Authorization = `Bearer ${accessToken}`;
-    }
+
+    const query = {
+      id: options.tournamentId,
+      ...(options.spectator ? { spectator: "true" } : {})
+    };
 
     this.socket = io(namespaceUrl, {
       transports: ["websocket"],
-      autoConnect: false, // We call connect explicitly
-      reconnectionAttempts: 3, // Sensible default
+      autoConnect: false,
+      reconnectionAttempts: 3,
       reconnectionDelay: 2000,
       extraHeaders,
-      query: {
-        id: tournamentId, // Server uses this to identify the tournament context
-      },
+      query,
     });
 
-    return new Promise((resolve, reject) => {
-      this.socket?.once("connect", () => {
-        console.log(`SocketService: Successfully connected to ${namespaceUrl}. Socket ID: ${this.socket?.id}`);
-        resolve();
-      });
+    console.log(`SocketService: Attempting to connect to WebSocket: ${namespaceUrl} for tournament ${options.tournamentId}`)
 
-      this.socket?.once("connect_error", (error) => {
-        console.error("SocketService: Connection error:", error);
-        this.socket = null; // Clear socket on fatal connection error
-        this.currentTournamentId = null;
-        reject(error);
-      });
+    this.registerConnectionListeners();
 
-      this.socket?.connect();
+    this.socket?.on("reconnect_attempt", () => {
+      this.registerConnectionListeners()
+
+      // listen to successful reconnect? but how to make it not forever remain listening.
+      // we want only listen to reconnect_success
     });
+
+    this.socket?.on("disconnect", this.options?.onDisconnect);
+
+    this.socket?.connect();
+  }
+
+  registerConnectionListeners(): void {
+    this.socket?.once("join:success", payload => {
+      this.options?.onJoinSuccess(payload)
+      this.cleanUpConnectionListeners()
+    })
+    this.socket?.once("join:failure", payload => {
+      this.options?.onJoinFailure(payload)
+      this.cleanUpConnectionListeners()
+    })
+    this.socket?.once("reconnect_failed", payload => {
+      this.options?.onConnectError(payload)
+      this.cleanUpConnectionListeners()
+    });
+    this.socket?.once("connect_error", payload => {
+      this.options?.onConnectError(payload)
+      this.cleanUpConnectionListeners()
+    });
+    this.socket?.once("connect", () => {
+      console.log(`SocketService: Successfully connected. Socket ID: ${this.socket?.id}`);
+    });
+  }
+
+  cleanUpConnectionListeners(): void {
+    this.socket?.off("join:success")
+    this.socket?.off("join:failure")
+    this.socket?.off("reconnect_failed");
+    this.socket?.off("connect_error")
+    this.socket?.off("reconnect_success")
+    this.socket?.off("connect")
   }
 
   public disconnect(): void {
@@ -102,7 +112,7 @@ export class SocketService {
       console.log("SocketService: Disconnecting socket...");
       this.socket.disconnect();
       this.socket = null;
-      this.currentTournamentId = null;
+      this.options = null;
     }
   }
 
@@ -110,49 +120,29 @@ export class SocketService {
     return this.socket?.connected || false;
   }
 
-  public emitTypeCharacter(character: string): void {
-    if (!this.socket || !this.socket.connected) {
-      console.warn("SocketService: Not connected. Cannot emit type-character.");
-      return;
-    }
-    this.socket.emit("type-character", { character });
-  }
-
-  public emitLeaveTournament(): void {
-    if (!this.socket || !this.socket.connected) {
-      console.warn("SocketService: Not connected. Cannot emit leave-tournament.");
-      return;
-    }
-    this.socket.emit("leave-tournament");
-  }
-
-  public on<Event extends keyof ServerToClientEvents>(
-    event: Event,
-    listener: ServerToClientEvents[Event],
+  public on(
+    event: string,
+    listener: (payload: unknown) => void,
   ): void {
     if (!this.socket) {
-      // This warning is fine if listeners are attempted to be added before connect() is called
       console.warn(`SocketService: Socket not initialized. Cannot listen to ${event}.`);
       return;
     }
-    // @ts-expect-error Type is actually valid
     this.socket.on(event, listener);
   }
 
-  public off<Event extends keyof ServerToClientEvents>(
-    event: Event,
-    listener?: ServerToClientEvents[Event],
+  public off(
+    event: string,
+    listener?: (payload: unknown) => void,
   ): void {
     if (!this.socket) {
-      // This warning is fine if listeners are attempted to be removed when socket is already null
-      // console.warn(`SocketService: Socket not initialized. Cannot unlisten from ${event}.`);
+      console.warn(`SocketService: Socket not initialized. Cannot unlisten from ${event}.`);
       return;
     }
     if (listener) {
-      // @ts-expect-error Type is actually valid
       this.socket.off(event, listener);
     } else {
-      this.socket.off(event); // Remove all listeners for this event
+      this.socket.off(event);
     }
   }
 }

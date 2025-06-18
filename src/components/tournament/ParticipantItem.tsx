@@ -1,5 +1,5 @@
 // @/components/tournament/elements/ParticipantItem.tsx
-import { TypingSessionSchema } from "@/types/api";
+import { ParticipantData } from "@/types/api";
 import { GamePhase } from "@/hooks/useTournamentRealtime";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { UserCircle, Zap, CheckCircle2 } from "lucide-react"; // Crown for winner, or star for current user
 
 interface ParticipantItemProps {
-  participant: TypingSessionSchema;
+  participant: ParticipantData;
   isCurrentUser: boolean;
   totalTextLength: number;
   gamePhase: GamePhase;

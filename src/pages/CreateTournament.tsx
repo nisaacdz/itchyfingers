@@ -3,8 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import httpService from "@/api/httpService";
 import { toast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-import { HttpResponse, TournamentSchema } from "@/types/api";
+import { CreatedTournament, HttpResponse, TextOptions, Tournament } from "@/types/api";
 import {
   Dialog,
   DialogContent,
@@ -29,15 +28,38 @@ export function CreateTournamentDialog({
   onCreateSuccess,
 }: CreateTournamentDialogProps) {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const defaultScheduledFor = DateTime.now()
-    .plus({ minutes: 5 })
+    .plus({ minutes: 15 })
     .toFormat("yyyy-MM-dd'T'HH:mm");
   const [scheduledFor, setScheduledFor] = useState(defaultScheduledFor);
-  const [includeSpecialChars, setIncludeSpecialChars] = useState(false);
-  const [includeUppercase, setIncludeUppercase] = useState(false);
+  // textOptions is null by default (no customization)
+  const [textOptions, setTextOptions] = useState<TextOptions | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+
+  // Default values for customization
+  const defaultTextOptions: TextOptions = {
+    uppercase: false,
+    lowercase: true,
+    numbers: false,
+    symbols: false,
+    meaningful: true,
+  };
+
+  const handleTextOptionChange = (key: keyof TextOptions, checked: boolean) => {
+    if (textOptions) {
+      setTextOptions((prev) => prev ? { ...prev, [key]: checked } : prev);
+    }
+  };
+
+  const handleCustomize = () => {
+    setTextOptions(defaultTextOptions);
+  };
+
+  const handleOptOut = () => {
+    setTextOptions(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,13 +84,13 @@ export function CreateTournamentDialog({
       return;
     }
     try {
-      const response = await httpService.post<HttpResponse<TournamentSchema>>(
+      const response = await httpService.post<HttpResponse<CreatedTournament>>(
         "/tournaments",
         {
           title,
-          scheduled_for: scheduledDate.toISO(),
-          includeSpecialChars,
-          includeUppercase,
+          description,
+          scheduledFor: scheduledDate.toISO(),
+          textOptions,
         },
       );
       if (response.data.success) {
@@ -107,12 +129,22 @@ export function CreateTournamentDialog({
             />
           </div>
           <div>
+            <Label htmlFor="description">Description</Label>
+            <Input
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={isLoading}
+              placeholder="(Optional) Description"
+            />
+          </div>
+          <div>
             <Label htmlFor="scheduledFor">Scheduled For</Label>
             <Input
               id="scheduledFor"
               type="datetime-local"
               value={scheduledFor}
-              min={defaultScheduledFor}
+              min={DateTime.now().plus({ minutes: 1 }).toFormat("yyyy-MM-dd'T'HH:mm")}
               onChange={(e) => setScheduledFor(e.target.value)}
               required
               disabled={isLoading}
@@ -120,26 +152,62 @@ export function CreateTournamentDialog({
           </div>
           <div>
             <Label>Text Options</Label>
-            <div className="flex gap-4 mt-2">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="specialChars"
-                  checked={includeSpecialChars}
-                  onCheckedChange={(checked) =>
-                    setIncludeSpecialChars(!!checked)
-                  }
-                />
-                <Label htmlFor="specialChars">Special Characters</Label>
+            {textOptions === null ? (
+              <div className="mt-2">
+                <Button type="button" variant="outline" onClick={handleCustomize} className="w-full">
+                  Customize Text Options
+                </Button>
+                <div className="text-xs text-muted-foreground mt-1">
+                  (Leave as is to let the system decide text options)
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="uppercase"
-                  checked={includeUppercase}
-                  onCheckedChange={(checked) => setIncludeUppercase(!!checked)}
-                />
-                <Label htmlFor="uppercase">Uppercase Letters</Label>
+            ) : (
+              <div className="flex flex-wrap gap-4 mt-2">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="uppercase"
+                    checked={textOptions.uppercase}
+                    onCheckedChange={(checked) => handleTextOptionChange("uppercase", !!checked)}
+                  />
+                  <Label htmlFor="uppercase">Uppercase</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="lowercase"
+                    checked={textOptions.lowercase}
+                    onCheckedChange={(checked) => handleTextOptionChange("lowercase", !!checked)}
+                  />
+                  <Label htmlFor="lowercase">Lowercase</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="numbers"
+                    checked={textOptions.numbers}
+                    onCheckedChange={(checked) => handleTextOptionChange("numbers", !!checked)}
+                  />
+                  <Label htmlFor="numbers">Numbers</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="symbols"
+                    checked={textOptions.symbols}
+                    onCheckedChange={(checked) => handleTextOptionChange("symbols", !!checked)}
+                  />
+                  <Label htmlFor="symbols">Symbols</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="meaningful"
+                    checked={textOptions.meaningful}
+                    onCheckedChange={(checked) => handleTextOptionChange("meaningful", !!checked)}
+                  />
+                  <Label htmlFor="meaningful">Meaningful</Label>
+                </div>
+                <Button type="button" variant="ghost" size="sm" onClick={handleOptOut} className="ml-2 mt-2">
+                  Use System Default
+                </Button>
               </div>
-            </div>
+            )}
           </div>
           {error && <div className="text-destructive text-sm">{error}</div>}
           <DialogFooter>

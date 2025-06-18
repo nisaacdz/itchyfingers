@@ -1,5 +1,5 @@
 // @/components/tournament/sections/StatsPanel.tsx
-import { TypingSessionSchema } from "@/types/api";
+import { ParticipantData } from "@/types/api";
 import { GamePhase } from "@/hooks/useTournamentRealtime";
 import { Progress } from "@/components/ui/progress";
 import { Target, CheckCircle, Percent, Zap, Clock } from "lucide-react"; // Example icons
@@ -33,7 +33,7 @@ const StatDisplayItem: React.FC<StatDisplayProps> = ({
 );
 
 interface StatsPanelProps {
-  userSession: TypingSessionSchema | null;
+  userSession: ParticipantData | null;
   totalTextLength: number;
   gamePhase: GamePhase;
 }

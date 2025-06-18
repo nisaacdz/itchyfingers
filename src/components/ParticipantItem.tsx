@@ -1,9 +1,9 @@
 import React from "react";
 import { Progress } from "@/components/ui/progress";
-import { TypingSessionSchema } from "@/types/api";
+import { ParticipantData } from "@/types/api";
 
 interface ParticipantItemProps {
-  participant: TypingSessionSchema;
+  participant: ParticipantData;
   isCurrentUser: boolean;
   textLength: number;
 }

@@ -1,17 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
-import { TypingSessionSchema, TournamentSchema } from "../types/api"; // Assuming api.ts is in ../types
+import { ParticipantData, TournamentData } from "../types/api"; // Assuming api.ts is in ../types
 
 interface TypingAreaProps {
   text: string;
-  participants: TypingSessionSchema[];
-  currentTournament: TournamentSchema | null;
+  participants: ParticipantData[];
+  currentTournament: TournamentData | null;
   clientId: string | null; // Assuming you have a way to identify the current user's client ID
   onCharacterInput: (char: string) => void;
   disabled?: boolean;
 }
 
 const Caret: React.FC<{
-  participant: TypingSessionSchema;
+  participant: ParticipantData;
   text: string;
   parentRef: React.RefObject<HTMLDivElement>;
   fontSize: number;

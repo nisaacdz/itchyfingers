@@ -76,7 +76,7 @@ export interface ApiResponse<T> {
   error: string | null;
 }
 
-export type PaginatedData<T> = {
+export type Pagination<T> = {
   page: number;
   limit: number;
   total: number;

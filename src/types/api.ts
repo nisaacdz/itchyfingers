@@ -1,9 +1,9 @@
 export type UserSchema = {
-  id: number;
+  id: string;
   username: string;
   email: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ClientSchema = {
@@ -12,83 +12,121 @@ export type ClientSchema = {
   updated: string;
 };
 
-/*
-pub struct TournamentSchema {
-    pub id: String,
-    pub title: String,
-    pub created_at: DateTimeUtc,
-    pub created_by: i32,
-    pub scheduled_for: DateTimeUtc,
-    pub joined: i32,
-    pub privacy: TournamentPrivacy,
-    pub text_options: Option<TextOptions>, -- you can ignore this for now
-    pub text_id: Option<i32>, -- ignore this
-}
-*/
+export type TextOptions = {
+  uppercase: boolean;
+  lowercase: boolean;
+  numbers: boolean;
+  symbols: boolean;
+  meaningful: boolean;
+};
 
-export type TournamentSchema = {
+export type TournamentStatus = "upcoming" | "started" | "ended";
+export type TournamentPrivacy = "open" | "invitational";
+
+export type Tournament = {
   id: string;
   title: string;
-  created_at: string;
-  crated_by: string;
-  scheduled_for: string;
+  creator: string;
+  scheduledFor: string;
   description: string;
-  text_options: unknown,
-  privacy: string;
-  joined: number,
-};
+  privacy: TournamentPrivacy;
+  textOptions: TextOptions | null;
+  startedAt: string | null;
+  endedAt: string | null;
+  participating: boolean;
+  participantCount: number;
+}
 
-export type WsResponse<T> = {
-  success: boolean;
-  message: string;
-  data: T | null;
-};
-
-export type TournamentSession = {
-  id: string;
-  started_at: string | null;
-  ended_at: string | null;
-  scheduled_for: string;
-  text: string;
-};
-
-export type TournamentUpcomingSchema = {
+export type CreatedTournament = {
   id: string;
   title: string;
-  created_at: string;
-  created_by: UserSchema;
-  scheduled_for: string;
-  joined: number;
-  privacy: string;
-  text_options?: any;
+  description: string;
+  createdAt: string;
+  createdBy: string;
+  scheduledFor: string,
+  privacy: TournamentPrivacy,
+  textOptions: TextOptions | null;
+}
+
+export type TournamentData = {
+  id: string;
+  title: string;
+  creator: string; // username of the creator
+  scheduledFor: string;
+  description: string;
+  textOptions: TextOptions | null;
+  privacy: TournamentPrivacy;
+  startedAt: string | null;
+  endedAt: string | null;
+  text: string | null;
 };
 
-export type TypingSessionSchema = {
+export type ParticipantData = {
   client: ClientSchema;
-  tournament_id: string;
-  current_position: number;
-  correct_position: number;
-  total_keystrokes: number;
-  current_speed: number;
-  current_accuracy: number;
-  started_at?: string | null;
-  ended_at?: string | null;
-  last_event_at: string;
+  currentPosition: number;
+  correctPosition: number;
+  totalKeystrokes: number;
+  currentSpeed: number;
+  currentAccuracy: number;
+  startedAt: string | null;
+  endedAt: string | null;
 };
 
-export type TournamentUpdateSchema = {
-  tournament: TournamentSession;
-  participants: TypingSessionSchema[];
+export type ParticipantUpdate = {
+  updates: Partial<Omit<ParticipantData, "client">>;
 };
 
-export type SocketResponse<T> = {
-  success: boolean;
-  data: T | null;
+export type WsFailurePayload = {
+  code: number;
   message: string;
 };
 
-export type TypeArgs = {
+export type PollableEvent = "me" | "all" | "data" | "check" | "leave";
+
+export type TypeEventPayload = {
   character: string;
+};
+
+export type JoinSuccessPayload = {
+  data: TournamentData;
+  clientId: string;
+  participants: ParticipantData[];
+};
+
+export type MeSuccessPayload = ParticipantData;
+
+export type UpdateMePayload = ParticipantUpdate;
+
+export type AllSuccessPayload = ParticipantData[];
+
+type PartialParticipantDataForUpdate = {
+  clientId: string;
+} & ParticipantUpdate;
+
+export type UpdateAllPayload = {
+  updates: PartialParticipantDataForUpdate[];
+};
+
+export type DataSuccessPayload = TournamentData;
+
+export type UpdateDataPayload = Partial<
+  Omit<TournamentData, "id" | "createdAt" | "createdBy">
+>;
+
+export type CheckSuccessPayload = {
+  status: TournamentStatus;
+};
+
+export type MemberJoinedPayload = {
+  participant: ParticipantData;
+};
+
+export type MemberLeftPayload = {
+  clientId: string;
+};
+
+export type LeaveSuccessPayload = {
+  message: string;
 };
 
 export type LoginSchema = {
@@ -99,7 +137,7 @@ export type LoginSchema = {
   };
 };
 
-export type PaginatedData<T> = {
+export type Pagination<T> = {
   data: T[];
   limit: number;
   page: number;

@@ -11,12 +11,12 @@ import {
   selectAllParticipantsArray,
 } from "@/store/tournamentStore";
 import { useAuthStore } from "@/store/authStore";
-import { TournamentSchema, TournamentSession } from "@/types/api";
+import { TournamentData, TournamentSession } from "@/types/api";
 
 interface ParticipantsPanelProps {
   // Pass these if not subscribing directly in this component, or for calculation
   liveTournamentSession: TournamentSession | null;
-  currentTournament: TournamentSchema | null; // For text length fallback
+  currentTournament: TournamentData | null; // For text length fallback
 }
 
 export default function ParticipantsPanel({
