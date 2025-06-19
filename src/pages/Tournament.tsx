@@ -18,8 +18,10 @@ export const TournamentPage = () => {
 
   const [tournamentData, setTournamentData] = useState<TournamentData | null>(null);
   const [participants, setParticipants] = useState<Record<string, ParticipantData>>({});
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!tournamentId) return setError("Invalid url")
     const connectOptions: ConnectOptions = {
       tournamentId,
       spectator,
