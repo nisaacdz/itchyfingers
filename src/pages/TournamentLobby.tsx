@@ -36,7 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CreateTournamentDialog } from "./CreateTournament";
-import { TournamentCard } from "../components/TournamentCard";
+import { TournamentCard } from "../components/tournament/TournamentCard";
 
 function getTimeLeft(scheduledFor: string, status: TournamentStatus) {
   if (status === "started") return "Started";
@@ -105,7 +105,7 @@ export default function TournamentLobby() {
         }
       } catch (err) {
         setError(
-          err.response?.data?.message ||
+          (err instanceof Error && err.message) ||
           "An error occurred while fetching tournaments"
         );
       } finally {
