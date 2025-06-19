@@ -2,6 +2,7 @@
 import httpService from "@/api/httpService";
 import { Button } from "@/components/ui/button";
 import { ClientSchema, HttpResponse } from "@/types/api";
+import { Loader } from "lucide-react";
 import { ReactNode, useContext, useEffect, useState, createContext } from "react";
 
 export interface AuthContextType {
@@ -55,6 +56,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
   }, []);
 
+  console.log("AuthProvider initialized with client:", client);
+
   return (
     client ? (
       <AuthContext.Provider value={{
@@ -64,7 +67,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }}>
         {children}
       </AuthContext.Provider>
-    ) : (
+    ) : isLoading ? (<div className="flex items-center justify-center h-screen">
+      <Loader className="animate-spin h-8 w-8 text-blue-500" />
+    </div>) : (
       <div className="flex items-center justify-center h-screen">
         <span className="text-lg text-red-500">
           "An error occurred while reaching the server."
