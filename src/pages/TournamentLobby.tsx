@@ -157,8 +157,6 @@ export default function TournamentLobby() {
     navigate(`/tournaments/${tournamentId}?spectator=true`);
   };
 
-  console.log(tournaments);
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

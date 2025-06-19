@@ -1,9 +1,11 @@
 import { TournamentRoomOrchestrator } from "@/components/TournamentOrchestrator";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import { ConnectOptions, socketService } from "@/api/socketService";
 import { ParticipantData, TournamentData } from "@/types/api";
+import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 type socketStatus = "connecting" | "connected" | "disconnected" | "failed";
 
@@ -19,6 +21,8 @@ export const TournamentPage = () => {
   const [tournamentData, setTournamentData] = useState<TournamentData | null>(null);
   const [participants, setParticipants] = useState<Record<string, ParticipantData>>({});
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { toast: detailedToast } = useToast();
 
   useEffect(() => {
     if (!tournamentId) return setError("Invalid url")
@@ -38,14 +42,23 @@ export const TournamentPage = () => {
       onConnectError: (error) => {
         setSocketStatus("failed");
         console.error("Failed to join tournament:", error);
+        detailedToast({
+          title: "Connection Failed",
+          description: error.message,
+          variant: "destructive",
+        });
       },
       onDisconnect: () => {
         setSocketStatus("disconnected");
         console.warn("Disconnected from tournament socket");
       },
-      onJoinFailure: (error) => {
+      onJoinFailure: (failure) => {
         setSocketStatus("failed");
-        console.error("Failed to join tournament:", error);
+        console.error("Failed to join tournament:", failure);
+        toast.error(failure.message);
+        if (failure.code === 1004) { // deadline passed for participants
+          navigate(".?spectator=true");
+        }
       }
     };
 
@@ -56,8 +69,8 @@ export const TournamentPage = () => {
       setSocketStatus(null);
       setTournamentData(null);
       setParticipants({});
-    }
-  }, [spectator, tournamentId])
+    };
+  }, [spectator, tournamentId, navigate, detailedToast]);
 
   useEffect(() => {
     if (socketStatus === "connected") {
