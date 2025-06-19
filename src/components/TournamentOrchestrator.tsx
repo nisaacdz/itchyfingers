@@ -1,13 +1,13 @@
 import { useAuth } from "@/hooks/useAuth";
-import { TournamentHeader } from "./TournamentHeader";
-import { MainContentLayout } from "./tournament/MainContentLayout";
-import { ParticipantsPanel } from "./ParticipantsPanel";
-import { TypingChallengeArea } from "./tournament/TypingChallengeArea";
+import { TournamentHeader } from "@/components/tournament/TournamentHeader";
+import { MainContentLayout } from "@/components/tournament/MainContentLayout";
+import { ParticipantsPanel } from "@/components/tournament/ParticipantsPanel";
+import { TypingChallengeArea } from "@/components/tournament/TypingChallengeArea";
+import { StatsPanel } from "@/components/tournament/StatsPanel";
 import {
   ParticipantData,
   TournamentData,
 } from "@/types/api";
-import { StatsBoard } from "./StatsBoard";
 
 type TournamentOrchestratorProps = {
   participants: Record<string, ParticipantData>;
@@ -20,28 +20,31 @@ export const TournamentRoomOrchestrator = ({
 }: TournamentOrchestratorProps) => {
   const { client } = useAuth();
 
-  const me = participants[client.id];
+  const toWatch = participants[client.id] || Object.values(participants).sort((a, b) => b.correctPosition - a.correctPosition)[0] || null;
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-slate-100 font-sans overflow-hidden">
       <TournamentHeader
         tournamentData={tournamentData}
-        participant={me}
+        toWatch={toWatch}
       />
       <MainContentLayout
         statsSlot={
-          <StatsBoard participant={me} tournamentData={tournamentData} />
+          <StatsPanel toWatch={toWatch} textLength={tournamentData.text?.length ?? 0} upcoming={!tournamentData.startedAt} />
         }
         participantsSlot={
           <ParticipantsPanel
             participants={participants}
             textLength={tournamentData.text?.length ?? 0}
+            started={!!tournamentData.startedAt}
+            toWatch={toWatch}
           />
         }
         mainChallengeSlot={
           <TypingChallengeArea
-            text={tournamentData.text}
-            participant={me}
+            toWatch={toWatch}
+            participants={participants}
+            data={tournamentData}
           />
         }
       />
