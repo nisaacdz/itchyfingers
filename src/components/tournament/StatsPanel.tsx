@@ -1,6 +1,4 @@
-// @/components/tournament/sections/StatsPanel.tsx
-import { ParticipantData } from "@/types/api";
-import { GamePhase } from "@/hooks/useTournamentRealtime";
+import { ParticipantData, TournamentStatus } from "@/types/api";
 import { Progress } from "@/components/ui/progress";
 import { Target, CheckCircle, Percent, Zap, Clock } from "lucide-react"; // Example icons
 import { ReactNode } from "react";
@@ -33,34 +31,34 @@ const StatDisplayItem: React.FC<StatDisplayProps> = ({
 );
 
 interface StatsPanelProps {
-  userSession: ParticipantData | null;
-  totalTextLength: number;
-  gamePhase: GamePhase;
+  toWatch: ParticipantData | null;
+  textLength: number;
+  upcoming: boolean;
 }
 
 export const StatsPanel = ({
-  userSession,
-  totalTextLength,
-  gamePhase,
+  toWatch,
+  textLength,
+  upcoming,
 }: StatsPanelProps) => {
-  if (!userSession || gamePhase === "lobby" || gamePhase === "countdown") {
+  if (!toWatch || upcoming) {
     return (
       <div className="text-center text-slate-400 py-4">
         <h3 className="text-lg font-semibold mb-2 text-slate-200">
-          Your Stats
+          Stats
         </h3>
         <p className="text-sm">
-          {gamePhase === "lobby" || gamePhase === "countdown"
+          {upcoming
             ? "Stats will appear once the race starts."
-            : "No active session."}
+            : "No participant to watch."}
         </p>
       </div>
     );
   }
 
   const progressPercentage =
-    totalTextLength > 0
-      ? (userSession.correct_position / totalTextLength) * 100
+    textLength > 0
+      ? (toWatch.correctPosition / textLength) * 100
       : 0;
 
   return (
@@ -72,21 +70,21 @@ export const StatsPanel = ({
         <StatDisplayItem
           icon={Zap}
           label="Speed"
-          value={Math.round(userSession.current_speed)}
+          value={Math.round(toWatch.currentSpeed)}
           unit="WPM"
           iconColor="text-yellow-400"
         />
         <StatDisplayItem
           icon={Target}
           label="Accuracy"
-          value={userSession.current_accuracy.toFixed(1)}
+          value={toWatch.currentAccuracy.toFixed(1)}
           unit="%"
           iconColor="text-green-400"
         />
         <StatDisplayItem
           icon={CheckCircle}
           label="Correct"
-          value={userSession.correct_position}
+          value={toWatch.correctPosition}
           unit="chars"
           iconColor="text-blue-400"
         />
@@ -101,12 +99,12 @@ export const StatsPanel = ({
           className="w-full h-2 bg-slate-700 [&>div]:bg-cyan-500"
         />
         {/* Optional: Add time elapsed */}
-        {userSession.started_at && (
+        {toWatch.startedAt && (
           <StatDisplayItem
             icon={Clock}
             label="Time"
             value={
-              <TimerDisplay startTime={userSession.started_at} mode="elapsed" />
+              <TimerDisplay startTime={toWatch.startedAt} mode="elapsed" />
             }
           />
         )}

@@ -1,46 +1,39 @@
-// @/components/tournament/elements/ParticipantItem.tsx
 import { ParticipantData } from "@/types/api";
-import { GamePhase } from "@/hooks/useTournamentRealtime";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { UserCircle, Zap, CheckCircle2 } from "lucide-react"; // Crown for winner, or star for current user
 
 interface ParticipantItemProps {
-  participant: ParticipantData;
-  isCurrentUser: boolean;
-  totalTextLength: number;
-  gamePhase: GamePhase;
+  data: ParticipantData;
+  watched: boolean;
+  textLength: number;
 }
 
 export const ParticipantItem = ({
-  participant,
-  isCurrentUser,
-  totalTextLength,
-  gamePhase,
+  data,
+  watched,
+  textLength,
 }: ParticipantItemProps) => {
   const progressPercentage =
-    totalTextLength > 0
-      ? (participant.correct_position / totalTextLength) * 100
+    textLength > 0
+      ? (data.correctPosition / textLength) * 100
       : 0;
   const displayName =
-    participant.client.user?.username ||
-    `Anon-${participant.client.id.substring(0, 4)}`;
+    data.client.user?.username ||
+    `Anon-${data.client.id.substring(0, 4)}`;
   const isFinished =
-    participant.ended_at ||
-    (totalTextLength > 0 && participant.correct_position === totalTextLength);
+    data.endedAt ||
+    (textLength > 0 && data.correctPosition === textLength);
 
   return (
     <div
       className={cn(
         "p-2.5 rounded-md transition-all duration-150 ease-in-out",
-        isCurrentUser
+        watched
           ? "bg-slate-700/70 border border-cyan-500/50"
           : "bg-slate-700/40 hover:bg-slate-700/60",
-        isFinished &&
-          gamePhase !== "lobby" &&
-          gamePhase !== "countdown" &&
-          "opacity-70 border-green-500/30",
+        isFinished && "opacity-70 border-green-500/30",
       )}
     >
       <div className="flex items-center justify-between mb-1.5">
@@ -50,7 +43,7 @@ export const ParticipantItem = ({
             <AvatarFallback
               className={cn(
                 "text-xs",
-                isCurrentUser
+                watched
                   ? "bg-cyan-600 text-white"
                   : "bg-slate-600 text-slate-300",
               )}
@@ -61,32 +54,24 @@ export const ParticipantItem = ({
           <span
             className={cn(
               "text-sm font-medium truncate max-w-[100px]",
-              isCurrentUser ? "text-cyan-300" : "text-slate-200",
+              watched ? "text-cyan-300" : "text-slate-200",
             )}
           >
             {displayName}
           </span>
         </div>
         <div className="flex items-center gap-1 text-xs text-slate-300">
-          {isFinished &&
-            (gamePhase === "active" ||
-              gamePhase === "user_completed" ||
-              gamePhase === "tournament_over") && (
-              <CheckCircle2 size={14} className="text-green-400" />
-            )}
+          {isFinished && <CheckCircle2 size={14} className="text-green-400" />}
           <Zap size={12} className="text-yellow-500" />
-          <span>{Math.round(participant.current_speed)}</span>
+          <span>{Math.round(data.currentSpeed)}</span>
         </div>
       </div>
-      {(gamePhase === "active" ||
-        gamePhase === "user_completed" ||
-        gamePhase === "tournament_over") &&
-        totalTextLength > 0 && (
-          <Progress
-            value={progressPercentage}
-            className="h-1.5 [&>div]:bg-purple-500"
-          />
-        )}
+      {(textLength > 0 && (
+        <Progress
+          value={progressPercentage}
+          className="h-1.5 [&>div]:bg-purple-500"
+        />
+      ))}
     </div>
   );
 };

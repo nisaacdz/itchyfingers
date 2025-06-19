@@ -1,4 +1,3 @@
-// @/components/tournament/elements/GamePhaseDisplay/PostGameSummary.tsx
 import { ParticipantData } from "@/types/api";
 import {
   Table,
@@ -13,44 +12,44 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Award, Medal, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PostGameSummaryProps {
   participants: Record<string, ParticipantData>;
-  currentAuthClientId: string | null;
 }
 
 export const PostGameSummary = ({
   participants,
-  currentAuthClientId,
 }: PostGameSummaryProps) => {
+  const { client } = useAuth();
   const navigate = useNavigate();
   const sortedParticipants = Object.values(participants).sort((a, b) => {
-    // Primary sort: finished (ended_at is set)
-    const aFinished = !!a.ended_at;
-    const bFinished = !!b.ended_at;
+    // Primary sort: finished (endedAt is set)
+    const aFinished = !!a.endedAt;
+    const bFinished = !!b.endedAt;
     if (aFinished !== bFinished) return aFinished ? -1 : 1; // Finished players first
 
-    // Secondary sort (if both finished or both not): correct_position
-    if (a.correct_position !== b.correct_position)
-      return b.correct_position - a.correct_position;
+    // Secondary sort (if both finished or both not): correctPosition
+    if (a.correctPosition !== b.correctPosition)
+      return b.correctPosition - a.correctPosition;
 
     // Tertiary sort (if same progress): time taken (lower is better if finished)
     if (
       aFinished &&
       bFinished &&
-      a.started_at &&
-      a.ended_at &&
-      b.started_at &&
-      b.ended_at
+      a.startedAt &&
+      a.endedAt &&
+      b.startedAt &&
+      b.endedAt
     ) {
       const timeA =
-        new Date(a.ended_at).getTime() - new Date(a.started_at).getTime();
+        new Date(a.endedAt).getTime() - new Date(a.startedAt).getTime();
       const timeB =
-        new Date(b.ended_at).getTime() - new Date(b.started_at).getTime();
+        new Date(b.endedAt).getTime() - new Date(b.startedAt).getTime();
       if (timeA !== timeB) return timeA - timeB;
     }
     // Final sort: WPM
-    return b.current_speed - a.current_speed;
+    return b.currentSpeed - a.currentSpeed;
   });
 
   const getRankIcon = (rank: number) => {
@@ -93,8 +92,8 @@ export const PostGameSummary = ({
                 key={p.client.id}
                 className={cn(
                   "border-slate-700",
-                  p.client.id === currentAuthClientId &&
-                    "bg-purple-600/30 hover:bg-purple-600/40",
+                  p.client.id === client.id &&
+                  "bg-purple-600/30 hover:bg-purple-600/40",
                 )}
               >
                 <TableCell className="font-medium text-center">
@@ -105,13 +104,13 @@ export const PostGameSummary = ({
                     `Anon-${p.client.id.substring(0, 4)}`}
                 </TableCell>
                 <TableCell className="text-right">
-                  {Math.round(p.current_speed)}
+                  {Math.round(p.currentSpeed)}
                 </TableCell>
                 <TableCell className="text-right">
-                  {p.current_accuracy.toFixed(1)}%
+                  {p.currentAccuracy.toFixed(1)}%
                 </TableCell>
                 <TableCell className="text-right">
-                  {p.correct_position}
+                  {p.correctPosition}
                 </TableCell>
               </TableRow>
             ))}
