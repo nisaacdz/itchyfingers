@@ -99,12 +99,12 @@ export function CreateTournamentDialog({
           description: "Your tournament has been created successfully.",
         });
         onOpenChange(false);
-        onCreateSuccess(response.data.data.id);
+        onCreateSuccess(response.data.data?.id || "");
       } else {
         setError(response.data.message || "Failed to create tournament.");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "An error occurred.");
+      setError((err instanceof Error && err.message) || "An error occurred.");
     } finally {
       setIsLoading(false);
     }
