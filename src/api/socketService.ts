@@ -62,7 +62,6 @@ export class SocketService {
     const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
     const clientId = sessionStorage.getItem(CLIENT_ID_KEY);
     const extraHeaders = {
-      "X-Requested-With": "XMLHttpRequest",
       ...(clientId ? { "X-Client-ID": clientId } : {}),
       ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : {})
     };
