@@ -1,10 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 import httpService from "@/api/httpService";
+import { Button } from "@/components/ui/button";
 import { ClientSchema, HttpResponse } from "@/types/api";
 import { ReactNode, useContext, useEffect, useState, createContext } from "react";
 
 export interface AuthContextType {
-  client: ClientSchema | null;
+  client: ClientSchema;
   isLoading: boolean;
   reload: () => Promise<void>;
 }
@@ -24,51 +25,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const fetchUserData = async (): Promise<void> => {
     try {
+      setError(null);
+      setIsLoading(true);
       const response =
         await httpService.get<HttpResponse<ClientSchema>>("/auth/me");
 
       if (response.data.success) {
         setClient(response.data.data);
       } else {
-        setClient(null);
-        setError(response.data.message || "Failed to fetch user data");
+        throw new Error(response.data.message || "Failed to fetch user data");
       }
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       setClient(null);
-      setError(error.message || "Failed to fetch user data");
+      setError((error instanceof Error && error.message) || "Failed to fetch user data");
+    } finally {
+      setIsLoading(false);
     }
   };
   const reload = async (): Promise<void> => {
     await fetchUserData();
   };
-  // Check authentication status on mount
+
   useEffect(() => {
     const initializeAuth = async () => {
-      setIsLoading(true);
-      try {
-        await fetchUserData();
-      } catch (error) {
-        console.error("Auth initialization failed:", error);
-      } finally {
-        setIsLoading(false);
-      }
+      await fetchUserData();
     };
 
     initializeAuth();
   }, []);
 
-  const value: AuthContextType = {
-    client,
-    isLoading,
-    reload,
-  };
-
   return (
-    <AuthContext.Provider value={value}>
-      {/* {error ? <ErrorMessage title="Authentication Error" message={error} /> : children} */}
-      {children}
-    </AuthContext.Provider>
+    client ? (
+      <AuthContext.Provider value={{
+        client,
+        isLoading,
+        reload,
+      }}>
+        {children}
+      </AuthContext.Provider>
+    ) : (
+      <div className="flex items-center justify-center h-screen">
+        <span className="text-lg text-red-500">
+          "An error occurred while reaching the server."
+        </span>
+
+        <Button
+          onClick={reload}
+          className="mt-4"
+          variant="outline"
+        >
+          Retry
+        </Button>
+      </div>
+    )
   );
 };
 
