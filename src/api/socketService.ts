@@ -73,7 +73,7 @@ export class SocketService {
     };
 
     this.socket = io(namespaceUrl, {
-      transports: ["websocket"],
+      transports: ['polling','websocket', 'webtransport'],
       autoConnect: false,
       reconnectionAttempts: 3,
       reconnectionDelay: 2000,
