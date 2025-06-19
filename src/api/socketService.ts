@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AllSuccessPayload, CheckSuccessPayload, DataSuccessPayload, JoinSuccessPayload, LeaveSuccessPayload, MemberJoinedPayload, MemberLeftPayload, MeSuccessPayload, TypeEventPayload, UpdateAllPayload, UpdateDataPayload, UpdateMePayload, WsFailurePayload } from "@/types/api";
 import { io, Socket as SocketIoClientSocket } from "socket.io-client"; // Renamed Socket from socket.io-client
 
@@ -41,7 +42,7 @@ export class SocketService {
     return import.meta.env.VITE_SOCKET_BASE_URL || "http://localhost:8000";
   }
 
-  public connect(options: ConnectOptions): Promise<void> {
+  public async connect(options: ConnectOptions): Promise<void> {
     if (this.socket && this.socket.connected && this.options?.tournamentId === options.tournamentId) {
       console.log("SocketService: Already connected to this tournament.");
       console.error("Why are you trying to connect again?");
@@ -161,12 +162,12 @@ export class SocketService {
 
   public async fire<E extends keyof PollableEvents>(
     event: E): Promise<PollableEvents[E]> {
-    if (!this.socket) {
-      console.warn(`SocketService: Socket not initialized. Cannot fire ${event}.`);
-      return Promise.reject(new Error(`Socket not initialized. Cannot fire ${event}.`));
-    }
-
     return new Promise((resolve, reject) => {
+      if (!this.socket) {
+        console.warn(`SocketService: Socket not initialized. Cannot fire ${event}.`);
+        return Promise.reject(new Error(`Socket not initialized. Cannot fire ${event}.`));
+      }
+
       const socket = this.socket;
       const successEvent = `${event}:success`;
       const failureEvent = `${event}:failure`;
@@ -182,7 +183,7 @@ export class SocketService {
         clearTimeout(timeoutId);
       };
 
-      const onSuccess = (payload) => {
+      const onSuccess = (payload: any) => {
         cleanup();
         resolve({ success: payload } as PollableEvents[E]);
       };
