@@ -17,7 +17,7 @@ class ApiClient {
       (response) => response,
       (error: AxiosError) => {
         if (error.response?.status === 401) {
-          window.sessionStorage.setItem("returnTo", window.location.pathname);
+          window.localStorage.setItem("returnTo", window.location.pathname);
           window.location.href = "/login";
         }
         return Promise.reject(error);
@@ -118,7 +118,7 @@ class ApiClient {
 const axiosInstance = axios.create({
   baseURL: config.apps.core,
   headers: {
-    "x-client": config.client,
+    "x-client-id": config.client,
   },
   withCredentials: true,
 });

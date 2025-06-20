@@ -42,11 +42,11 @@ export class SocketService {
     return import.meta.env.VITE_SOCKET_BASE_URL || "http://localhost:8000";
   }
 
-  public async connect(options: ConnectOptions): Promise<void> {
+  public connect(options: ConnectOptions): void {
     if (this.socket && this.socket.connected && this.options?.tournamentId === options.tournamentId) {
       console.log("SocketService: Already connected to this tournament.");
       console.error("Why are you trying to connect again?");
-      return Promise.resolve();
+      return;
     }
 
     this.options = options;
@@ -60,9 +60,9 @@ export class SocketService {
     const namespaceUrl = `${baseUrl}/`;
 
     const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-    const clientId = sessionStorage.getItem(CLIENT_ID_KEY);
+    const clientId = localStorage.getItem(CLIENT_ID_KEY);
     const extraHeaders = {
-      ...(clientId ? { "X-Client-ID": clientId } : {}),
+      ...(clientId ? { "x-client-id": clientId } : {}),
       ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : {})
     };
 
@@ -72,7 +72,7 @@ export class SocketService {
     };
 
     this.socket = io(namespaceUrl, {
-      transports: ['polling','websocket', 'webtransport'],
+      transports: ['polling', 'websocket', 'webtransport'],
       autoConnect: false,
       reconnectionAttempts: 3,
       reconnectionDelay: 2000,
@@ -92,6 +92,20 @@ export class SocketService {
     this.socket?.on("disconnect", this.options?.onDisconnect);
 
     this.socket?.connect();
+  }
+
+  ensureConnected(): SocketIoClientSocket {
+    if (this.socket?.connected) {
+      return this.socket;
+    }
+
+    if (this.options && this.socket) {
+      console.warn("SocketService: Socket not connected, attempting to reconnect...");
+      this.connect(this.options);
+      return this.socket;
+    }
+
+    throw new Error("SocketService: Socket not initialized.");
   }
 
   registerConnectionListeners(): void {
@@ -134,10 +148,6 @@ export class SocketService {
     }
   }
 
-  public isConnected(): boolean {
-    return this.socket?.connected || false;
-  }
-
   public on<E extends keyof RealtimeUpdateEvents>(
     event: E,
     listener: RealtimeUpdateEvents[E]
@@ -157,17 +167,13 @@ export class SocketService {
       console.warn(`SocketService: Socket not initialized. Cannot unlisten from ${event}.`);
       return;
     }
+    this.socket?.off(event)
   }
 
   public async fire<E extends keyof PollableEvents>(
     event: E): Promise<PollableEvents[E]> {
     return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        console.warn(`SocketService: Socket not initialized. Cannot fire ${event}.`);
-        return Promise.reject(new Error(`Socket not initialized. Cannot fire ${event}.`));
-      }
-
-      const socket = this.socket;
+      const socket = this.ensureConnected();
       const successEvent = `${event}:success`;
       const failureEvent = `${event}:failure`;
 
@@ -200,11 +206,8 @@ export class SocketService {
   }
 
   public emit<E extends keyof EmitOnlyEvents>(event: E, payload: EmitOnlyEvents[E]): void {
-    if (!this.socket) {
-      console.warn(`SocketService: Socket not initialized. Cannot emit ${event}.`);
-      return;
-    }
-    this.socket.emit(event, payload);
+    const socket = this.ensureConnected();
+    socket.emit(event, payload);
   }
 }
 

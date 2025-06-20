@@ -5,29 +5,38 @@ interface CountdownTimerProps {
   scheduledFor: string;
 }
 
-export const CountdownTimer = ({ scheduledFor }: CountdownTimerProps) => {
-  const calculateTimeLeft = () => {
-    const difference = +new Date(scheduledFor) - +new Date();
-    let timeLeft = { seconds: 0 };
-    if (difference > 0) {
-      timeLeft = {
-        seconds: Math.floor(difference / 1000), // Total seconds
-      };
-    }
-    return timeLeft.seconds;
-  };
+const calculateTimeLeft = (scheduledFor: string) => {
+  const difference = +new Date(scheduledFor) - +new Date();
+  let timeLeft = { seconds: 0 };
+  if (difference > 0) {
+    timeLeft = {
+      seconds: Math.floor(difference / 1000), // Total seconds
+    };
+  }
+  return timeLeft.seconds;
+};
 
-  const [secondsLeft, setSecondsLeft] = useState(calculateTimeLeft());
+export const CountdownTimer = ({ scheduledFor }: CountdownTimerProps) => {
+  const [secondsLeft, setSecondsLeft] = useState(calculateTimeLeft(scheduledFor));
 
   useEffect(() => {
     if (secondsLeft <= 0) return;
-
+    const calculateTimeLeft = () => {
+      const difference = +new Date(scheduledFor) - +new Date();
+      let timeLeft = { seconds: 0 };
+      if (difference > 0) {
+        timeLeft = {
+          seconds: Math.floor(difference / 1000), // Total seconds
+        };
+      }
+      return timeLeft.seconds;
+    };
     const timer = setTimeout(() => {
       setSecondsLeft(calculateTimeLeft());
-    }, 1000);
+    }, 300);
 
     return () => clearTimeout(timer);
-  });
+  }, [secondsLeft, scheduledFor]);
 
   if (secondsLeft <= 0) {
     return (
@@ -46,7 +55,7 @@ export const CountdownTimer = ({ scheduledFor }: CountdownTimerProps) => {
     <div className="flex flex-col items-center justify-center text-center text-slate-100">
       <p className="text-2xl md:text-3xl mb-4 text-slate-300">Starting in...</p>
       <motion.div
-        key={secondsLeft} // Ensures animation re-triggers when number changes
+        key={secondsLeft}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.5, opacity: 0 }}

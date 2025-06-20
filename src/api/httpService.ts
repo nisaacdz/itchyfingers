@@ -23,7 +23,7 @@ class HttpService {
         if (token) {
           config.headers["Authorization"] = `Bearer ${token}`;
         }
-        const clientId = sessionStorage.getItem(CLIENT_ID_KEY);
+        const clientId = localStorage.getItem(CLIENT_ID_KEY);
         if (clientId) {
           config.headers["X-Client-ID"] = clientId;
         }
@@ -44,7 +44,8 @@ class HttpService {
 
         const clientId = response.headers["x-client-id"];
         if (clientId) {
-          sessionStorage.setItem(CLIENT_ID_KEY, clientId as string);
+          console.log("Received new client ID from server:", clientId);
+          localStorage.setItem(CLIENT_ID_KEY, clientId as string);
         }
 
         return response;
