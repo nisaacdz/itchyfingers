@@ -5,8 +5,8 @@ import {
   DataSuccessPayload,
   JoinSuccessPayload,
   LeaveSuccessPayload,
-  MemberJoinedPayload,
-  MemberLeftPayload,
+  ParticipantJoinedPayload,
+  ParticipantLeftPayload,
   MeSuccessPayload,
   TypeEventPayload,
   UpdateAllPayload,
@@ -35,8 +35,8 @@ type RealtimeUpdateEvents = {
   "update:data": (payload: UpdateDataPayload) => void;
   "update:all": (payload: UpdateAllPayload) => void;
   "update:me": (payload: UpdateMePayload) => void;
-  "member:joined": (payload: MemberJoinedPayload) => void;
-  "member:left": (payload: MemberLeftPayload) => void;
+  "participant:joined": (payload: ParticipantJoinedPayload) => void;
+  "participant:left": (payload: ParticipantLeftPayload) => void;
 };
 
 type PollableEvents = {
@@ -62,11 +62,13 @@ export class SocketService {
   public connect(options: ConnectOptions): void {
     if (
       this.socket &&
-      this.socket.connected &&
-      this.options?.tournamentId === options.tournamentId
+      this.options?.tournamentId === options.tournamentId &&
+      this.options?.spectator === options.spectator &&
+      this.options?.anonymous === options.anonymous
     ) {
-      console.log("SocketService: Already connected to this tournament.");
-      console.error("Why are you trying to connect again?");
+      this.options = options; // Will be used on the next reconnection attempt
+
+      this.ensureConnected();
       return;
     }
 
@@ -102,22 +104,14 @@ export class SocketService {
       query,
     });
 
-    console.log(
-      `SocketService: Attempting to connect to WebSocket: ${namespaceUrl} for tournament ${options.tournamentId}`,
-    );
-
-    this.registerConnectionListeners();
-
     this.socket?.on("reconnect_attempt", () => {
       this.registerConnectionListeners();
-      console.log(
-        `SocketService: Attempting to reconnect to WebSocket: ${namespaceUrl} for tournament ${options.tournamentId}`,
-      );
+      console.log(`SocketService: Connecting to WS tournament ${options.tournamentId}`);
     });
 
-    this.socket?.on("disconnect", this.options?.onDisconnect);
+    this.socket?.on("disconnect", (reason) => this.options?.onDisconnect(reason));
 
-    this.socket?.connect();
+    this.ensureConnected();
   }
 
   public ensureConnected(): SocketIoClientSocket {
@@ -126,10 +120,12 @@ export class SocketService {
     }
 
     if (this.options && this.socket) {
-      console.warn(
-        "SocketService: Socket not connected, attempting to reconnect...",
-      );
-      this.connect(this.options);
+      console.log(`SocketService: Connecting to WS tournament: ${this.options.tournamentId}`);
+
+      this.registerConnectionListeners();
+
+      this.socket?.connect();
+
       return this.socket;
     }
 
@@ -137,6 +133,7 @@ export class SocketService {
   }
 
   registerConnectionListeners(): void {
+    this.cleanUpConnectionListeners();
     this.socket?.once("join:success", (payload) => {
       const { noauth, ...remPayload } = payload;
       if (payload.noauth) {
@@ -158,9 +155,7 @@ export class SocketService {
       this.cleanUpConnectionListeners();
     });
     this.socket?.once("connect", () => {
-      console.log(
-        `SocketService: Successfully connected. Socket ID: ${this.socket?.id}`,
-      );
+      console.log(`SocketService: Connected. Socket ID: ${this.socket?.id}`);
     });
   }
 
@@ -246,8 +241,8 @@ export class SocketService {
     event: E,
     payload: EmitOnlyEvents[E],
   ): void {
-    const socket = this.ensureConnected();
-    socket.emit(event, payload);
+    //const socket = this.ensureConnected();
+    this.socket?.emit(event, payload);
   }
 }
 

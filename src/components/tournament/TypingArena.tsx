@@ -12,7 +12,7 @@ interface TypingArenaProps {
 }
 
 export const TypingArena = ({ toWatch }: TypingArenaProps) => {
-  const { data, participants } = useRoom();
+  const { data, participants, participating } = useRoom();
   const paragraphRef = useRef<HTMLParagraphElement>(null);
 
   const { fontSize } = useParagraphStyles(paragraphRef);
@@ -20,20 +20,20 @@ export const TypingArena = ({ toWatch }: TypingArenaProps) => {
   const whiteSpaceErrorHighlights =
     paragraphRef.current && toWatch
       ? Array.from(
-          {
-            length: toWatch.currentPosition - toWatch.correctPosition,
-          },
-          (_, i) => toWatch.correctPosition + i,
-        )
-          .filter((pos) => data.text?.charAt(pos) === " ")
-          .map((pos) => (
-            <WhiteSpaceErrorHighlight
-              key={pos}
-              position={computeAbsolutePosition(paragraphRef, pos)}
-              height={fontSize}
-              width={fontSize * 0.6}
-            />
-          ))
+        {
+          length: toWatch.currentPosition - toWatch.correctPosition,
+        },
+        (_, i) => toWatch.correctPosition + i,
+      )
+        .filter((pos) => data.text?.charAt(pos) === " ")
+        .map((pos) => (
+          <WhiteSpaceErrorHighlight
+            key={pos}
+            position={computeAbsolutePosition(paragraphRef, pos)}
+            height={fontSize}
+            width={fontSize * 0.6}
+          />
+        ))
       : [];
 
   const caretElements = Object.values(participants).map((p) => {
@@ -57,7 +57,9 @@ export const TypingArena = ({ toWatch }: TypingArenaProps) => {
       className="relative w-full h-full flex items-center justify-center p-2 md:p-4 focus:outline-none"
       tabIndex={-1}
     >
-      <KeyPopper className="absolute top-[15%] left-1/2 -translate-x-1/2 pointer-events-none z-20" />
+      {participating && (
+        <KeyPopper className="absolute top-[15%] left-1/2 -translate-x-1/2 pointer-events-none z-20" />
+      )}
       {/* Container for text and absolutely positioned elements to ensure correct offset calculations */}
       <div className="relative w-full max-w-3xl md:max-w-4xl">
         <p
@@ -127,7 +129,6 @@ type KeyPopperProps = {
 
 const KeyPopper = ({ className }: KeyPopperProps) => {
   const [activeKey, setActiveKey] = useState<string | null>(null);
-  const { participating } = useRoom();
   useEffect(() => {
     let timeout: NodeJS.Timeout | undefined;
 
@@ -151,15 +152,13 @@ const KeyPopper = ({ className }: KeyPopperProps) => {
       }, 500);
     };
 
-    if (participating) {
-      window.addEventListener("keydown", handleKeyDown);
-      window.addEventListener("keyup", handleKeyUp);
-    }
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [participating]);
+  }, []);
 
   return (
     <div className={cn(className)}>

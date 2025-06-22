@@ -80,7 +80,7 @@ export type ParticipantData = {
 };
 
 export type ParticipantUpdate = {
-  updates: Partial<Omit<ParticipantData, "client">>;
+  updates: Partial<Omit<ParticipantData, "member">>;
 };
 
 export type WsFailurePayload = {
@@ -107,7 +107,7 @@ export type UpdateMePayload = ParticipantUpdate;
 export type AllSuccessPayload = ParticipantData[];
 
 type PartialParticipantDataForUpdate = {
-  clientId: string;
+  memberId: string;
 } & ParticipantUpdate;
 
 export type UpdateAllPayload = {
@@ -117,19 +117,19 @@ export type UpdateAllPayload = {
 export type DataSuccessPayload = TournamentData;
 
 export type UpdateDataPayload = {
-  updates: Partial<Omit<TournamentData, "id" | "createdAt" | "createdBy">>;
+  updates: Partial<Omit<TournamentData, "id" | "creator">>;
 };
 
 export type CheckSuccessPayload = {
   status: TournamentStatus;
 };
 
-export type MemberJoinedPayload = {
+export type ParticipantJoinedPayload = {
   participant: ParticipantData;
 };
 
-export type MemberLeftPayload = {
-  clientId: string;
+export type ParticipantLeftPayload = {
+  memberId: string;
 };
 
 export type LeaveSuccessPayload = {

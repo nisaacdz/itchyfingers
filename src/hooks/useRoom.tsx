@@ -1,6 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
 import { socketService, ConnectOptions } from "@/api/socketService";
-import { Button } from "@/components/ui/button";
 import {
   ParticipantData,
   TournamentData,
@@ -88,6 +87,7 @@ export const TournamentRoom = ({
       },
       onDisconnect: () => {
         setSocketStatus("disconnected");
+        socketService.ensureConnected(); // Attempt to reconnect
         console.warn("Disconnected from tournament socket");
       },
       onJoinFailure: (failure) => {
@@ -116,7 +116,6 @@ export const TournamentRoom = ({
 
   useEffect(() => {
     if (socketStatus === "connected") {
-      // Handle successful connection logic here
       console.log("Successfully connected to tournament socket");
 
       socketService.on("update:all", (data) => {
@@ -125,9 +124,9 @@ export const TournamentRoom = ({
           if (!prev) return null;
           const newParticipants = { ...prev.participants };
           data.updates.forEach((update) => {
-            if (newParticipants[update.clientId]) {
-              newParticipants[update.clientId] = {
-                ...newParticipants[update.clientId],
+            if (newParticipants[update.memberId]) {
+              newParticipants[update.memberId] = {
+                ...newParticipants[update.memberId],
                 ...update.updates,
               };
             }
@@ -173,7 +172,7 @@ export const TournamentRoom = ({
         });
       });
 
-      socketService.on("member:joined", (data) => {
+      socketService.on("participant:joined", (data) => {
         setContextValue((prev) => {
           if (!prev) return null;
           return {
@@ -186,10 +185,10 @@ export const TournamentRoom = ({
         });
       });
 
-      socketService.on("member:left", (data) => {
+      socketService.on("participant:left", (data) => {
         setContextValue((prev) => {
           if (!prev) return null;
-          const { [data.clientId]: delme, ...remParticipants } = {
+          const { [data.memberId]: delme, ...remParticipants } = {
             ...prev.participants,
           };
           return {
@@ -204,8 +203,8 @@ export const TournamentRoom = ({
       socketService.off("update:all");
       socketService.off("update:data");
       socketService.off("update:me");
-      socketService.off("member:joined");
-      socketService.off("member:left");
+      socketService.off("participant:joined");
+      socketService.off("participant:left");
     };
   }, [socketStatus]);
 
