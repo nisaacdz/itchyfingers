@@ -65,7 +65,8 @@ export default function Login() {
       }
     } catch (err) {
       const errorMessage =
-        (err instanceof Error && err.message) || "An error occurred during login";
+        (err instanceof Error && err.message) ||
+        "An error occurred during login";
       setError(errorMessage);
       toast({
         title: "Login failed",

@@ -1,9 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AllSuccessPayload, CheckSuccessPayload, DataSuccessPayload, JoinSuccessPayload, LeaveSuccessPayload, MemberJoinedPayload, MemberLeftPayload, MeSuccessPayload, TypeEventPayload, UpdateAllPayload, UpdateDataPayload, UpdateMePayload, WsFailurePayload } from "@/types/api";
+import {
+  AllSuccessPayload,
+  CheckSuccessPayload,
+  DataSuccessPayload,
+  JoinSuccessPayload,
+  LeaveSuccessPayload,
+  MemberJoinedPayload,
+  MemberLeftPayload,
+  MeSuccessPayload,
+  TypeEventPayload,
+  UpdateAllPayload,
+  UpdateDataPayload,
+  UpdateMePayload,
+  WsFailurePayload,
+} from "@/types/api";
 import { io, Socket as SocketIoClientSocket } from "socket.io-client"; // Renamed Socket from socket.io-client
 
-const ACCESS_TOKEN_KEY = import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
-const NOAUTH_UNIQUE_KEY = import.meta.env.VITE_NOAUTH_UNIQUE_KEY || "noauth_unique"
+const ACCESS_TOKEN_KEY =
+  import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
+const NOAUTH_UNIQUE_KEY =
+  import.meta.env.VITE_NOAUTH_UNIQUE_KEY || "noauth_unique";
 
 export type ConnectOptions = {
   tournamentId: string;
@@ -13,7 +29,7 @@ export type ConnectOptions = {
   onDisconnect: (reason: string) => void;
   onJoinFailure: (payload: WsFailurePayload) => void;
   onConnectError: (error: Error) => void;
-}
+};
 
 type RealtimeUpdateEvents = {
   "update:data": (payload: UpdateDataPayload) => void;
@@ -24,16 +40,16 @@ type RealtimeUpdateEvents = {
 };
 
 type PollableEvents = {
-  "leave": { success: LeaveSuccessPayload } | { failure: WsFailurePayload };
-  "me": { success: MeSuccessPayload } | { failure: WsFailurePayload };
-  "all": { success: AllSuccessPayload } | { failure: WsFailurePayload };
-  "data": { success: DataSuccessPayload } | { failure: WsFailurePayload };
-  "check": { success: CheckSuccessPayload } | { failure: WsFailurePayload };
-}
+  leave: { success: LeaveSuccessPayload } | { failure: WsFailurePayload };
+  me: { success: MeSuccessPayload } | { failure: WsFailurePayload };
+  all: { success: AllSuccessPayload } | { failure: WsFailurePayload };
+  data: { success: DataSuccessPayload } | { failure: WsFailurePayload };
+  check: { success: CheckSuccessPayload } | { failure: WsFailurePayload };
+};
 
 type EmitOnlyEvents = {
-  "type": TypeEventPayload;
-}
+  type: TypeEventPayload;
+};
 
 export class SocketService {
   private socket: SocketIoClientSocket | null = null;
@@ -44,7 +60,11 @@ export class SocketService {
   }
 
   public connect(options: ConnectOptions): void {
-    if (this.socket && this.socket.connected && this.options?.tournamentId === options.tournamentId) {
+    if (
+      this.socket &&
+      this.socket.connected &&
+      this.options?.tournamentId === options.tournamentId
+    ) {
       console.log("SocketService: Already connected to this tournament.");
       console.error("Why are you trying to connect again?");
       return;
@@ -64,7 +84,7 @@ export class SocketService {
     const noauth = localStorage.getItem(NOAUTH_UNIQUE_KEY);
     const extraHeaders = {
       ...(noauth ? { "x-noauth-unique": noauth } : {}),
-      ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : {})
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     };
 
     const query = {
@@ -74,7 +94,7 @@ export class SocketService {
     };
 
     this.socket = io(namespaceUrl, {
-      transports: ['polling', 'websocket', 'webtransport'],
+      transports: ["polling", "websocket", "webtransport"],
       autoConnect: false,
       reconnectionAttempts: 3,
       reconnectionDelay: 2000,
@@ -82,13 +102,17 @@ export class SocketService {
       query,
     });
 
-    console.log(`SocketService: Attempting to connect to WebSocket: ${namespaceUrl} for tournament ${options.tournamentId}`)
+    console.log(
+      `SocketService: Attempting to connect to WebSocket: ${namespaceUrl} for tournament ${options.tournamentId}`,
+    );
 
     this.registerConnectionListeners();
 
     this.socket?.on("reconnect_attempt", () => {
       this.registerConnectionListeners();
-      console.log(`SocketService: Attempting to reconnect to WebSocket: ${namespaceUrl} for tournament ${options.tournamentId}`);
+      console.log(
+        `SocketService: Attempting to reconnect to WebSocket: ${namespaceUrl} for tournament ${options.tournamentId}`,
+      );
     });
 
     this.socket?.on("disconnect", this.options?.onDisconnect);
@@ -102,7 +126,9 @@ export class SocketService {
     }
 
     if (this.options && this.socket) {
-      console.warn("SocketService: Socket not connected, attempting to reconnect...");
+      console.warn(
+        "SocketService: Socket not connected, attempting to reconnect...",
+      );
       this.connect(this.options);
       return this.socket;
     }
@@ -111,38 +137,40 @@ export class SocketService {
   }
 
   registerConnectionListeners(): void {
-    this.socket?.once("join:success", payload => {
+    this.socket?.once("join:success", (payload) => {
       const { noauth, ...remPayload } = payload;
       if (payload.noauth) {
-        localStorage.setItem(NOAUTH_UNIQUE_KEY, payload.noauth)
+        localStorage.setItem(NOAUTH_UNIQUE_KEY, payload.noauth);
       }
-      this.options?.onJoinSuccess(remPayload)
-      this.cleanUpConnectionListeners()
-    })
-    this.socket?.once("join:failure", payload => {
-      this.options?.onJoinFailure(payload)
-      this.cleanUpConnectionListeners()
-    })
-    this.socket?.once("reconnect_failed", payload => {
-      this.options?.onConnectError(payload)
-      this.cleanUpConnectionListeners()
+      this.options?.onJoinSuccess(remPayload);
+      this.cleanUpConnectionListeners();
     });
-    this.socket?.once("connect_error", payload => {
-      this.options?.onConnectError(payload)
-      this.cleanUpConnectionListeners()
+    this.socket?.once("join:failure", (payload) => {
+      this.options?.onJoinFailure(payload);
+      this.cleanUpConnectionListeners();
+    });
+    this.socket?.once("reconnect_failed", (payload) => {
+      this.options?.onConnectError(payload);
+      this.cleanUpConnectionListeners();
+    });
+    this.socket?.once("connect_error", (payload) => {
+      this.options?.onConnectError(payload);
+      this.cleanUpConnectionListeners();
     });
     this.socket?.once("connect", () => {
-      console.log(`SocketService: Successfully connected. Socket ID: ${this.socket?.id}`);
+      console.log(
+        `SocketService: Successfully connected. Socket ID: ${this.socket?.id}`,
+      );
     });
   }
 
   cleanUpConnectionListeners(): void {
-    this.socket?.off("join:success")
-    this.socket?.off("join:failure")
+    this.socket?.off("join:success");
+    this.socket?.off("join:failure");
     this.socket?.off("reconnect_failed");
-    this.socket?.off("connect_error")
-    this.socket?.off("reconnect_success")
-    this.socket?.off("connect")
+    this.socket?.off("connect_error");
+    this.socket?.off("reconnect_success");
+    this.socket?.off("connect");
   }
 
   public disconnect(): void {
@@ -156,28 +184,31 @@ export class SocketService {
 
   public on<E extends keyof RealtimeUpdateEvents>(
     event: E,
-    listener: RealtimeUpdateEvents[E]
+    listener: RealtimeUpdateEvents[E],
   ): void {
     if (!this.socket) {
-      console.warn(`SocketService: Socket not initialized. Cannot listen to ${event}.`);
+      console.warn(
+        `SocketService: Socket not initialized. Cannot listen to ${event}.`,
+      );
       return;
     }
     //@ts-expect-error type is actually valid
     this.socket.on(event, listener);
   }
 
-  public off<E extends keyof RealtimeUpdateEvents>(
-    event: E,
-  ): void {
+  public off<E extends keyof RealtimeUpdateEvents>(event: E): void {
     if (!this.socket) {
-      console.warn(`SocketService: Socket not initialized. Cannot unlisten from ${event}.`);
+      console.warn(
+        `SocketService: Socket not initialized. Cannot unlisten from ${event}.`,
+      );
       return;
     }
-    this.socket?.off(event)
+    this.socket?.off(event);
   }
 
   public async fire<E extends keyof PollableEvents>(
-    event: E): Promise<PollableEvents[E]> {
+    event: E,
+  ): Promise<PollableEvents[E]> {
     return new Promise((resolve, reject) => {
       const socket = this.ensureConnected();
       const successEvent = `${event}:success`;
@@ -211,7 +242,10 @@ export class SocketService {
     });
   }
 
-  public emit<E extends keyof EmitOnlyEvents>(event: E, payload: EmitOnlyEvents[E]): void {
+  public emit<E extends keyof EmitOnlyEvents>(
+    event: E,
+    payload: EmitOnlyEvents[E],
+  ): void {
     const socket = this.ensureConnected();
     socket.emit(event, payload);
   }

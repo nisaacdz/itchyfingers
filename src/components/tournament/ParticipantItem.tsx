@@ -16,15 +16,11 @@ export const ParticipantItem = ({
   textLength,
 }: ParticipantItemProps) => {
   const progressPercentage =
-    textLength > 0
-      ? (data.correctPosition / textLength) * 100
-      : 0;
+    textLength > 0 ? (data.correctPosition / textLength) * 100 : 0;
   const displayName =
-    data.member.user?.username ||
-    `Anon-${data.member.id.substring(0, 4)}`;
+    data.member.user?.username || `Anon-${data.member.id.substring(0, 4)}`;
   const isFinished =
-    data.endedAt ||
-    (textLength > 0 && data.correctPosition === textLength);
+    data.endedAt || (textLength > 0 && data.correctPosition === textLength);
 
   return (
     <div
@@ -66,12 +62,12 @@ export const ParticipantItem = ({
           <span>{Math.round(data.currentSpeed)}</span>
         </div>
       </div>
-      {(textLength > 0 && (
+      {textLength > 0 && (
         <Progress
           value={progressPercentage}
           className="h-1.5 [&>div]:bg-purple-500"
         />
-      ))}
+      )}
     </div>
   );
 };

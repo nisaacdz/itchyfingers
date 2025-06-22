@@ -5,21 +5,21 @@ import { TypingArena } from "./TypingArena";
 import { getStatus } from "@/lib/utils";
 import { useRoom } from "@/hooks/useRoom";
 
-export const TypingChallengeArea = ({ toWatch }: { toWatch: ParticipantData | null }) => {
+export const TypingChallengeArea = ({
+  toWatch,
+}: {
+  toWatch: ParticipantData | null;
+}) => {
   const { data } = useRoom();
 
   const status = getStatus(data);
 
   switch (status) {
     case "upcoming":
-      return <CountdownTimer scheduledFor={data.scheduledFor} />
+      return <CountdownTimer scheduledFor={data.scheduledFor} />;
     case "started":
-      return (
-        <TypingArena toWatch={toWatch} />
-      );
+      return <TypingArena toWatch={toWatch} />;
     case "ended":
-      return (
-        <PostGameSummary />
-      );
+      return <PostGameSummary />;
   }
 };

@@ -39,10 +39,14 @@ export function TournamentCard({
   onJoinTournament,
   onSpectateTournament,
 }: TournamentCardProps) {
-const tournamentStatus = tournament.endedAt ? "ended" : tournament.startedAt ? "started" : "upcoming";
+  const tournamentStatus = tournament.endedAt
+    ? "ended"
+    : tournament.startedAt
+      ? "started"
+      : "upcoming";
   const timeLeftOrStatus = getTimeLeft(
     tournament.scheduledFor,
-    tournamentStatus
+    tournamentStatus,
   );
 
   return (
@@ -87,9 +91,7 @@ const tournamentStatus = tournament.endedAt ? "ended" : tournament.startedAt ? "
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">
-              {tournamentStatus === "upcoming"
-                ? "Starts in:"
-                : "Status:"}
+              {tournamentStatus === "upcoming" ? "Starts in:" : "Status:"}
             </span>
             <span>{timeLeftOrStatus}</span>
           </div>

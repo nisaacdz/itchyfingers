@@ -8,11 +8,11 @@ export type UserSchema = {
 
 export type TournamentRoomUserProfile = {
   username: string;
-}
+};
 
 export type AuthSchema = {
   user: UserSchema | null;
-}
+};
 
 export type TournamentRoomMember = {
   id: string;
@@ -42,7 +42,7 @@ export type Tournament = {
   endedAt: string | null;
   participating: boolean;
   participantCount: number;
-}
+};
 
 export type CreatedTournament = {
   id: string;
@@ -50,10 +50,10 @@ export type CreatedTournament = {
   description: string;
   createdAt: string;
   createdBy: string;
-  scheduledFor: string,
-  privacy: TournamentPrivacy,
+  scheduledFor: string;
+  privacy: TournamentPrivacy;
   textOptions: TextOptions | null;
-}
+};
 
 export type TournamentData = {
   id: string;
@@ -117,10 +117,8 @@ export type UpdateAllPayload = {
 export type DataSuccessPayload = TournamentData;
 
 export type UpdateDataPayload = {
-  updates: Partial<
-    Omit<TournamentData, "id" | "createdAt" | "createdBy">
-  >;
-}
+  updates: Partial<Omit<TournamentData, "id" | "createdAt" | "createdBy">>;
+};
 
 export type CheckSuccessPayload = {
   status: TournamentStatus;

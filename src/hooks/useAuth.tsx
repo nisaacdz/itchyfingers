@@ -3,7 +3,13 @@ import httpService from "@/api/httpService";
 import { Button } from "@/components/ui/button";
 import { AuthSchema, HttpResponse, UserSchema } from "@/types/api";
 import { Loader } from "lucide-react";
-import { ReactNode, useContext, useEffect, useState, createContext } from "react";
+import {
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+  createContext,
+} from "react";
 
 export interface AuthContextType {
   user: UserSchema | null;
@@ -39,7 +45,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       setUser(null);
-      setError((error instanceof Error && error.message) || "Failed to fetch user data");
+      setError(
+        (error instanceof Error && error.message) ||
+          "Failed to fetch user data",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -57,16 +66,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isLoading,
-      reload,
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        reload,
+      }}
+    >
       {children}
     </AuthContext.Provider>
-  )
+  );
 };
-
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);

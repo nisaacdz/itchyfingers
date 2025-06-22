@@ -86,7 +86,7 @@ export const PostGameSummary = () => {
                 className={cn(
                   "border-slate-700",
                   p.member.id == member.id &&
-                  "bg-purple-600/30 hover:bg-purple-600/40",
+                    "bg-purple-600/30 hover:bg-purple-600/40",
                 )}
               >
                 <TableCell className="font-medium text-center">

@@ -67,7 +67,8 @@ export default function Register() {
       }
     } catch (err) {
       const errorMessage =
-        (err instanceof Error && err.message) || "An error occurred during registration";
+        (err instanceof Error && err.message) ||
+        "An error occurred during registration";
       setError(errorMessage);
       toast({
         title: "Registration failed",

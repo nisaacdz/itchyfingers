@@ -67,7 +67,9 @@ export default function TournamentLobby() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [privacyFilter, setPrivacyFilter] = useState<TournamentPrivacy | "">("");
+  const [privacyFilter, setPrivacyFilter] = useState<TournamentPrivacy | "">(
+    "",
+  );
   const [statusFilter, setStatusFilter] = useState<TournamentStatus | "">("");
   const navigate = useNavigate();
 
@@ -76,7 +78,7 @@ export default function TournamentLobby() {
       pageNum = 1,
       currentSearchTerm = searchTerm,
       currentPrivacyFilter = privacyFilter,
-      currentStatusFilter = statusFilter
+      currentStatusFilter = statusFilter,
     ) => {
       try {
         setLoading(true);
@@ -106,18 +108,25 @@ export default function TournamentLobby() {
       } catch (err) {
         setError(
           (err instanceof Error && err.message) ||
-          "An error occurred while fetching tournaments"
+            "An error occurred while fetching tournaments",
         );
       } finally {
         setLoading(false);
       }
     },
-    [pageSize, searchTerm, privacyFilter, statusFilter]
+    [pageSize, searchTerm, privacyFilter, statusFilter],
   );
 
   useEffect(() => {
     fetchTournaments(page, searchTerm, privacyFilter, statusFilter);
-  }, [page, pageSize, searchTerm, privacyFilter, statusFilter, fetchTournaments]);
+  }, [
+    page,
+    pageSize,
+    searchTerm,
+    privacyFilter,
+    statusFilter,
+    fetchTournaments,
+  ]);
 
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -185,7 +194,10 @@ export default function TournamentLobby() {
             onChange={handleSearchChange}
             className="md:col-span-1"
           />
-          <Select value={privacyFilter || undefined} onValueChange={handlePrivacyChange}>
+          <Select
+            value={privacyFilter || undefined}
+            onValueChange={handlePrivacyChange}
+          >
             <SelectTrigger>
               <SelectValue placeholder="All Privacy" />
             </SelectTrigger>
@@ -194,7 +206,10 @@ export default function TournamentLobby() {
               <SelectItem value="invitational">Invitational</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={statusFilter || undefined} onValueChange={handleStatusChange}>
+          <Select
+            value={statusFilter || undefined}
+            onValueChange={handleStatusChange}
+          >
             <SelectTrigger>
               <SelectValue placeholder="All" />
             </SelectTrigger>
@@ -260,7 +275,9 @@ export default function TournamentLobby() {
         <div className="mt-8 flex flex-col items-center gap-4">
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Button
-              onClick={() => fetchTournaments(page, searchTerm, privacyFilter, statusFilter)}
+              onClick={() =>
+                fetchTournaments(page, searchTerm, privacyFilter, statusFilter)
+              }
               variant="outline"
               disabled={loading}
             >
@@ -307,7 +324,9 @@ export default function TournamentLobby() {
                     <PaginationLink
                       isActive={page === i + 1}
                       onClick={() => !loading && setPage(i + 1)}
-                      className={loading ? "pointer-events-none opacity-50" : ""}
+                      className={
+                        loading ? "pointer-events-none opacity-50" : ""
+                      }
                     >
                       {i + 1}
                     </PaginationLink>

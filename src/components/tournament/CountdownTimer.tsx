@@ -17,7 +17,9 @@ const calculateTimeLeft = (scheduledFor: string) => {
 };
 
 export const CountdownTimer = ({ scheduledFor }: CountdownTimerProps) => {
-  const [secondsLeft, setSecondsLeft] = useState(calculateTimeLeft(scheduledFor));
+  const [secondsLeft, setSecondsLeft] = useState(
+    calculateTimeLeft(scheduledFor),
+  );
 
   useEffect(() => {
     if (secondsLeft <= 0) return;

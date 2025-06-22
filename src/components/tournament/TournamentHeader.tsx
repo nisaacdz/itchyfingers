@@ -11,9 +11,7 @@ interface TournamentHeaderProps {
   toWatch: ParticipantData | null;
 }
 
-const getStatusText = (
-  status: TournamentStatus,
-): string => {
+const getStatusText = (status: TournamentStatus): string => {
   switch (status) {
     case "upcoming":
       return "Starting Soon!";
@@ -24,9 +22,7 @@ const getStatusText = (
   }
 };
 
-export const TournamentHeader = ({
-  toWatch
-}: TournamentHeaderProps) => {
+export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
   const { data: tournamentData } = useRoom();
   const navigate = useNavigate();
   const status = getStatus(tournamentData);
@@ -44,7 +40,9 @@ export const TournamentHeader = ({
       }
     } catch (error) {
       console.error("Failed to leave tournament:", error);
-      toast.error(`Failed to leave tournament: ${error instanceof Error ? error.message : "Unknown error"}`);
+      toast.error(
+        `Failed to leave tournament: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   };
 
@@ -72,7 +70,7 @@ export const TournamentHeader = ({
         {status === "started" && (
           <div className="flex items-center gap-1 text-sm md:text-base font-semibold text-cyan-400">
             <Zap size={18} className="text-yellow-400" />
-            {toWatch ? toWatch.currentSpeed.toFixed(0) : '_'}{" "}
+            {toWatch ? toWatch.currentSpeed.toFixed(0) : "_"}{" "}
             <span className="text-xs text-slate-400">WPM</span>
           </div>
         )}

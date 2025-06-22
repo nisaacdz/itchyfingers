@@ -1,10 +1,10 @@
 import { RefObject, useEffect, useState } from "react";
 
 export type ParagraphStyles = {
-    fontSize: number;
-    lineHeight: number;
-    lineSpacing: number;
-}
+  fontSize: number;
+  lineHeight: number;
+  lineSpacing: number;
+};
 
 export const useParagraphStyles = (
   elementRef: RefObject<HTMLParagraphElement | null>,
@@ -41,4 +41,4 @@ export const useParagraphStyles = (
   }, [elementRef]);
 
   return styles;
-}
+};

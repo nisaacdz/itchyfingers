@@ -44,9 +44,7 @@ export const StatsPanel = ({
   if (!toWatch || upcoming) {
     return (
       <div className="text-center text-slate-400 py-4">
-        <h3 className="text-lg font-semibold mb-2 text-slate-200">
-          Stats
-        </h3>
+        <h3 className="text-lg font-semibold mb-2 text-slate-200">Stats</h3>
         <p className="text-sm">
           {upcoming
             ? "Stats will appear once the race starts."
@@ -57,9 +55,7 @@ export const StatsPanel = ({
   }
 
   const progressPercentage =
-    textLength > 0
-      ? (toWatch.correctPosition / textLength) * 100
-      : 0;
+    textLength > 0 ? (toWatch.correctPosition / textLength) * 100 : 0;
 
   return (
     <div>

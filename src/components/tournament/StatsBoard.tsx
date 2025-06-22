@@ -1,5 +1,9 @@
 import React from "react";
-import { ParticipantData, TournamentData, TournamentStatus } from "../../types/api";
+import {
+  ParticipantData,
+  TournamentData,
+  TournamentStatus,
+} from "../../types/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 

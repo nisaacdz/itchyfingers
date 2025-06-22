@@ -24,7 +24,7 @@ export const TournamentPage = () => {
   }, []);
 
   if (!tournamentId || typeof tournamentId != "string") {
-    return <ErrorMessage message={"Invalid url"} />
+    return <ErrorMessage message={"Invalid url"} />;
   }
 
   return (

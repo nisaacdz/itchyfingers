@@ -5,7 +5,7 @@ const ACCESS_TOKEN_KEY =
 const REFRESH_TOKEN_KEY =
   import.meta.env.VITE_REFRESH_TOKEN_KEY || "refresh_token";
 const NOAUTH_UNIQUE_KEY =
-  import.meta.env.VITE_NOAUTH_UNIQUE_KEY || "noauth_unique"
+  import.meta.env.VITE_NOAUTH_UNIQUE_KEY || "noauth_unique";
 
 class HttpService {
   private instance: AxiosInstance;

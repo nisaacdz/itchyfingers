@@ -3,7 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import httpService from "@/api/httpService";
 import { toast } from "@/hooks/use-toast";
-import { CreatedTournament, HttpResponse, TextOptions, Tournament } from "@/types/api";
+import {
+  CreatedTournament,
+  HttpResponse,
+  TextOptions,
+  Tournament,
+} from "@/types/api";
 import {
   Dialog,
   DialogContent,
@@ -49,7 +54,7 @@ export function CreateTournamentDialog({
 
   const handleTextOptionChange = (key: keyof TextOptions, checked: boolean) => {
     if (textOptions) {
-      setTextOptions((prev) => prev ? { ...prev, [key]: checked } : prev);
+      setTextOptions((prev) => (prev ? { ...prev, [key]: checked } : prev));
     }
   };
 
@@ -144,7 +149,9 @@ export function CreateTournamentDialog({
               id="scheduledFor"
               type="datetime-local"
               value={scheduledFor}
-              min={DateTime.now().plus({ minutes: 1 }).toFormat("yyyy-MM-dd'T'HH:mm")}
+              min={DateTime.now()
+                .plus({ minutes: 1 })
+                .toFormat("yyyy-MM-dd'T'HH:mm")}
               onChange={(e) => setScheduledFor(e.target.value)}
               required
               disabled={isLoading}
@@ -154,7 +161,12 @@ export function CreateTournamentDialog({
             <Label>Text Options</Label>
             {textOptions === null ? (
               <div className="mt-2">
-                <Button type="button" variant="outline" onClick={handleCustomize} className="w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCustomize}
+                  className="w-full"
+                >
                   Customize Text Options
                 </Button>
                 <div className="text-xs text-muted-foreground mt-1">
@@ -167,7 +179,9 @@ export function CreateTournamentDialog({
                   <Checkbox
                     id="uppercase"
                     checked={textOptions.uppercase}
-                    onCheckedChange={(checked) => handleTextOptionChange("uppercase", !!checked)}
+                    onCheckedChange={(checked) =>
+                      handleTextOptionChange("uppercase", !!checked)
+                    }
                   />
                   <Label htmlFor="uppercase">Uppercase</Label>
                 </div>
@@ -175,7 +189,9 @@ export function CreateTournamentDialog({
                   <Checkbox
                     id="lowercase"
                     checked={textOptions.lowercase}
-                    onCheckedChange={(checked) => handleTextOptionChange("lowercase", !!checked)}
+                    onCheckedChange={(checked) =>
+                      handleTextOptionChange("lowercase", !!checked)
+                    }
                   />
                   <Label htmlFor="lowercase">Lowercase</Label>
                 </div>
@@ -183,7 +199,9 @@ export function CreateTournamentDialog({
                   <Checkbox
                     id="numbers"
                     checked={textOptions.numbers}
-                    onCheckedChange={(checked) => handleTextOptionChange("numbers", !!checked)}
+                    onCheckedChange={(checked) =>
+                      handleTextOptionChange("numbers", !!checked)
+                    }
                   />
                   <Label htmlFor="numbers">Numbers</Label>
                 </div>
@@ -191,7 +209,9 @@ export function CreateTournamentDialog({
                   <Checkbox
                     id="symbols"
                     checked={textOptions.symbols}
-                    onCheckedChange={(checked) => handleTextOptionChange("symbols", !!checked)}
+                    onCheckedChange={(checked) =>
+                      handleTextOptionChange("symbols", !!checked)
+                    }
                   />
                   <Label htmlFor="symbols">Symbols</Label>
                 </div>
@@ -199,11 +219,19 @@ export function CreateTournamentDialog({
                   <Checkbox
                     id="meaningful"
                     checked={textOptions.meaningful}
-                    onCheckedChange={(checked) => handleTextOptionChange("meaningful", !!checked)}
+                    onCheckedChange={(checked) =>
+                      handleTextOptionChange("meaningful", !!checked)
+                    }
                   />
                   <Label htmlFor="meaningful">Meaningful</Label>
                 </div>
-                <Button type="button" variant="ghost" size="sm" onClick={handleOptOut} className="ml-2 mt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleOptOut}
+                  className="ml-2 mt-2"
+                >
                   Use System Default
                 </Button>
               </div>

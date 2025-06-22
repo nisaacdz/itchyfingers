@@ -8,9 +8,7 @@ interface ParticipantsPanelProps {
   toWatch?: ParticipantData | null;
 }
 
-export const ParticipantsPanel = ({
-  toWatch,
-}: ParticipantsPanelProps) => {
+export const ParticipantsPanel = ({ toWatch }: ParticipantsPanelProps) => {
   const { participants, data } = useRoom();
   const started = data.startedAt !== null;
   const textLength = data.text?.length || 0;
@@ -26,10 +24,7 @@ export const ParticipantsPanel = ({
     return b.currentSpeed - a.currentSpeed;
   });
 
-  const title =
-    started
-      ? "Leaderboard"
-      : "Participants";
+  const title = started ? "Leaderboard" : "Participants";
 
   return (
     <div className="flex flex-col h-full">

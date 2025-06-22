@@ -6,12 +6,7 @@ import {
   TournamentData,
   TournamentRoomMember,
 } from "@/types/api";
-import {
-  useContext,
-  useEffect,
-  useState,
-  createContext,
-} from "react";
+import { useContext, useEffect, useState, createContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./use-toast";
 import { toast } from "sonner";
@@ -69,12 +64,12 @@ export const TournamentRoom = ({
         const participants = data.participants.reduce(
           (
             acc: Record<string, ParticipantData>,
-            participant: ParticipantData
+            participant: ParticipantData,
           ) => {
             acc[participant.member.id] = participant;
             return acc;
           },
-          {}
+          {},
         );
         setContextValue({
           participants,

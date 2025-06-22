@@ -11,32 +11,30 @@ interface TypingArenaProps {
   toWatch: ParticipantData | null;
 }
 
-export const TypingArena = ({
-  toWatch,
-}: TypingArenaProps) => {
+export const TypingArena = ({ toWatch }: TypingArenaProps) => {
   const { data, participants } = useRoom();
   const paragraphRef = useRef<HTMLParagraphElement>(null);
 
   const { fontSize } = useParagraphStyles(paragraphRef);
 
-  const whiteSpaceErrorHighlights = paragraphRef.current && toWatch
-    ? Array.from(
-      {
-        length:
-          toWatch.currentPosition - toWatch.correctPosition,
-      },
-      (_, i) => toWatch.correctPosition + i,
-    )
-      .filter((pos) => data.text?.charAt(pos) === " ")
-      .map((pos) => (
-        <WhiteSpaceErrorHighlight
-          key={pos}
-          position={computeAbsolutePosition(paragraphRef, pos)}
-          height={fontSize}
-          width={fontSize * 0.6}
-        />
-      ))
-    : [];
+  const whiteSpaceErrorHighlights =
+    paragraphRef.current && toWatch
+      ? Array.from(
+          {
+            length: toWatch.currentPosition - toWatch.correctPosition,
+          },
+          (_, i) => toWatch.correctPosition + i,
+        )
+          .filter((pos) => data.text?.charAt(pos) === " ")
+          .map((pos) => (
+            <WhiteSpaceErrorHighlight
+              key={pos}
+              position={computeAbsolutePosition(paragraphRef, pos)}
+              height={fontSize}
+              width={fontSize * 0.6}
+            />
+          ))
+      : [];
 
   const caretElements = Object.values(participants).map((p) => {
     const absPos = computeAbsolutePosition(paragraphRef, p.correctPosition);
@@ -104,9 +102,11 @@ type WhiteSpaceErrorHighlightProps = {
   height: number;
 };
 
-const WhiteSpaceErrorHighlight: React.FC<
-  WhiteSpaceErrorHighlightProps
-> = ({ position, width, height }) => {
+const WhiteSpaceErrorHighlight: React.FC<WhiteSpaceErrorHighlightProps> = ({
+  position,
+  width,
+  height,
+}) => {
   return (
     <div
       key={`space-${position.top}-${position.left}`}
@@ -133,22 +133,22 @@ const KeyPopper = ({ className }: KeyPopperProps) => {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       event.preventDefault();
-      clearTimeout(timeout)
+      clearTimeout(timeout);
       setActiveKey(null);
       if (event.key === "Backspace") {
         socketService.emit("type", { character: "\b" });
-        setActiveKey("⌫")
+        setActiveKey("⌫");
       } else if (event.key.length === 1) {
         socketService.emit("type", { character: event.key });
-        setActiveKey(event.key)
+        setActiveKey(event.key);
       }
     };
 
     const handleKeyUp = () => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
-        setActiveKey(null)
-      }, 500)
+        setActiveKey(null);
+      }, 500);
     };
 
     if (participating) {
@@ -161,18 +161,35 @@ const KeyPopper = ({ className }: KeyPopperProps) => {
     };
   }, [participating]);
 
-  return (<div className={cn(className)}>
-    <AnimatePresence>
-      {activeKey && (
-        <motion.div
-          initial={{ opacity: 0, y: 15, scale: 0.8 }}
-          animate={{ opacity: 1, y: 8, scale: 1.2, transition: { type: "spring", stiffness: 500, damping: 30, duration: 0.15 } }}
-          exit={{ opacity: 0, y: 0, scale: 0.5, transition: { ease: "easeOut", duration: 0.15 } }}
-          className="text-white bg-muted-foreground backdrop-blur-sm px-4 py-2 rounded-lg text-2xl font-semibold"
-        >
-          {activeKey}
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </div>)
-}
+  return (
+    <div className={cn(className)}>
+      <AnimatePresence>
+        {activeKey && (
+          <motion.div
+            initial={{ opacity: 0, y: 15, scale: 0.8 }}
+            animate={{
+              opacity: 1,
+              y: 8,
+              scale: 1.2,
+              transition: {
+                type: "spring",
+                stiffness: 500,
+                damping: 30,
+                duration: 0.15,
+              },
+            }}
+            exit={{
+              opacity: 0,
+              y: 0,
+              scale: 0.5,
+              transition: { ease: "easeOut", duration: 0.15 },
+            }}
+            className="text-white bg-muted-foreground backdrop-blur-sm px-4 py-2 rounded-lg text-2xl font-semibold"
+          >
+            {activeKey}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
