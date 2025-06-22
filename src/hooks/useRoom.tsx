@@ -125,7 +125,7 @@ export const TournamentRoom = ({
       console.log("Successfully connected to tournament socket");
 
       socketService.on("update:all", (data) => {
-        if (!data.updates || !data.updates.length) return;
+        if (!data.updates.length) return;
         setContextValue((prev) => {
           if (!prev) return null;
           const newParticipants = { ...prev.participants };
@@ -159,7 +159,6 @@ export const TournamentRoom = ({
       });
 
       socketService.on("update:me", (data) => {
-        if (!data.updates) return;
         setContextValue((prev) => {
           if (!prev) return null;
           const memberId = prev.member.id;

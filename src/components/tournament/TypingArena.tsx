@@ -133,8 +133,6 @@ const KeyPopper = ({ className }: KeyPopperProps) => {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       event.preventDefault();
-      // event.stopPropagation(); propagation is needed by keypopper
-
       clearTimeout(timeout)
       setActiveKey(null);
       if (event.key === "Backspace") {
