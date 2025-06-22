@@ -8,6 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tournament, TournamentStatus } from "../../types/api";
+import { Clock, Globe, Lock, Users } from "lucide-react";
 
 interface TournamentCardProps {
   tournament: Tournament;
@@ -80,20 +81,33 @@ export function TournamentCard({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Participants:</span>
-            <span>{tournament.participantCount}</span>
+        <div className="space-y-3 text-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Users className="h-4 w-4" />
+              <span>Participants</span>
+            </div>
+            <span className="font-medium">{tournament.participantCount}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Privacy:</span>
-            <span className="capitalize">{tournament.privacy}</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              {tournament.privacy === "open" ? (
+                <Globe className="h-4 w-4" />
+              ) : (
+                <Lock className="h-4 w-4" />
+              )}
+              <span>Privacy</span>
+            </div>
+            <span className="capitalize font-medium">{tournament.privacy}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">
-              {tournamentStatus === "upcoming" ? "Starts in:" : "Status:"}
-            </span>
-            <span>{timeLeftOrStatus}</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span>
+                {tournamentStatus === "upcoming" ? "Starts in" : "Status"}
+              </span>
+            </div>
+            <span className="font-medium">{timeLeftOrStatus}</span>
           </div>
         </div>
         <div className="pt-4 space-y-2">
@@ -102,7 +116,7 @@ export function TournamentCard({
             onClick={() => onJoinTournament(tournament.id)}
             disabled={tournamentStatus === "ended"}
           >
-            {tournament.participating ? "Rejoin" : "Join"} Tournament
+            {tournament.participating ? "Enter" : "Join"} Tournament
           </Button>
           <Button
             className="w-full"

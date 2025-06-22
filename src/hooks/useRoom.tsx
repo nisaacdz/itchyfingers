@@ -87,7 +87,7 @@ export const TournamentRoom = ({
       },
       onDisconnect: () => {
         setSocketStatus("disconnected");
-        socketService.ensureConnected(); // Attempt to reconnect
+        toast.error("Disconnected from tournament socket");
         console.warn("Disconnected from tournament socket");
       },
       onJoinFailure: (failure) => {

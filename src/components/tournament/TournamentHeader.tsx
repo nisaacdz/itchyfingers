@@ -1,11 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { cn, getStatus } from "@/lib/utils";
-import { LogOut, Zap } from "lucide-react";
+import { List, LogOut, Zap } from "lucide-react";
 import { ParticipantData, TournamentData, TournamentStatus } from "@/types/api";
 import { socketService } from "@/api/socketService";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useRoom } from "@/hooks/useRoom";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 interface TournamentHeaderProps {
   toWatch: ParticipantData | null;
@@ -41,20 +49,64 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
     } catch (error) {
       console.error("Failed to leave tournament:", error);
       toast.error(
-        `Failed to leave tournament: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to leave tournament: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
       );
     }
   };
 
   return (
-    <header className="flex items-center justify-between p-3 md:p-4 bg-slate-800/50 backdrop-blur-sm shadow-lg text-slate-200">
-      <div className="flex flex-col">
-        <h1
-          className="text-lg md:text-xl font-bold truncate max-w-[200px] md:max-w-xs "
-          title={tournamentData.title}
-        >
-          {tournamentData.title}
-        </h1>
+    <header className="grid grid-cols-[1fr,auto,1fr] items-center gap-4 p-3 md:p-4 bg-slate-800/50 backdrop-blur-sm shadow-lg text-slate-200">
+      <div className="justify-self-start">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link
+                  to="/tournaments"
+                  className="flex items-center gap-1.5 text-slate-300 hover:text-white"
+                >
+                  <List size={16} />
+                  <span className="hidden md:inline">Tournaments</span>
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage
+                className="font-medium truncate max-w-32 md:max-w-xs"
+                title={tournamentData.title}
+              >
+                {tournamentData.title}
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+
+      <div className="flex flex-col items-center text-center">
+        <div className="flex items-baseline gap-2 justify-center">
+          <h1
+            className="text-lg md:text-xl font-bold truncate"
+            title={tournamentData.title}
+          >
+            {tournamentData.title}
+          </h1>
+          {tournamentData.description && (
+            <>
+              <span className="text-slate-500 text-sm hidden md:inline">
+                -
+              </span>
+              <p
+                className="text-sm text-slate-400 truncate max-w-[100px] md:max-w-sm hidden md:inline"
+                title={tournamentData.description}
+              >
+                {tournamentData.description}
+              </p>
+            </>
+          )}
+        </div>
         <span
           className={cn(
             "text-xs md:text-sm font-medium",
@@ -62,11 +114,11 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
             status === "ended" && "text-amber-400",
           )}
         >
-          {statusText}{" "}
+          {statusText}
         </span>
       </div>
 
-      <div className="flex items-center gap-3 md:gap-4">
+      <div className="flex items-center justify-end gap-3 md:gap-4">
         {status === "started" && (
           <div className="flex items-center gap-1 text-sm md:text-base font-semibold text-cyan-400">
             <Zap size={18} className="text-yellow-400" />
@@ -74,9 +126,6 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
             <span className="text-xs text-slate-400">WPM</span>
           </div>
         )}
-        {/* {status === "upcoming" && (
-          <TimerDisplay targetTime={tournamentData.scheduledFor} mode="countdown" />
-        )} */}
         <Button
           variant="ghost"
           size="sm"

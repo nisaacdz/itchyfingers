@@ -172,8 +172,6 @@ export class SocketService {
     if (this.socket) {
       console.log("SocketService: Disconnecting socket...");
       this.socket.disconnect();
-      this.socket = null;
-      this.options = null;
     }
   }
 
