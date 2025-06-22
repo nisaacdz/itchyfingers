@@ -1,4 +1,3 @@
-import { ParticipantData } from "@/types/api";
 import {
   Table,
   TableBody,
@@ -10,18 +9,12 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Award, Medal, UserCircle } from "lucide-react";
+import { Award, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/useAuth";
+import { useRoom } from "@/hooks/useRoom";
 
-interface PostGameSummaryProps {
-  participants: Record<string, ParticipantData>;
-}
-
-export const PostGameSummary = ({
-  participants,
-}: PostGameSummaryProps) => {
-  const { client } = useAuth();
+export const PostGameSummary = () => {
+  const { member, participants } = useRoom();
   const navigate = useNavigate();
   const sortedParticipants = Object.values(participants).sort((a, b) => {
     // Primary sort: finished (endedAt is set)
@@ -89,10 +82,10 @@ export const PostGameSummary = ({
           <TableBody>
             {sortedParticipants.map((p, index) => (
               <TableRow
-                key={p.client.id}
+                key={p.member.id}
                 className={cn(
                   "border-slate-700",
-                  p.client.id === client.id &&
+                  p.member.id == member.id &&
                   "bg-purple-600/30 hover:bg-purple-600/40",
                 )}
               >
@@ -100,8 +93,8 @@ export const PostGameSummary = ({
                   {getRankIcon(index)}
                 </TableCell>
                 <TableCell className="font-medium text-slate-200">
-                  {p.client.user?.username ||
-                    `Anon-${p.client.id.substring(0, 4)}`}
+                  {p.member.user?.username ||
+                    `Anon-${p.member.id.substring(0, 4)}`}
                 </TableCell>
                 <TableCell className="text-right">
                   {Math.round(p.currentSpeed)}

@@ -6,10 +6,17 @@ export type UserSchema = {
   updatedAt: string;
 };
 
-export type ClientSchema = {
-  id: string;
+export type TournamentRoomUserProfile = {
+  username: string;
+}
+
+export type AuthSchema = {
   user: UserSchema | null;
-  updated: string;
+}
+
+export type TournamentRoomMember = {
+  id: string;
+  user: TournamentRoomUserProfile | null;
 };
 
 export type TextOptions = {
@@ -62,7 +69,7 @@ export type TournamentData = {
 };
 
 export type ParticipantData = {
-  client: ClientSchema;
+  member: TournamentRoomMember;
   currentPosition: number;
   correctPosition: number;
   totalKeystrokes: number;
@@ -89,7 +96,7 @@ export type TypeEventPayload = {
 
 export type JoinSuccessPayload = {
   data: TournamentData;
-  clientId: string;
+  member: TournamentRoomMember;
   participants: ParticipantData[];
 };
 

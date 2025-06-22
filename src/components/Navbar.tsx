@@ -14,7 +14,7 @@ import axiosInstance from "../api/httpService";
 import { toast } from "@/hooks/use-toast";
 
 export function Navbar() {
-  const { client, reload, isLoading } = useAuth();
+  const { user, reload, isLoading } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -48,7 +48,7 @@ export function Navbar() {
         <div className="flex items-center space-x-4">
           <ThemeToggle />
 
-          {client?.user ? (
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -57,7 +57,7 @@ export function Navbar() {
                 >
                   <Avatar className="h-9 w-9">
                     <AvatarFallback>
-                      {client.user.username.charAt(0).toUpperCase()}
+                      {user.username.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -68,9 +68,9 @@ export function Navbar() {
               >
                 <div className="flex items-center justify-start gap-2 p-2">
                   <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium">{client.user.username}</p>
+                    <p className="font-medium">{user.username}</p>
                     <p className="w-[200px] truncate text-sm text-muted-foreground">
-                      {client.user.email}
+                      {user.email}
                     </p>
                   </div>
                 </div>

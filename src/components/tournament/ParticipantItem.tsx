@@ -1,8 +1,8 @@
 import { ParticipantData } from "@/types/api";
 import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { UserCircle, Zap, CheckCircle2 } from "lucide-react"; // Crown for winner, or star for current user
+import { Zap, CheckCircle2 } from "lucide-react";
 
 interface ParticipantItemProps {
   data: ParticipantData;
@@ -20,8 +20,8 @@ export const ParticipantItem = ({
       ? (data.correctPosition / textLength) * 100
       : 0;
   const displayName =
-    data.client.user?.username ||
-    `Anon-${data.client.id.substring(0, 4)}`;
+    data.member.user?.username ||
+    `Anon-${data.member.id.substring(0, 4)}`;
   const isFinished =
     data.endedAt ||
     (textLength > 0 && data.correctPosition === textLength);

@@ -25,14 +25,14 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { client, reload } = useAuth();
+  const { user, reload } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (client.user) {
+    if (user) {
       navigate("/");
     }
-  }, [client.user, navigate]);
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,9 +63,9 @@ export default function Login() {
       } else {
         setError("Login failed");
       }
-    } catch (err: any) {
+    } catch (err) {
       const errorMessage =
-        err.response?.data?.message || "An error occurred during login";
+        (err instanceof Error && err.message) || "An error occurred during login";
       setError(errorMessage);
       toast({
         title: "Login failed",

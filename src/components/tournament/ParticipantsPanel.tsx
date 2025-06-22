@@ -1,27 +1,25 @@
-import { ParticipantData, ClientSchema } from "@/types/api";
+import { ParticipantData } from "@/types/api";
 import { ParticipantItem } from "@/components/tournament/ParticipantItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users } from "lucide-react";
+import { useRoom } from "@/hooks/useRoom";
 
 interface ParticipantsPanelProps {
-  participants: Record<string, ParticipantData>;
   toWatch?: ParticipantData | null;
-  textLength: number;
-  started: boolean;
 }
 
 export const ParticipantsPanel = ({
-  participants,
   toWatch,
-  textLength,
-  started
 }: ParticipantsPanelProps) => {
+  const { participants, data } = useRoom();
+  const started = data.startedAt !== null;
+  const textLength = data.text?.length || 0;
   const participantArray = Object.values(participants);
 
   // Sort participants: current user first, then by progress (desc), then by WPM (desc)
   participantArray.sort((a, b) => {
-    if (a.client.id === toWatch?.client.id) return -1;
-    if (b.client.id === toWatch?.client.id) return 1;
+    if (a.member.id === toWatch?.member.id) return -1;
+    if (b.member.id === toWatch?.member.id) return 1;
     if (b.correctPosition !== a.correctPosition) {
       return b.correctPosition - a.correctPosition;
     }
@@ -52,10 +50,10 @@ export const ParticipantsPanel = ({
           <div className="space-y-2">
             {participantArray.map((p) => (
               <ParticipantItem
-                key={p.client.id}
+                key={p.member.id}
                 data={p}
                 textLength={textLength}
-                watched={toWatch?.client.id === p.client.id}
+                watched={toWatch?.member.id === p.member.id}
               />
             ))}
           </div>

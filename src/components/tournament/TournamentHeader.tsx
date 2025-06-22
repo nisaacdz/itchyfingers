@@ -5,10 +5,10 @@ import { ParticipantData, TournamentData, TournamentStatus } from "@/types/api";
 import { socketService } from "@/api/socketService";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useRoom } from "@/hooks/useRoom";
 
 interface TournamentHeaderProps {
-  tournamentData: TournamentData;
-  toWatch: ParticipantData;
+  toWatch: ParticipantData | null;
 }
 
 const getStatusText = (
@@ -25,9 +25,9 @@ const getStatusText = (
 };
 
 export const TournamentHeader = ({
-  tournamentData,
   toWatch
 }: TournamentHeaderProps) => {
+  const { data: tournamentData } = useRoom();
   const navigate = useNavigate();
   const status = getStatus(tournamentData);
   const statusText = getStatusText(status);
@@ -72,7 +72,7 @@ export const TournamentHeader = ({
         {status === "started" && (
           <div className="flex items-center gap-1 text-sm md:text-base font-semibold text-cyan-400">
             <Zap size={18} className="text-yellow-400" />
-            {Math.round(toWatch.currentSpeed)}{" "}
+            {toWatch ? toWatch.currentSpeed.toFixed(0) : '_'}{" "}
             <span className="text-xs text-slate-400">WPM</span>
           </div>
         )}

@@ -3,18 +3,10 @@ import { CountdownTimer } from "./CountdownTimer";
 import { PostGameSummary } from "./PostGameSummary";
 import { TypingArena } from "./TypingArena";
 import { getStatus } from "@/lib/utils";
+import { useRoom } from "@/hooks/useRoom";
 
-interface TypingChallengeAreaProps {
-  toWatch: ParticipantData | null;
-  participants: Record<string, ParticipantData>;
-  data: TournamentData;
-}
-
-export const TypingChallengeArea = ({
-  toWatch,
-  participants,
-  data
-}: TypingChallengeAreaProps) => {
+export const TypingChallengeArea = ({ toWatch }: { toWatch: ParticipantData | null }) => {
+  const { data } = useRoom();
 
   const status = getStatus(data);
 
@@ -23,17 +15,11 @@ export const TypingChallengeArea = ({
       return <CountdownTimer scheduledFor={data.scheduledFor} />
     case "started":
       return (
-        <TypingArena
-          text={data.text || ""}
-          participants={participants}
-          toWatch={toWatch}
-        />
+        <TypingArena toWatch={toWatch} />
       );
     case "ended":
       return (
-        <PostGameSummary
-          participants={participants}
-        />
+        <PostGameSummary />
       );
   }
 };

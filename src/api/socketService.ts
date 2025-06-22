@@ -3,11 +3,12 @@ import { AllSuccessPayload, CheckSuccessPayload, DataSuccessPayload, JoinSuccess
 import { io, Socket as SocketIoClientSocket } from "socket.io-client"; // Renamed Socket from socket.io-client
 
 const ACCESS_TOKEN_KEY = import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
-const CLIENT_ID_KEY = import.meta.env.VITE_CLIENT_ID_KEY || "client_id";
+const NOAUTH_UNIQUE_KEY = import.meta.env.VITE_NOAUTH_UNIQUE_KEY || "noauth_unique"
 
 export type ConnectOptions = {
   tournamentId: string;
   spectator?: boolean;
+  anonymous?: boolean;
   onJoinSuccess: (payload: JoinSuccessPayload) => void;
   onDisconnect: (reason: string) => void;
   onJoinFailure: (payload: WsFailurePayload) => void;
@@ -60,15 +61,16 @@ export class SocketService {
     const namespaceUrl = `${baseUrl}/`;
 
     const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-    const clientId = localStorage.getItem(CLIENT_ID_KEY);
+    const noauth = localStorage.getItem(NOAUTH_UNIQUE_KEY);
     const extraHeaders = {
-      ...(clientId ? { "x-client-id": clientId } : {}),
+      ...(noauth ? { "x-noauth-unique": noauth } : {}),
       ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : {})
     };
 
     const query = {
       id: options.tournamentId,
-      ...(options.spectator ? { spectator: "true" } : {})
+      ...(options.spectator ? { spectator: "true" } : {}),
+      ...(options.anonymous ? { anonymous: "true" } : {}),
     };
 
     this.socket = io(namespaceUrl, {
@@ -94,7 +96,7 @@ export class SocketService {
     this.socket?.connect();
   }
 
-  ensureConnected(): SocketIoClientSocket {
+  public ensureConnected(): SocketIoClientSocket {
     if (this.socket?.connected) {
       return this.socket;
     }
@@ -110,7 +112,11 @@ export class SocketService {
 
   registerConnectionListeners(): void {
     this.socket?.once("join:success", payload => {
-      this.options?.onJoinSuccess(payload)
+      const { noauth, ...remPayload } = payload;
+      if (payload.noauth) {
+        localStorage.setItem(NOAUTH_UNIQUE_KEY, payload.noauth)
+      }
+      this.options?.onJoinSuccess(remPayload)
       this.cleanUpConnectionListeners()
     })
     this.socket?.once("join:failure", payload => {

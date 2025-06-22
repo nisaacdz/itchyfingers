@@ -17,7 +17,7 @@ class ApiClient {
       (response) => response,
       (error: AxiosError) => {
         if (error.response?.status === 401) {
-          window.localStorage.setItem("returnTo", window.location.pathname);
+          window.sessionStorage.setItem("returnTo", window.location.pathname);
           window.location.href = "/login";
         }
         return Promise.reject(error);

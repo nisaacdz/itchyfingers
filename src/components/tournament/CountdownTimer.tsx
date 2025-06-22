@@ -55,7 +55,6 @@ export const CountdownTimer = ({ scheduledFor }: CountdownTimerProps) => {
     <div className="flex flex-col items-center justify-center text-center text-slate-100">
       <p className="text-2xl md:text-3xl mb-4 text-slate-300">Starting in...</p>
       <motion.div
-        key={secondsLeft}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.5, opacity: 0 }}

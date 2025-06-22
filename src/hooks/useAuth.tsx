@@ -1,12 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import httpService from "@/api/httpService";
 import { Button } from "@/components/ui/button";
-import { ClientSchema, HttpResponse } from "@/types/api";
+import { AuthSchema, HttpResponse, UserSchema } from "@/types/api";
 import { Loader } from "lucide-react";
 import { ReactNode, useContext, useEffect, useState, createContext } from "react";
 
 export interface AuthContextType {
-  client: ClientSchema;
+  user: UserSchema | null;
   isLoading: boolean;
   reload: () => Promise<void>;
 }
@@ -20,7 +20,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 );
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [client, setClient] = useState<ClientSchema | null>(null);
+  const [user, setUser] = useState<UserSchema | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,16 +29,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(null);
       setIsLoading(true);
       const response =
-        await httpService.get<HttpResponse<ClientSchema>>("/auth/me");
+        await httpService.get<HttpResponse<AuthSchema>>("/auth/me");
 
       if (response.data.success) {
-        setClient(response.data.data);
+        setUser(response.data.data?.user || null);
       } else {
         throw new Error(response.data.message || "Failed to fetch user data");
       }
     } catch (error) {
       console.error("Failed to fetch user data:", error);
-      setClient(null);
+      setUser(null);
       setError((error instanceof Error && error.message) || "Failed to fetch user data");
     } finally {
       setIsLoading(false);
@@ -56,35 +56,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
   }, []);
 
-  console.log("AuthProvider initialized with client:", client);
-
   return (
-    client ? (
-      <AuthContext.Provider value={{
-        client,
-        isLoading,
-        reload,
-      }}>
-        {children}
-      </AuthContext.Provider>
-    ) : isLoading ? (<div className="flex items-center justify-center h-screen">
-      <Loader className="animate-spin h-8 w-8 text-blue-500" />
-    </div>) : (
-      <div className="flex items-center justify-center h-screen">
-        <span className="text-lg text-red-500">
-          "An error occurred while reaching the server."
-        </span>
-
-        <Button
-          onClick={reload}
-          className="mt-4"
-          variant="outline"
-        >
-          Retry
-        </Button>
-      </div>
-    )
-  );
+    <AuthContext.Provider value={{
+      user,
+      isLoading,
+      reload,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  )
 };
 
 

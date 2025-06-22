@@ -4,8 +4,9 @@ const ACCESS_TOKEN_KEY =
   import.meta.env.VITE_ACCESS_TOKEN_KEY || "access_token";
 const REFRESH_TOKEN_KEY =
   import.meta.env.VITE_REFRESH_TOKEN_KEY || "refresh_token";
-const CLIENT_ID_KEY =
-  import.meta.env.VITE_CLIENT_ID_KEY || "client_id";
+const NOAUTH_UNIQUE_KEY =
+  import.meta.env.VITE_NOAUTH_UNIQUE_KEY || "noauth_unique"
+
 class HttpService {
   private instance: AxiosInstance;
 
@@ -23,9 +24,9 @@ class HttpService {
         if (token) {
           config.headers["Authorization"] = `Bearer ${token}`;
         }
-        const clientId = localStorage.getItem(CLIENT_ID_KEY);
-        if (clientId) {
-          config.headers["X-Client-ID"] = clientId;
+        const noauth = localStorage.getItem(NOAUTH_UNIQUE_KEY);
+        if (noauth) {
+          config.headers["x-noauth-unique"] = noauth;
         }
         return config;
       },
@@ -40,12 +41,6 @@ class HttpService {
           const refreshToken = response.data.data.tokens.refresh;
 
           this.setTokens(accessToken, refreshToken);
-        }
-
-        const clientId = response.headers["x-client-id"];
-        if (clientId) {
-          console.log("Received new client ID from server:", clientId);
-          localStorage.setItem(CLIENT_ID_KEY, clientId as string);
         }
 
         return response;
