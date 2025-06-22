@@ -57,7 +57,7 @@ export const TypingArena = ({ toWatch }: TypingArenaProps) => {
       className="relative w-full h-full flex items-center justify-center p-2 md:p-4 focus:outline-none"
       tabIndex={-1}
     >
-      {participating && (
+      {participating && toWatch && !toWatch.endedAt && (
         <KeyPopper className="absolute top-[15%] left-1/2 -translate-x-1/2 pointer-events-none z-20" />
       )}
       {/* Container for text and absolutely positioned elements to ensure correct offset calculations */}
