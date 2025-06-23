@@ -28,12 +28,12 @@ export const ParticipantsPanel = ({ toWatch }: ParticipantsPanelProps) => {
 
   return (
     <div className="flex flex-col h-full">
-      <h3 className="text-lg font-semibold mb-3 text-slate-100 border-b border-slate-700 pb-2 flex items-center gap-2">
-        <Users size={20} className="text-slate-400" />
+      <h3 className="text-lg font-semibold mb-3 text-muted-foreground border-b border-slate-700 pb-2 flex items-center gap-2">
+        <Users size={20} className="text-foreground" />
         {title} ({participantArray.length})
       </h3>
       {participantArray.length === 0 ? (
-        <p className="text-sm text-slate-400 text-center flex-grow flex items-center justify-center">
+        <p className="text-sm text-foreground text-center flex-grow flex items-center justify-center">
           {started
             ? "No participants found."
             : "Waiting for players to join..."}

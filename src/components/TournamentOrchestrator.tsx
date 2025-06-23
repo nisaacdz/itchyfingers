@@ -4,11 +4,11 @@ import { MainContentLayout } from "@/components/tournament/MainContentLayout";
 import { ParticipantsPanel } from "@/components/tournament/ParticipantsPanel";
 import { TypingChallengeArea } from "@/components/tournament/TypingChallengeArea";
 import { StatsPanel } from "@/components/tournament/StatsPanel";
-import { ParticipantData, TournamentData } from "@/types/api";
+import { ParticipantData } from "@/types/api";
 import { useRoom } from "@/hooks/useRoom";
 
 export const TournamentRoomOrchestrator = () => {
-  const { data, participants, member } = useRoom();
+  const { data, participants, member, participating } = useRoom();
   let toWatch: ParticipantData | null = null;
   toWatch =
     participants[member.id] ||
@@ -17,7 +17,7 @@ export const TournamentRoomOrchestrator = () => {
     )[0] ||
     null;
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-slate-100 font-sans overflow-hidden">
+    <div className="flex flex-col h-screen bg-background text-foreground font-sans overflow-hidden">
       <TournamentHeader toWatch={toWatch} />
       <MainContentLayout
         statsSlot={
@@ -25,6 +25,7 @@ export const TournamentRoomOrchestrator = () => {
             toWatch={toWatch}
             textLength={data.text?.length ?? 0}
             upcoming={!data.startedAt}
+            participating={participating}
           />
         }
         participantsSlot={<ParticipantsPanel toWatch={toWatch} />}

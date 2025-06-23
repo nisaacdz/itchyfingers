@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { cn, getStatus } from "@/lib/utils";
 import { List, LogOut, Zap } from "lucide-react";
-import { ParticipantData, TournamentData, TournamentStatus } from "@/types/api";
+import { ParticipantData, TournamentStatus } from "@/types/api";
 import { socketService } from "@/api/socketService";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
@@ -57,7 +57,7 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
   };
 
   return (
-    <header className="grid grid-cols-[1fr,auto,1fr] items-center gap-4 p-3 md:p-4 bg-slate-800/50 backdrop-blur-sm shadow-lg text-slate-200">
+    <header className="grid grid-cols-[1fr,auto,1fr] items-center gap-4 p-3 md:p-4 bg-accent backdrop-blur-sm shadow-lg text-slate-200">
       <div className="justify-self-start">
         <Breadcrumb>
           <BreadcrumbList>
