@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Navbar } from "../components/Navbar"; // Assuming this path is correct for the new location
+// import { Navbar } from "../components/Navbar"; // removed in favor of AuthLayout
 import { toast } from "@/hooks/use-toast";
 import httpService from "../api/httpService";
 import { HttpResponse } from "../types/api"; // Assuming this path is correct
@@ -24,6 +24,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Loader } from "lucide-react";
+import { AxiosError } from "axios";
 
 type FormStep = "enterEmail" | "resetPassword";
 
@@ -62,7 +63,7 @@ export default function PasswordRecovery() {
     try {
       const response = await httpService.post<HttpResponse<null>>(
         "/auth/forgot-password",
-        { email },
+        { email }
       );
 
       if (response.data.success) {
@@ -76,7 +77,7 @@ export default function PasswordRecovery() {
         // setSuccessMessage("An OTP has been sent. Please check your email and enter it below.");
       } else {
         setError(
-          response.data.message || "Failed to send password reset email.",
+          response.data.message || "Failed to send password reset email."
         );
         toast({
           title: "Error",
@@ -85,9 +86,10 @@ export default function PasswordRecovery() {
           variant: "destructive",
         });
       }
-    } catch (err: any) {
+    } catch (err) {
       const errorMessage =
-        err.response?.data?.message || "An error occurred. Please try again.";
+        (err instanceof AxiosError && err?.response?.data?.message) ||
+        "An error occurred. Please try again.";
       setError(errorMessage);
       toast({
         title: "Error",
@@ -120,12 +122,12 @@ export default function PasswordRecovery() {
       // IMPORTANT: The backend needs the email for the reset password step too.
       const response = await httpService.post<HttpResponse<null>>(
         `/auth/reset-password`,
-        { email, password: newPassword, otp }, // Send email along with otp and newPassword
+        { email, password: newPassword, otp } // Send email along with otp and newPassword
       );
 
       if (response.data.success) {
         setSuccessMessage(
-          response.data.message || "Your password has been reset successfully.",
+          response.data.message || "Your password has been reset successfully."
         );
         setPasswordResetComplete(true); // Set flag for final success UI
         toast({
@@ -138,7 +140,7 @@ export default function PasswordRecovery() {
       } else {
         setError(
           response.data.message ||
-            "Failed to reset password. Invalid OTP or other error.",
+            "Failed to reset password. Invalid OTP or other error."
         );
         toast({
           title: "Reset Failed",
@@ -148,9 +150,10 @@ export default function PasswordRecovery() {
           variant: "destructive",
         });
       }
-    } catch (err: any) {
+    } catch (err) {
       const errorMessage =
-        err.response?.data?.message || "An error occurred. Please try again.";
+        (err instanceof AxiosError && err?.response?.data?.message) ||
+        "An error occurred. Please try again.";
       setError(errorMessage);
       toast({
         title: "Error",
@@ -354,14 +357,11 @@ export default function PasswordRecovery() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
-        <Card className="w-full max-w-md">
-          {formStep === "enterEmail" && renderEnterEmailStep()}
-          {formStep === "resetPassword" && renderResetPasswordStep()}
-        </Card>
-      </div>
-    </div>
+    <>
+      <Card className="w-full max-w-md">
+        {formStep === "enterEmail" && renderEnterEmailStep()}
+        {formStep === "resetPassword" && renderResetPasswordStep()}
+      </Card>
+    </>
   );
 }

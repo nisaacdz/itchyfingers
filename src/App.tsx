@@ -6,13 +6,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { useTheme } from "./hooks/useTheme";
 import Index from "./pages/Index";
+import AuthLayout from "./components/AuthLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import PasswordRecovery from "./pages/PasswordRecovery";
 import Tournament from "./pages/Tournament";
 import TournamentLobby from "./pages/TournamentLobby";
 import NotFound from "./pages/NotFound";
-import PasswordRecovery from "./pages/PasswordRecovery";
 import { AuthProvider } from "./hooks/useAuth";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const queryClient = new QueryClient();
 
@@ -26,31 +28,37 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <div className="min-h-screen bg-background text-foreground transition-colors">
-          <Toaster />
-          <Sonner />
-          <AuthProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth/login" element={<Login />} />
-                <Route path="/auth/register" element={<Register />} />
-                <Route
-                  path="/auth/password-recovery"
-                  element={<PasswordRecovery />}
-                />
-                <Route path="/tournaments" element={<TournamentLobby />} />
-                <Route
-                  path="/tournaments/:tournamentId"
-                  element={<Tournament />}
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </AuthProvider>
-        </div>
-      </TooltipProvider>
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        <TooltipProvider>
+          <div className="min-h-screen bg-background text-foreground transition-colors">
+            <Toaster />
+            <Sonner />
+            <AuthProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<AuthLayout />}>
+                    {" "}
+                    {/* unified auth layout */}
+                    <Route path="login" element={<Login />} />
+                    <Route path="register" element={<Register />} />
+                    <Route
+                      path="password-recovery"
+                      element={<PasswordRecovery />}
+                    />
+                  </Route>
+                  <Route path="/tournaments" element={<TournamentLobby />} />
+                  <Route
+                    path="/tournaments/:tournamentId"
+                    element={<Tournament />}
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </AuthProvider>
+          </div>
+        </TooltipProvider>
+      </GoogleOAuthProvider>
     </QueryClientProvider>
   );
 };
