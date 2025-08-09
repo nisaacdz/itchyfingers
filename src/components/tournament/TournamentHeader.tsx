@@ -14,6 +14,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { TooltipArrow, TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
+import { Tooltip } from "../ui/tooltip";
 
 interface TournamentHeaderProps {
   toWatch: ParticipantData | null;
@@ -49,15 +51,14 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
     } catch (error) {
       console.error("Failed to leave tournament:", error);
       toast.error(
-        `Failed to leave tournament: ${
-          error instanceof Error ? error.message : "Unknown error"
+        `Failed to leave tournament: ${error instanceof Error ? error.message : "Unknown error"
         }`,
       );
     }
   };
 
   return (
-    <header className="grid grid-cols-[1fr,auto,1fr] items-center gap-4 p-3 md:p-4 bg-accent backdrop-blur-sm shadow-lg text-slate-200">
+    <header className="grid grid-cols-[1fr,auto,1fr] items-center gap-4 p-3 md:p-4 bg-accent/80 text-accent-foreground backdrop-blur-sm shadow-lg">
       <div className="justify-self-start">
         <Breadcrumb>
           <BreadcrumbList>
@@ -65,17 +66,25 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
               <BreadcrumbLink asChild>
                 <Link
                   to="/tournaments"
-                  className="flex items-center gap-1.5 text-slate-300 hover:text-white"
+                  className="text-accent-foreground font-bold text-lg hover:text-primary-foreground"
                 >
-                  <List size={16} />
-                  <span className="hidden md:inline">Tournaments</span>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Button variant="ghost" className="text-accent-foreground hover:text-primary-foreground">
+                        <List size={20} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <span className="bg-muted text-muted-foreground rounded-sm p-1 text-sm">Tournaments List</span>
+                    </TooltipContent>
+                  </Tooltip>
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator />
+            <BreadcrumbSeparator style={{ strokeWidth: 4, color: "hsl(var(--muted-foreground))" }} />
             <BreadcrumbItem>
               <BreadcrumbPage
-                className="font-medium truncate max-w-32 md:max-w-xs"
+                className="font-bold leading-none text-accent-foreground"
                 title={tournamentData.title}
               >
                 {tournamentData.title}
@@ -88,18 +97,18 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
       <div className="flex flex-col items-center text-center">
         <div className="flex items-baseline gap-2 justify-center">
           <h1
-            className="text-lg md:text-xl font-bold truncate"
+            className="text-lg md:text-xl font-bold truncate text-accent-foreground"
             title={tournamentData.title}
           >
             {tournamentData.title}
           </h1>
           {tournamentData.description && (
             <>
-              <span className="text-slate-500 text-sm hidden md:inline">
+              <span className="text-muted-foreground text-sm hidden md:inline">
                 -
               </span>
               <p
-                className="text-sm text-slate-400 truncate max-w-[100px] md:max-w-sm hidden md:inline"
+                className="text-sm text-muted-foreground truncate max-w-[100px] md:max-w-sm hidden md:inline"
                 title={tournamentData.description}
               >
                 {tournamentData.description}
@@ -110,8 +119,9 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
         <span
           className={cn(
             "text-xs md:text-sm font-medium",
-            status === "started" && "text-green-400 animate-pulse",
-            status === "ended" && "text-amber-400",
+            status === "started" && "text-success animate-pulse",
+            status === "ended" && "text-warning",
+            status !== "started" && status !== "ended" && "text-muted-foreground"
           )}
         >
           {statusText}
@@ -120,17 +130,17 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
 
       <div className="flex items-center justify-end gap-3 md:gap-4">
         {status === "started" && (
-          <div className="flex items-center gap-1 text-sm md:text-base font-semibold text-cyan-400">
-            <Zap size={18} className="text-yellow-400" />
+          <div className="flex items-center gap-1 text-sm md:text-base font-semibold text-info">
+            <Zap size={18} className="text-warning" />
             {toWatch ? toWatch.currentSpeed.toFixed(0) : "_"}{" "}
-            <span className="text-xs text-slate-400">WPM</span>
+            <span className="text-xs text-muted-foreground">WPM</span>
           </div>
         )}
         <Button
           variant="ghost"
           size="sm"
           onClick={handleLeaveTournament}
-          className="text-slate-300 hover:bg-red-500/80 hover:text-white"
+          className="text-muted-foreground hover:bg-destructive/80 hover:text-destructive-foreground"
         >
           <LogOut size={16} className="mr-1 md:mr-2" />
           Leave

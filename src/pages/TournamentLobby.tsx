@@ -67,10 +67,8 @@ export default function TournamentLobby() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [privacyFilter, setPrivacyFilter] = useState<TournamentPrivacy | "">(
-    "",
-  );
-  const [statusFilter, setStatusFilter] = useState<TournamentStatus | "">("");
+  const [privacyFilter, setPrivacyFilter] = useState<TournamentPrivacy | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<TournamentStatus | "all">("all");
   const navigate = useNavigate();
 
   const fetchTournaments = useCallback(
@@ -89,10 +87,10 @@ export default function TournamentLobby() {
         if (currentSearchTerm) {
           params.append("search", currentSearchTerm);
         }
-        if (currentPrivacyFilter) {
+        if (currentPrivacyFilter && currentPrivacyFilter != "all") {
           params.append("privacy", currentPrivacyFilter);
         }
-        if (currentStatusFilter) {
+        if (currentStatusFilter && currentStatusFilter != "all") {
           params.append("status", currentStatusFilter);
         }
 
@@ -108,7 +106,7 @@ export default function TournamentLobby() {
       } catch (err) {
         setError(
           (err instanceof Error && err.message) ||
-            "An error occurred while fetching tournaments",
+          "An error occurred while fetching tournaments",
         );
       } finally {
         setLoading(false);
@@ -148,12 +146,12 @@ export default function TournamentLobby() {
     setPage(1);
   };
 
-  const handlePrivacyChange = (value: TournamentPrivacy | "") => {
+  const handlePrivacyChange = (value: TournamentPrivacy | "all") => {
     setPrivacyFilter(value);
     setPage(1);
   };
 
-  const handleStatusChange = (value: TournamentStatus | "") => {
+  const handleStatusChange = (value: TournamentStatus | "all") => {
     setStatusFilter(value);
     setPage(1);
   };
@@ -202,6 +200,7 @@ export default function TournamentLobby() {
               <SelectValue placeholder="All Privacy" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="open">Open</SelectItem>
               <SelectItem value="invitational">Invitational</SelectItem>
             </SelectContent>
@@ -214,6 +213,7 @@ export default function TournamentLobby() {
               <SelectValue placeholder="All" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="upcoming">Upcoming</SelectItem>
               <SelectItem value="started">Started</SelectItem>
               <SelectItem value="ended">Ended</SelectItem>
