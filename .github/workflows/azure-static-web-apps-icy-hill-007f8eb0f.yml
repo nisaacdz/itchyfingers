@@ -32,6 +32,14 @@ jobs:
           api_location: "" # Api source code path - optional
           output_location: "dist" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_SOCKET_BASE_URL: ${{ secrets.VITE_SOCKET_BASE_URL }}
+          VITE_ACCESS_TOKEN_KEY: ${{ secrets.VITE_ACCESS_TOKEN_KEY }}
+          VITE_REFRESH_TOKEN_KEY: ${{ secrets.VITE_REFRESH_TOKEN_KEY }}
+          VITE_CLIENT_ID_KEY: ${{ secrets.VITE_CLIENT_ID_KEY }}
+          VITE_NOAUTH_UNIQUE_KEY: ${{ secrets.VITE_NOAUTH_UNIQUE_KEY }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
