@@ -27,7 +27,7 @@ const AuthLayout = () => {
         }
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Google login failed"
+          error instanceof Error ? error.message : "Google login failed",
         );
       }
     },

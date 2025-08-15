@@ -69,7 +69,10 @@ class HttpService {
     localStorage.removeItem(REFRESH_TOKEN_KEY);
   }
 
-  public get<T, R = AxiosResponse<HttpResponse<T>>>(url: string, config = {}): Promise<R> {
+  public get<T, R = AxiosResponse<HttpResponse<T>>>(
+    url: string,
+    config = {},
+  ): Promise<R> {
     return this.instance.get<T, R>(url, config);
   }
 

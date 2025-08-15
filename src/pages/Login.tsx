@@ -59,7 +59,7 @@ export default function Login() {
       } else {
         setError(
           response.data.message ||
-            "Login failed. Please check your credentials."
+            "Login failed. Please check your credentials.",
         );
       }
     } catch (err) {

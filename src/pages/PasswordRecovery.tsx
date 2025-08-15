@@ -61,7 +61,7 @@ export default function PasswordRecovery() {
         setFormStep("resetPassword");
       } else {
         setError(
-          response.data.message || "Failed to send password reset email."
+          response.data.message || "Failed to send password reset email.",
         );
         toast({
           title: "Error",
@@ -111,7 +111,7 @@ export default function PasswordRecovery() {
 
       if (response.data.success) {
         setSuccessMessage(
-          response.data.message || "Your password has been reset successfully."
+          response.data.message || "Your password has been reset successfully.",
         );
         setPasswordResetComplete(true);
         toast({
@@ -124,7 +124,7 @@ export default function PasswordRecovery() {
       } else {
         setError(
           response.data.message ||
-            "Failed to reset password. Invalid OTP or other error."
+            "Failed to reset password. Invalid OTP or other error.",
         );
         toast({
           title: "Reset Failed",

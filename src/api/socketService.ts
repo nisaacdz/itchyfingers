@@ -106,10 +106,14 @@ export class SocketService {
 
     this.socket?.on("reconnect_attempt", () => {
       this.registerConnectionListeners();
-      console.log(`SocketService: Connecting to WS tournament ${options.tournamentId}`);
+      console.log(
+        `SocketService: Connecting to WS tournament ${options.tournamentId}`,
+      );
     });
 
-    this.socket?.on("disconnect", (reason) => this.options?.onDisconnect(reason));
+    this.socket?.on("disconnect", (reason) =>
+      this.options?.onDisconnect(reason),
+    );
 
     this.ensureConnected();
   }
@@ -120,7 +124,9 @@ export class SocketService {
     }
 
     if (this.options && this.socket) {
-      console.log(`SocketService: Connecting to WS tournament: ${this.options.tournamentId}`);
+      console.log(
+        `SocketService: Connecting to WS tournament: ${this.options.tournamentId}`,
+      );
 
       this.registerConnectionListeners();
 

@@ -73,7 +73,7 @@ export function CreateTournamentDialog({
     // Validate that scheduledFor is a valid future datetime
     const scheduledDate = DateTime.fromFormat(
       scheduledFor,
-      "yyyy-MM-dd'T'HH:mm"
+      "yyyy-MM-dd'T'HH:mm",
     );
     if (
       !scheduledDate.isValid ||
@@ -91,7 +91,7 @@ export function CreateTournamentDialog({
           description,
           scheduledFor: scheduledDate.toISO(),
           textOptions,
-        }
+        },
       );
       if (response.data.success) {
         toast({

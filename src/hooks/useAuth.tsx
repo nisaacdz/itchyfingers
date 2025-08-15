@@ -33,8 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setError(null);
       setIsLoading(true);
-      const response =
-        await httpService.get<AuthSchema>("/auth/me");
+      const response = await httpService.get<AuthSchema>("/auth/me");
 
       if (response.data.success) {
         setUser(response.data.data?.user || null);

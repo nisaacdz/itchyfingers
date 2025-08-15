@@ -67,8 +67,12 @@ export default function TournamentLobby() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [privacyFilter, setPrivacyFilter] = useState<TournamentPrivacy | "all">("all");
-  const [statusFilter, setStatusFilter] = useState<TournamentStatus | "all">("all");
+  const [privacyFilter, setPrivacyFilter] = useState<TournamentPrivacy | "all">(
+    "all",
+  );
+  const [statusFilter, setStatusFilter] = useState<TournamentStatus | "all">(
+    "all",
+  );
   const navigate = useNavigate();
 
   const fetchTournaments = useCallback(
@@ -106,7 +110,7 @@ export default function TournamentLobby() {
       } catch (err) {
         setError(
           (err instanceof Error && err.message) ||
-          "An error occurred while fetching tournaments",
+            "An error occurred while fetching tournaments",
         );
       } finally {
         setLoading(false);

@@ -20,20 +20,20 @@ export const TypingArena = ({ toWatch }: TypingArenaProps) => {
   const whiteSpaceErrorHighlights =
     paragraphRef.current && toWatch
       ? Array.from(
-        {
-          length: toWatch.currentPosition - toWatch.correctPosition,
-        },
-        (_, i) => toWatch.correctPosition + i,
-      )
-        .filter((pos) => data.text?.charAt(pos) === " ")
-        .map((pos) => (
-          <WhiteSpaceErrorHighlight
-            key={pos}
-            position={computeAbsolutePosition(paragraphRef, pos)}
-            height={fontSize}
-            width={fontSize * 0.6}
-          />
-        ))
+          {
+            length: toWatch.currentPosition - toWatch.correctPosition,
+          },
+          (_, i) => toWatch.correctPosition + i,
+        )
+          .filter((pos) => data.text?.charAt(pos) === " ")
+          .map((pos) => (
+            <WhiteSpaceErrorHighlight
+              key={pos}
+              position={computeAbsolutePosition(paragraphRef, pos)}
+              height={fontSize}
+              width={fontSize * 0.6}
+            />
+          ))
       : [];
 
   const caretElements = Object.values(participants).map((p) => {

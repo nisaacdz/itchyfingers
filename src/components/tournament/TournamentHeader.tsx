@@ -14,7 +14,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { TooltipArrow, TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
+import {
+  TooltipArrow,
+  TooltipContent,
+  TooltipTrigger,
+} from "@radix-ui/react-tooltip";
 import { Tooltip } from "../ui/tooltip";
 
 interface TournamentHeaderProps {
@@ -51,7 +55,8 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
     } catch (error) {
       console.error("Failed to leave tournament:", error);
       toast.error(
-        `Failed to leave tournament: ${error instanceof Error ? error.message : "Unknown error"
+        `Failed to leave tournament: ${
+          error instanceof Error ? error.message : "Unknown error"
         }`,
       );
     }
@@ -70,18 +75,25 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
                 >
                   <Tooltip>
                     <TooltipTrigger>
-                      <Button variant="ghost" className="text-accent-foreground hover:text-primary-foreground">
+                      <Button
+                        variant="ghost"
+                        className="text-accent-foreground hover:text-primary-foreground"
+                      >
                         <List size={20} />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <span className="bg-muted text-muted-foreground rounded-sm p-1 text-sm">Tournaments List</span>
+                      <span className="bg-muted text-muted-foreground rounded-sm p-1 text-sm">
+                        Tournaments List
+                      </span>
                     </TooltipContent>
                   </Tooltip>
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator style={{ strokeWidth: 4, color: "hsl(var(--muted-foreground))" }} />
+            <BreadcrumbSeparator
+              style={{ strokeWidth: 4, color: "hsl(var(--muted-foreground))" }}
+            />
             <BreadcrumbItem>
               <BreadcrumbPage
                 className="font-bold leading-none text-accent-foreground"
@@ -121,7 +133,9 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
             "text-xs md:text-sm font-medium",
             status === "started" && "text-success animate-pulse",
             status === "ended" && "text-warning",
-            status !== "started" && status !== "ended" && "text-muted-foreground"
+            status !== "started" &&
+              status !== "ended" &&
+              "text-muted-foreground",
           )}
         >
           {statusText}

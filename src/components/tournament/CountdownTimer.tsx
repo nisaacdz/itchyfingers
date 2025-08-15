@@ -22,7 +22,7 @@ export const CountdownTimer = ({ scheduledFor }: CountdownTimerProps) => {
     const timer = setInterval(() => {
       setSecondsLeft(calculateTimeLeft(scheduledFor));
     }, 250);
-    
+
     return () => clearInterval(timer);
   }, [scheduledFor]);
 

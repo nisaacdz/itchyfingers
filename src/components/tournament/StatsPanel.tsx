@@ -62,7 +62,7 @@ export const StatsPanel = ({
   return (
     <div>
       <h3 className="text-lg font-semibold mb-3 text-accent-foreground border-b border-slate-700 pb-2">
-        { participating ? "Your Performance": "Top Performance" }
+        {participating ? "Your Performance" : "Top Performance"}
       </h3>
       <div className="space-y-3">
         <StatDisplayItem
