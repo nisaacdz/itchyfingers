@@ -3,12 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import httpService from "@/api/httpService";
 import { toast } from "@/hooks/use-toast";
-import {
-  CreatedTournament,
-  HttpResponse,
-  TextOptions,
-  Tournament,
-} from "@/types/api";
+import { CreatedTournament, TextOptions } from "@/types/api";
 import {
   Dialog,
   DialogContent,
@@ -78,7 +73,7 @@ export function CreateTournamentDialog({
     // Validate that scheduledFor is a valid future datetime
     const scheduledDate = DateTime.fromFormat(
       scheduledFor,
-      "yyyy-MM-dd'T'HH:mm",
+      "yyyy-MM-dd'T'HH:mm"
     );
     if (
       !scheduledDate.isValid ||
@@ -89,14 +84,14 @@ export function CreateTournamentDialog({
       return;
     }
     try {
-      const response = await httpService.post<HttpResponse<CreatedTournament>>(
+      const response = await httpService.post<CreatedTournament>(
         "/tournaments",
         {
           title,
           description,
           scheduledFor: scheduledDate.toISO(),
           textOptions,
-        },
+        }
       );
       if (response.data.success) {
         toast({

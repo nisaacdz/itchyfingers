@@ -12,7 +12,7 @@ import { Navbar } from "../components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Index() {
-  const { client } = useAuth();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
@@ -36,7 +36,7 @@ export default function Index() {
                   Join Tournament
                 </Button>
               </Link>
-              {client && !client.user && (
+              {!user && (
                 <Link to="/auth/register">
                   <Button
                     variant="outline"
@@ -49,11 +49,11 @@ export default function Index() {
               )}
             </div>
 
-            {client?.user && (
+            {user && (
               <div className="mt-8 p-4 bg-accent/50 rounded-lg border">
                 <p className="text-lg">
                   Welcome back,{" "}
-                  <span className="font-semibold">{client.user.username}</span>!
+                  <span className="font-semibold">{user.username}</span>!
                   Ready to compete?
                 </p>
               </div>

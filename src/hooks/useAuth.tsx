@@ -1,8 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import httpService from "@/api/httpService";
-import { Button } from "@/components/ui/button";
-import { AuthSchema, HttpResponse, UserSchema } from "@/types/api";
-import { Loader } from "lucide-react";
+import { AuthSchema, UserSchema } from "@/types/api";
 import {
   ReactNode,
   useContext,
@@ -15,6 +13,7 @@ export interface AuthContextType {
   user: UserSchema | null;
   isLoading: boolean;
   reload: () => Promise<void>;
+  setUser: React.Dispatch<React.SetStateAction<UserSchema | null>>;
 }
 
 interface AuthProviderProps {
@@ -35,7 +34,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(null);
       setIsLoading(true);
       const response =
-        await httpService.get<HttpResponse<AuthSchema>>("/auth/me");
+        await httpService.get<AuthSchema>("/auth/me");
 
       if (response.data.success) {
         setUser(response.data.data?.user || null);
@@ -71,6 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         user,
         isLoading,
         reload,
+        setUser,
       }}
     >
       {children}

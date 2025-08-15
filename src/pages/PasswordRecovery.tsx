@@ -1,11 +1,9 @@
-// PasswordRecovery.tsx
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Card,
   CardContent,
   CardDescription,
   CardFooter,
@@ -13,46 +11,35 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-// import { Navbar } from "../components/Navbar"; // removed in favor of AuthLayout
 import { toast } from "@/hooks/use-toast";
 import httpService from "../api/httpService";
-import { HttpResponse } from "../types/api"; // Assuming this path is correct
 import {
   InputOTP,
   InputOTPGroup,
-  // InputOTPSeparator, // Not used in your original ResetPassword
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { Loader } from "lucide-react";
+import { Loader, Eye, EyeOff } from "lucide-react";
 import { AxiosError } from "axios";
 
 type FormStep = "enterEmail" | "resetPassword";
 
 export default function PasswordRecovery() {
   const navigate = useNavigate();
-
-  // Shared states
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState(""); // General success message
-
-  // Step-specific states
+  const [successMessage, setSuccessMessage] = useState("");
   const [formStep, setFormStep] = useState<FormStep>("enterEmail");
-  const [email, setEmail] = useState(""); // Persists across steps
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
-
-  // State to indicate final success before navigation
   const [passwordResetComplete, setPasswordResetComplete] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Clear errors/messages when step changes, but not email
   useEffect(() => {
     setError("");
     setSuccessMessage("");
-    // Don't clear OTP/password if moving to resetPassword step (though they'll be empty initially)
-    // but if for some reason we were to switch back, we might want to clear them.
-    // For now, this simple clear is fine.
   }, [formStep]);
 
   const handleForgotPasswordSubmit = async () => {
@@ -61,10 +48,9 @@ export default function PasswordRecovery() {
     setSuccessMessage("");
 
     try {
-      const response = await httpService.post<HttpResponse<null>>(
-        "/auth/forgot-password",
-        { email }
-      );
+      const response = await httpService.post<null>("/auth/forgot-password", {
+        email,
+      });
 
       if (response.data.success) {
         toast({
@@ -72,9 +58,7 @@ export default function PasswordRecovery() {
           description:
             response.data.message || "An OTP has been sent to your email.",
         });
-        setFormStep("resetPassword"); // Move to the next step
-        // Optionally, set a temporary success message for this step if needed
-        // setSuccessMessage("An OTP has been sent. Please check your email and enter it below.");
+        setFormStep("resetPassword");
       } else {
         setError(
           response.data.message || "Failed to send password reset email."
@@ -119,17 +103,17 @@ export default function PasswordRecovery() {
     }
 
     try {
-      // IMPORTANT: The backend needs the email for the reset password step too.
-      const response = await httpService.post<HttpResponse<null>>(
-        `/auth/reset-password`,
-        { email, password: newPassword, otp } // Send email along with otp and newPassword
-      );
+      const response = await httpService.post<null>(`/auth/reset-password`, {
+        email,
+        password: newPassword,
+        otp,
+      });
 
       if (response.data.success) {
         setSuccessMessage(
           response.data.message || "Your password has been reset successfully."
         );
-        setPasswordResetComplete(true); // Set flag for final success UI
+        setPasswordResetComplete(true);
         toast({
           title: "Password Reset Successful",
           description:
@@ -176,13 +160,12 @@ export default function PasswordRecovery() {
 
   const renderEnterEmailStep = () => (
     <>
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">
+      <CardHeader className="space-y-1 text-center">
+        <CardTitle className="text-2xl font-bold">
           Forgot Your Password?
         </CardTitle>
-        <CardDescription className="text-center">
-          Enter your email address and we'll send you instructions to reset your
-          password.
+        <CardDescription>
+          Enter your email and we'll send you a recovery code.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -192,13 +175,12 @@ export default function PasswordRecovery() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          {/* No success message display here, toast is enough, or it transitions */}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -212,15 +194,14 @@ export default function PasswordRecovery() {
             className="w-full"
             disabled={isLoading || !email}
           >
-            {isLoading ? (
-              <Loader className="animate-spin" />
-            ) : (
-              "Send Reset Instructions"
-            )}
+            {isLoading ? <Loader className="animate-spin" /> : "Send Code"}
           </Button>
           <div className="text-center text-sm text-muted-foreground">
             Remember your password?{" "}
-            <Link to="/auth/login" className="text-primary hover:underline">
+            <Link
+              to="/auth/login"
+              className="font-semibold text-primary hover:underline"
+            >
               Sign in
             </Link>
           </div>
@@ -231,13 +212,13 @@ export default function PasswordRecovery() {
 
   const renderResetPasswordStep = () => (
     <>
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">
+      <CardHeader className="space-y-1 text-center">
+        <CardTitle className="text-2xl font-bold">
           Reset Your Password
         </CardTitle>
-        <CardDescription className="text-center">
-          An OTP has been sent to <strong>{email}</strong>. Enter it below along
-          with your new password.
+        <CardDescription>
+          A 6-digit code was sent to <strong>{email}</strong>. Enter it below to
+          reset your password.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -247,15 +228,14 @@ export default function PasswordRecovery() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          {successMessage &&
-            passwordResetComplete && ( // Only show final success message
-              <Alert variant="default">
-                <AlertDescription>{successMessage}</AlertDescription>
-              </Alert>
-            )}
+          {successMessage && passwordResetComplete && (
+            <Alert variant="default">
+              <AlertDescription>{successMessage}</AlertDescription>
+            </Alert>
+          )}
           {!passwordResetComplete && (
             <>
-              <div className="space-y-2">
+              <div className="space-y-2 text-center">
                 <Label htmlFor="otp">One-Time Password (OTP)</Label>
                 <InputOTP
                   maxLength={6}
@@ -264,38 +244,61 @@ export default function PasswordRecovery() {
                   disabled={isLoading}
                 >
                   <InputOTPGroup className="w-full justify-center">
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
+                    <InputOTPSlot index={0} /> <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} /> <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} /> <InputOTPSlot index={5} />
                   </InputOTPGroup>
                 </InputOTP>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  placeholder="Enter your new password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
+                <div className="relative">
+                  <Input
+                    id="newPassword"
+                    type={showNewPassword ? "text" : "password"}
+                    placeholder="Enter your new password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                  >
+                    {showNewPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
-                <Input
-                  id="confirmNewPassword"
-                  type="password"
-                  placeholder="Confirm your new password"
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
+                <div className="relative">
+                  <Input
+                    id="confirmNewPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm your new password"
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -321,34 +324,18 @@ export default function PasswordRecovery() {
           )}
           {passwordResetComplete && (
             <Button onClick={() => navigate("/auth/login")} className="w-full">
-              Go to Login
+              Back to Login
             </Button>
           )}
           <div className="text-center text-sm text-muted-foreground">
             {!passwordResetComplete && (
               <button
                 type="button"
-                onClick={() => {
-                  setFormStep("enterEmail");
-                  // Optionally clear email if you want them to re-enter,
-                  // or keep it pre-filled. For now, let's keep it.
-                  // setEmail("");
-                  setOtp("");
-                  setNewPassword("");
-                  setConfirmNewPassword("");
-                }}
-                className="text-primary hover:underline"
+                onClick={() => setFormStep("enterEmail")}
+                className="font-semibold text-primary hover:underline"
               >
-                Entered wrong email? Start Over
+                Use a different email
               </button>
-            )}
-            {passwordResetComplete && (
-              <span>
-                Need help?{" "}
-                <Link to="/support" className="text-primary hover:underline">
-                  Contact Support
-                </Link>
-              </span>
             )}
           </div>
         </CardFooter>
@@ -358,10 +345,8 @@ export default function PasswordRecovery() {
 
   return (
     <>
-      <Card className="w-full max-w-md">
-        {formStep === "enterEmail" && renderEnterEmailStep()}
-        {formStep === "resetPassword" && renderResetPasswordStep()}
-      </Card>
+      {formStep === "enterEmail" && renderEnterEmailStep()}
+      {formStep === "resetPassword" && renderResetPasswordStep()}
     </>
   );
 }

@@ -137,7 +137,7 @@ export type LeaveSuccessPayload = {
 };
 
 export type LoginSchema = {
-  user: UserSchema;
+  user: UserSchema,
   tokens: {
     access: string;
     refresh: string;

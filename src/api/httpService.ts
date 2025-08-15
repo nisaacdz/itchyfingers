@@ -1,3 +1,4 @@
+import { HttpResponse } from "@/types/api";
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 
 const ACCESS_TOKEN_KEY =
@@ -68,30 +69,19 @@ class HttpService {
     localStorage.removeItem(REFRESH_TOKEN_KEY);
   }
 
-  public get<T, R = AxiosResponse<T>>(url: string, config = {}): Promise<R> {
+  public get<T, R = AxiosResponse<HttpResponse<T>>>(url: string, config = {}): Promise<R> {
     return this.instance.get<T, R>(url, config);
   }
 
-  public post<T, B = unknown, R = AxiosResponse<T>>(
+  public post<T, B = unknown, R = AxiosResponse<HttpResponse<T>>>(
     url: string,
     data?: B,
     config = {},
   ): Promise<R> {
     return this.instance.post<T, R>(url, data, config);
   }
-
-  // You can add other methods like put, delete, patch as needed
-  // public put<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: any): Promise<R> {
-  //   return this.instance.put<T, R>(url, data, config);
-  // }
-
-  // public delete<T = any, R = AxiosResponse<T>>(url: string, config?: any): Promise<R> {
-  //   return this.instance.delete<T, R>(url, config);
-  // }
 }
 
-// Create an instance of the HttpService
 export const httpService = new HttpService();
 
-// Export the instance as default for convenience, or just the named export
 export default httpService;
