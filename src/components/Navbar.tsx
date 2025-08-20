@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import axiosInstance from "../api/httpService";
+import httpService from "../api/httpService";
 import { toast } from "@/hooks/use-toast";
 
 export function Navbar() {
@@ -18,7 +18,7 @@ export function Navbar() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    axiosInstance.clearTokens();
+    httpService.clearTokens();
     await reload();
     toast({
       title: "Logged out successfully",

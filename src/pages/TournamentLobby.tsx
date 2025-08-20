@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "../components/Navbar";
-import axiosInstance from "../api/httpService";
+import httpService from "@/api/httpService";
 import {
   HttpResponse,
   Tournament,
@@ -71,7 +71,7 @@ export default function TournamentLobby() {
     "all",
   );
   const [statusFilter, setStatusFilter] = useState<TournamentStatus | "all">(
-    "all",
+    "upcoming",
   );
   const navigate = useNavigate();
 
@@ -98,12 +98,10 @@ export default function TournamentLobby() {
           params.append("status", currentStatusFilter);
         }
 
-        const response = await axiosInstance.get<
-          HttpResponse<PaginationType<Tournament>>
-        >(`/tournaments?${params.toString()}`);
+        const response = await httpService.get<PaginationType<Tournament>>(`/tournaments?${params.toString()}`);
 
-        if (response.data.success) {
-          setTournaments(response.data.data);
+        if (response.data?.success) {
+          setTournaments(response.data?.data || null);
         } else {
           setError(response.data.message || "Failed to load tournaments");
         }
