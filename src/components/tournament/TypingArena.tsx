@@ -33,7 +33,7 @@ export const TypingArena = ({ toWatch }: TypingArenaProps) => {
           {
             length: currentPosition - correctPosition,
           },
-          (_, i) => correctPosition + i
+          (_, i) => correctPosition + i,
         )
           .filter((pos) => text.charAt(pos) === " ")
           .map((pos) => (
