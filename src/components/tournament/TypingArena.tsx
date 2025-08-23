@@ -16,7 +16,10 @@ interface TypingArenaProps {
 
 export const TypingArena = ({ toWatch }: TypingArenaProps) => {
   const { data, participants } = useRoomStore();
-  const { currentPosition, correctPosition } = useCursorState();
+  const { currentPosition, correctPosition } = useCursorState() || {
+    currentPosition: 0,
+    correctPosition: 0,
+  };
   const isParticipating = useIsParticipating();
   const paragraphRef = useRef<HTMLParagraphElement>(null);
 
@@ -30,7 +33,7 @@ export const TypingArena = ({ toWatch }: TypingArenaProps) => {
           {
             length: currentPosition - correctPosition,
           },
-          (_, i) => correctPosition + i,
+          (_, i) => correctPosition + i
         )
           .filter((pos) => text.charAt(pos) === " ")
           .map((pos) => (
