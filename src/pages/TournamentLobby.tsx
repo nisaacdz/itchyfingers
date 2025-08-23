@@ -98,7 +98,9 @@ export default function TournamentLobby() {
           params.append("status", currentStatusFilter);
         }
 
-        const response = await httpService.get<PaginationType<Tournament>>(`/tournaments?${params.toString()}`);
+        const response = await httpService.get<PaginationType<Tournament>>(
+          `/tournaments?${params.toString()}`,
+        );
 
         if (response.data?.success) {
           setTournaments(response.data?.data || null);

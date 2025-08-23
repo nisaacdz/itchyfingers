@@ -2,16 +2,16 @@ import { ParticipantData } from "@/types/api";
 import { ParticipantItem } from "@/components/tournament/ParticipantItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users } from "lucide-react";
-import { useRoom } from "@/hooks/useRoom";
+import { useRoomStore } from "@/stores/roomStore";
 
 interface ParticipantsPanelProps {
   toWatch?: ParticipantData | null;
 }
 
 export const ParticipantsPanel = ({ toWatch }: ParticipantsPanelProps) => {
-  const { participants, data } = useRoom();
-  const started = data.startedAt !== null;
-  const textLength = data.text?.length || 0;
+  const { participants, data } = useRoomStore();
+  const started = !!data?.startedAt;
+  const textLength = data?.text?.length || 0;
   const participantArray = Object.values(participants);
 
   // Sort participants: current user first, then by progress (desc), then by WPM (desc)

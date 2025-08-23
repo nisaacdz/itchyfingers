@@ -3,14 +3,16 @@ import { CountdownTimer } from "./CountdownTimer";
 import { PostGameSummary } from "./PostGameSummary";
 import { TypingArena } from "./TypingArena";
 import { getStatus } from "@/lib/utils";
-import { useRoom } from "@/hooks/useRoom";
+import { useRoomStore } from "@/stores/roomStore";
 
 export const TypingChallengeArea = ({
   toWatch,
 }: {
   toWatch: ParticipantData | null;
 }) => {
-  const { data } = useRoom();
+  const { data } = useRoomStore();
+
+  if (!data) return null;
 
   const status = getStatus(data);
 

@@ -92,6 +92,7 @@ export type PollableEvent = "me" | "all" | "data" | "check" | "leave";
 
 export type TypeEventPayload = {
   character: string;
+  rid: number;
 };
 
 export type JoinSuccessPayload = {
@@ -102,7 +103,13 @@ export type JoinSuccessPayload = {
 
 export type MeSuccessPayload = ParticipantData;
 
-export type UpdateMePayload = ParticipantUpdate;
+export type UpdateMePayload = {
+  updates: Partial<Omit<ParticipantData, "member">> & {
+    currentPosition: number;
+    correctPosition: number;
+  };
+  rid: number;
+};
 
 export type AllSuccessPayload = ParticipantData[];
 

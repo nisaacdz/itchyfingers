@@ -9,10 +9,10 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Navbar } from "../components/Navbar";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function Index() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return (
     <div className="min-h-screen bg-background">

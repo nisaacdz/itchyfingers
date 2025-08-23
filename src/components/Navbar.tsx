@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
-import { useAuth } from "@/hooks/useAuth";
+import { reloadAuth, useAuthStore } from "@/stores/authStore";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -14,12 +14,12 @@ import httpService from "../api/httpService";
 import { toast } from "@/hooks/use-toast";
 
 export function Navbar() {
-  const { user, reload, isLoading } = useAuth();
+  const { user, isLoading } = useAuthStore();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     httpService.clearTokens();
-    await reload();
+    await reloadAuth();
     toast({
       title: "Logged out successfully",
       description: "You have been logged out of your account.",

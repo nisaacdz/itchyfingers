@@ -11,10 +11,10 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Award, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRoom } from "@/hooks/useRoom";
+import { useRoomStore } from "@/stores/roomStore";
 
 export const PostGameSummary = () => {
-  const { member, participants } = useRoom();
+  const { member, participants } = useRoomStore();
   const navigate = useNavigate();
   const sortedParticipants = Object.values(participants).sort((a, b) => {
     // Primary sort: finished (endedAt is set)
@@ -85,7 +85,7 @@ export const PostGameSummary = () => {
                 key={p.member.id}
                 className={cn(
                   "border-slate-700",
-                  p.member.id == member.id &&
+                  p.member.id == member?.id &&
                     "bg-purple-600/30 hover:bg-purple-600/40",
                 )}
               >

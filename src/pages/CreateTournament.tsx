@@ -75,10 +75,7 @@ export function CreateTournamentDialog({
       scheduledFor,
       "yyyy-MM-dd'T'HH:mm",
     );
-    if (
-      !scheduledDate.isValid ||
-      scheduledDate < DateTime.now().plus({ minutes: 1 })
-    ) {
+    if (!scheduledDate.isValid || scheduledDate < DateTime.now()) {
       setError("Scheduled time must be at least 1 minute from now and valid.");
       setIsLoading(false);
       return;

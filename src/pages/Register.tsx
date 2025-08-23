@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/stores/authStore";
 import { toast } from "@/hooks/use-toast";
 import httpService from "../api/httpService";
 import { LoginSchema } from "../types/api";
@@ -25,7 +25,7 @@ export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { user, setUser } = useAuth();
+  const { user, setUser } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {

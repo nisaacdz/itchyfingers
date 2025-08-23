@@ -1,9 +1,8 @@
-import { TournamentRoom, useRoom } from "@/hooks/useRoom";
 import { TournamentRoomOrchestrator } from "@/components/TournamentOrchestrator";
 import { useLocation, useParams } from "react-router-dom";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { useEffect } from "react";
-import { socketService } from "@/api/socketService";
+import { useRoomStore } from "@/stores/roomStore";
 
 export const TournamentPage = () => {
   const { tournamentId } = useParams<{ tournamentId: string }>();
@@ -12,30 +11,30 @@ export const TournamentPage = () => {
   const spectator = searchParams.get("spectator") === "true";
   const anonymous = searchParams.get("anonymous") === "true";
 
+  const connect = useRoomStore((state) => state.connect);
+  const disconnect = useRoomStore((state) => state.disconnect);
+
   useEffect(() => {
-    const handleFocus = (_: FocusEvent) => {
-      socketService.ensureConnected();
-    };
+    if (tournamentId) {
+      connect({ tournamentId, spectator, anonymous });
+    }
 
-    window.addEventListener("focus", handleFocus);
     return () => {
-      window.removeEventListener("focus", handleFocus);
+      disconnect();
     };
-  }, []);
+  }, [tournamentId, spectator, anonymous, connect, disconnect]);
 
-  if (!tournamentId || typeof tournamentId != "string") {
+  // useEffect(() => {
+  //   const handleFocus = () => socketService.ensureConnected();
+  //   window.addEventListener("focus", handleFocus);
+  //   return () => window.removeEventListener("focus", handleFocus);
+  // }, []);
+
+  if (!tournamentId) {
     return <ErrorMessage message={"Invalid url"} />;
   }
 
-  return (
-    <TournamentRoom
-      tournamentId={tournamentId}
-      spectator={spectator}
-      anonymous={anonymous}
-    >
-      <TournamentRoomOrchestrator />
-    </TournamentRoom>
-  );
+  return <TournamentRoomOrchestrator />;
 };
 
 export default TournamentPage;

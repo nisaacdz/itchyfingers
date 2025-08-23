@@ -7,10 +7,10 @@ import { Card } from "@/components/ui/card";
 import { httpService } from "../api/httpService";
 import { LoginSchema } from "@/types/api";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/stores/authStore";
 
 const AuthLayout = () => {
-  const { setUser } = useAuth();
+  const { setUser } = useAuthStore();
   const login = useGoogleLogin({
     onSuccess: async (codeResponse) => {
       console.log("Google login success:", codeResponse);

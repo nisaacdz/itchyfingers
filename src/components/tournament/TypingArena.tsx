@@ -1,31 +1,38 @@
 import React, { useRef, useEffect, useState } from "react";
 import { ParticipantData } from "@/types/api";
 import { computeAbsolutePosition } from "@/lib/typing";
-import { socketService } from "@/api/socketService";
 import { useParagraphStyles } from "@/hooks/useParagraphStyles";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useRoom } from "@/hooks/useRoom";
+import {
+  useCursorState,
+  useIsParticipating,
+  useRoomStore,
+} from "@/stores/roomStore";
 
 interface TypingArenaProps {
   toWatch: ParticipantData | null;
 }
 
 export const TypingArena = ({ toWatch }: TypingArenaProps) => {
-  const { data, participants, participating } = useRoom();
+  const { data, participants } = useRoomStore();
+  const { currentPosition, correctPosition } = useCursorState();
+  const isParticipating = useIsParticipating();
   const paragraphRef = useRef<HTMLParagraphElement>(null);
 
   const { fontSize } = useParagraphStyles(paragraphRef);
+
+  const text = data?.text || "";
 
   const whiteSpaceErrorHighlights =
     paragraphRef.current && toWatch
       ? Array.from(
           {
-            length: toWatch.currentPosition - toWatch.correctPosition,
+            length: currentPosition - correctPosition,
           },
-          (_, i) => toWatch.correctPosition + i,
+          (_, i) => correctPosition + i,
         )
-          .filter((pos) => data.text?.charAt(pos) === " ")
+          .filter((pos) => text.charAt(pos) === " ")
           .map((pos) => (
             <WhiteSpaceErrorHighlight
               key={pos}
@@ -37,7 +44,9 @@ export const TypingArena = ({ toWatch }: TypingArenaProps) => {
       : [];
 
   const caretElements = Object.values(participants).map((p) => {
-    const absPos = computeAbsolutePosition(paragraphRef, p.correctPosition);
+    const pos =
+      p.member.id === toWatch?.member.id ? correctPosition : p.correctPosition;
+    const absPos = computeAbsolutePosition(paragraphRef, pos);
     return (
       <Caret
         key={p.member.id}
@@ -46,7 +55,7 @@ export const TypingArena = ({ toWatch }: TypingArenaProps) => {
           position: "absolute",
           zIndex: 11,
           height: fontSize,
-          opacity: p.member.id == toWatch?.member.id ? 1 : 0.25,
+          opacity: p.member.id === toWatch?.member.id ? 1 : 0.25,
         }}
       />
     );
@@ -57,25 +66,21 @@ export const TypingArena = ({ toWatch }: TypingArenaProps) => {
       className="relative w-full h-full flex items-center justify-center p-2 md:p-4 focus:outline-none"
       tabIndex={-1}
     >
-      {participating && toWatch && !toWatch.endedAt && (
+      {isParticipating && (
         <KeyPopper className="absolute top-[15%] left-1/2 -translate-x-1/2 pointer-events-none z-20" />
       )}
-      {/* Container for text and absolutely positioned elements to ensure correct offset calculations */}
       <div className="relative w-full max-w-3xl md:max-w-4xl">
         <p
           className="text-3xl font-medium text-muted-foreground font-courier-prime w-full h-full select-none"
           ref={paragraphRef}
         >
           <span className="text-yellow-600">
-            {data.text?.slice(0, toWatch?.correctPosition || 0)}
+            {text.slice(0, correctPosition)}
           </span>
           <span className="text-red-600">
-            {data.text?.slice(
-              toWatch?.correctPosition || 0,
-              toWatch?.currentPosition || 0,
-            )}
+            {text.slice(correctPosition, currentPosition)}
           </span>
-          {data.text?.slice(toWatch?.currentPosition || 0)}
+          {text.slice(currentPosition)}
         </p>
 
         {caretElements}
@@ -128,7 +133,9 @@ type KeyPopperProps = {
 };
 
 const KeyPopper = ({ className }: KeyPopperProps) => {
+  const { onChar } = useRoomStore();
   const [activeKey, setActiveKey] = useState<string | null>(null);
+
   useEffect(() => {
     let timeout: NodeJS.Timeout | undefined;
 
@@ -136,11 +143,12 @@ const KeyPopper = ({ className }: KeyPopperProps) => {
       event.preventDefault();
       clearTimeout(timeout);
       setActiveKey(null);
+
       if (event.key === "Backspace") {
-        socketService.emit("type", { character: "\b" });
+        onChar("\b");
         setActiveKey("⌫");
       } else if (event.key.length === 1) {
-        socketService.emit("type", { character: event.key });
+        onChar(event.key);
         setActiveKey(event.key);
       }
     };
@@ -158,7 +166,7 @@ const KeyPopper = ({ className }: KeyPopperProps) => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [onChar]);
 
   return (
     <div className={cn(className)}>

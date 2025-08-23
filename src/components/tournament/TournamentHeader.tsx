@@ -5,7 +5,7 @@ import { ParticipantData, TournamentStatus } from "@/types/api";
 import { socketService } from "@/api/socketService";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
-import { useRoom } from "@/hooks/useRoom";
+import { useRoomStore } from "@/stores/roomStore";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,11 +15,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
-  TooltipArrow,
+  Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@radix-ui/react-tooltip";
-import { Tooltip } from "../ui/tooltip";
+} from "@/components/ui/tooltip";
+import { TooltipArrow } from "@radix-ui/react-tooltip";
 
 interface TournamentHeaderProps {
   toWatch: ParticipantData | null;
@@ -37,8 +37,11 @@ const getStatusText = (status: TournamentStatus): string => {
 };
 
 export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
-  const { data: tournamentData } = useRoom();
+  const { data: tournamentData } = useRoomStore();
   const navigate = useNavigate();
+
+  if (!tournamentData) return null;
+
   const status = getStatus(tournamentData);
   const statusText = getStatusText(status);
 
@@ -74,7 +77,8 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
                   className="text-accent-foreground font-bold text-lg hover:text-primary-foreground"
                 >
                   <Tooltip>
-                    <TooltipTrigger>
+                    {/* FIX: Add asChild to TooltipTrigger to merge with the Button */}
+                    <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         className="text-accent-foreground hover:text-primary-foreground"
@@ -83,17 +87,14 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <span className="bg-muted text-muted-foreground rounded-sm p-1 text-sm">
-                        Tournaments List
-                      </span>
+                      <p>Tournaments List</p>
+                      <TooltipArrow />
                     </TooltipContent>
                   </Tooltip>
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator
-              style={{ strokeWidth: 4, color: "hsl(var(--muted-foreground))" }}
-            />
+            <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbPage
                 className="font-bold leading-none text-accent-foreground"
@@ -106,6 +107,7 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
         </Breadcrumb>
       </div>
 
+      {/* ... The rest of your component is great and doesn't need changes ... */}
       <div className="flex flex-col items-center text-center">
         <div className="flex items-baseline gap-2 justify-center">
           <h1

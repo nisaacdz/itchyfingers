@@ -75,3 +75,38 @@ function getAllTextNodes(node: Node): Text[] {
 
   return textNodes;
 }
+
+export function predictCursorState(
+  currentState: { correctPosition: number; currentPosition: number },
+  character: string,
+  challengeText: string,
+): { correctPosition: number; currentPosition: number } {
+  let { correctPosition, currentPosition } = { ...currentState };
+  const textLen = challengeText?.length ?? 0;
+
+  if (correctPosition >= textLen) {
+    return { correctPosition, currentPosition };
+  }
+
+  if (character === "\b") {
+    if (currentPosition > correctPosition) {
+      currentPosition -= 1;
+    } else if (currentPosition === correctPosition && currentPosition > 0) {
+      if (challengeText[currentPosition - 1] !== " ") {
+        correctPosition -= 1;
+        currentPosition -= 1;
+      }
+    }
+  } else if (character.length === 1) {
+    // Ensure it's a single character
+    if (currentPosition < textLen) {
+      const expectedChar = challengeText[currentPosition];
+      if (currentPosition === correctPosition && character === expectedChar) {
+        correctPosition += 1;
+      }
+      currentPosition += 1;
+    }
+  }
+
+  return { correctPosition, currentPosition };
+}

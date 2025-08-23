@@ -1,17 +1,18 @@
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/stores/authStore";
 import { TournamentHeader } from "@/components/tournament/TournamentHeader";
 import { MainContentLayout } from "@/components/tournament/MainContentLayout";
 import { ParticipantsPanel } from "@/components/tournament/ParticipantsPanel";
 import { TypingChallengeArea } from "@/components/tournament/TypingChallengeArea";
 import { StatsPanel } from "@/components/tournament/StatsPanel";
 import { ParticipantData } from "@/types/api";
-import { useRoom } from "@/hooks/useRoom";
+import { useIsParticipating, useRoomStore } from "@/stores/roomStore";
 
 export const TournamentRoomOrchestrator = () => {
-  const { data, participants, member, participating } = useRoom();
+  const { data, participants, member } = useRoomStore();
+  const participating = useIsParticipating();
   let toWatch: ParticipantData | null = null;
   toWatch =
-    participants[member.id] ||
+    (member && participants[member.id]) ||
     Object.values(participants).sort(
       (a, b) => b.correctPosition - a.correctPosition,
     )[0] ||
@@ -23,8 +24,8 @@ export const TournamentRoomOrchestrator = () => {
         statsSlot={
           <StatsPanel
             toWatch={toWatch}
-            textLength={data.text?.length ?? 0}
-            upcoming={!data.startedAt}
+            textLength={data?.text?.length ?? 0}
+            upcoming={!data?.startedAt}
             participating={participating}
           />
         }
