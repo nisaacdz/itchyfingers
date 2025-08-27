@@ -1,3 +1,5 @@
+// src/pages/CreateTournament.tsx
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,14 +14,24 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DateTime } from "luxon";
 import { Loader } from "lucide-react";
+
+// --- Correct Aceternity UI Imports ---
+import { BackgroundGradient } from "@/components/ui/background-gradient";
+import { SparklesCore } from "@/components/ui/sparkles"; // Your actual sparkles component
 
 type CreateTournamentDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreateSuccess: (tournamentId: string) => void;
+};
+
+const timePresets = {
+  "1m": { minutes: 1 },
+  "5m": { minutes: 5 },
+  "15m": { minutes: 15 },
 };
 
 export function CreateTournamentDialog({
@@ -29,16 +41,40 @@ export function CreateTournamentDialog({
 }: CreateTournamentDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const defaultScheduledFor = DateTime.now()
-    .plus({ minutes: 15 })
-    .toFormat("yyyy-MM-dd'T'HH:mm");
-  const [scheduledFor, setScheduledFor] = useState(defaultScheduledFor);
-  // textOptions is null by default (no customization)
+  const [timeSelection, setTimeSelection] = useState<
+    "1m" | "5m" | "15m" | "custom"
+  >("5m");
+  const [scheduledFor, setScheduledFor] = useState("");
   const [textOptions, setTextOptions] = useState<TextOptions | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Default values for customization
+  useEffect(() => {
+    if (timeSelection !== "custom") {
+      const preset = timePresets[timeSelection];
+      const newScheduledFor = DateTime.now()
+        .plus(preset)
+        .toFormat("yyyy-MM-dd'T'HH:mm");
+      setScheduledFor(newScheduledFor);
+    } else {
+      const defaultCustom = DateTime.now()
+        .plus({ minutes: 30 })
+        .toFormat("yyyy-MM-dd'T'HH:mm");
+      setScheduledFor(defaultCustom);
+    }
+  }, [timeSelection]);
+
+  useEffect(() => {
+    if (!open) {
+      setTitle("");
+      setDescription("");
+      setTimeSelection("5m");
+      setTextOptions(null);
+      setError("");
+      setIsLoading(false);
+    }
+  }, [open]);
+
   const defaultTextOptions: TextOptions = {
     uppercase: false,
     lowercase: true,
@@ -48,38 +84,27 @@ export function CreateTournamentDialog({
   };
 
   const handleTextOptionChange = (key: keyof TextOptions, checked: boolean) => {
-    if (textOptions) {
-      setTextOptions((prev) => (prev ? { ...prev, [key]: checked } : prev));
-    }
-  };
-
-  const handleCustomize = () => {
-    setTextOptions(defaultTextOptions);
-  };
-
-  const handleOptOut = () => {
-    setTextOptions(null);
+    setTextOptions((prev) => (prev ? { ...prev, [key]: checked } : null));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    if (!title.trim() || !scheduledFor) {
-      setError("Title and scheduled time are required.");
+
+    if (!title.trim()) {
+      setError("Title is required.");
       setIsLoading(false);
       return;
     }
-    // Validate that scheduledFor is a valid future datetime
-    const scheduledDate = DateTime.fromFormat(
-      scheduledFor,
-      "yyyy-MM-dd'T'HH:mm",
-    );
-    if (!scheduledDate.isValid || scheduledDate < DateTime.now()) {
-      setError("Scheduled time must be at least 1 minute from now and valid.");
+
+    const scheduledDate = DateTime.fromISO(scheduledFor);
+    if (!scheduledDate.isValid || scheduledDate <= DateTime.now()) {
+      setError("Scheduled time must be in the future.");
       setIsLoading(false);
       return;
     }
+
     try {
       const response = await httpService.post<CreatedTournament>(
         "/tournaments",
@@ -90,10 +115,11 @@ export function CreateTournamentDialog({
           textOptions,
         },
       );
+
       if (response.data.success) {
         toast({
-          title: "Tournament Created",
-          description: "Your tournament has been created successfully.",
+          title: "Tournament Created!",
+          description: "Your tournament is ready to go.",
         });
         onOpenChange(false);
         onCreateSuccess(response.data.data?.id || "");
@@ -109,137 +135,145 @@ export function CreateTournamentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Create Tournament</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              disabled={isLoading}
-              placeholder="Tournament Title"
-            />
-          </div>
-          <div>
-            <Label htmlFor="description">Description</Label>
-            <Input
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={isLoading}
-              placeholder="(Optional) Description"
-            />
-          </div>
-          <div>
-            <Label htmlFor="scheduledFor">Scheduled For</Label>
-            <Input
-              id="scheduledFor"
-              type="datetime-local"
-              value={scheduledFor}
-              min={DateTime.now()
-                .plus({ minutes: 1 })
-                .toFormat("yyyy-MM-dd'T'HH:mm")}
-              onChange={(e) => setScheduledFor(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <div>
-            <Label>Text Options</Label>
-            {textOptions === null ? (
-              <div className="mt-2">
+      <DialogContent className="sm:max-w-[480px] p-0 border-0">
+        <BackgroundGradient className="rounded-[22px] p-6 bg-slate-900">
+          <DialogHeader>
+            {/* --- THIS IS THE CORRECTED IMPLEMENTATION --- */}
+            <div className="relative w-full h-24 flex items-center justify-center mb-4">
+              <div className="absolute inset-0 w-full h-full">
+                <SparklesCore
+                  id="creation-sparkles"
+                  background="transparent"
+                  minSize={0.4}
+                  maxSize={1}
+                  particleDensity={1200}
+                  className="w-full h-full"
+                  particleColor="#FFFFFF"
+                />
+              </div>
+              <DialogTitle className="relative z-20 text-2xl font-bold text-white">
+                Create New Tournament
+              </DialogTitle>
+            </div>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                disabled={isLoading}
+                placeholder="e.g., Weekend Speed Run"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Input
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={isLoading}
+                placeholder="e.g., A quick tournament for fun"
+              />
+            </div>
+            <div className="space-y-3">
+              <Label>Start Time</Label>
+              <div className="flex gap-2">
+                {(
+                  Object.keys(timePresets) as Array<keyof typeof timePresets>
+                ).map((key) => (
+                  <Button
+                    type="button"
+                    variant={timeSelection === key ? "default" : "outline"}
+                    onClick={() => setTimeSelection(key)}
+                    key={key}
+                  >
+                    In {key.replace("m", " min")}
+                  </Button>
+                ))}
+                <Button
+                  type="button"
+                  variant={timeSelection === "custom" ? "default" : "outline"}
+                  onClick={() => setTimeSelection("custom")}
+                >
+                  Custom...
+                </Button>
+              </div>
+              {timeSelection === "custom" && (
+                <Input
+                  id="scheduledFor"
+                  type="datetime-local"
+                  value={scheduledFor}
+                  min={DateTime.now()
+                    .plus({ minutes: 1 })
+                    .toFormat("yyyy-MM-dd'T'HH:mm")}
+                  onChange={(e) => setScheduledFor(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  className="mt-2"
+                />
+              )}
+            </div>
+            <div>
+              <Label>Text Customization</Label>
+              {textOptions === null ? (
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={handleCustomize}
-                  className="w-full"
+                  onClick={() => setTextOptions(defaultTextOptions)}
+                  className="w-full mt-2"
                 >
-                  Customize Text Options
+                  Customize Text
                 </Button>
-                <div className="text-xs text-muted-foreground mt-1">
-                  (Leave as is to let the system decide text options)
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-4 mt-2">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="uppercase"
-                    checked={textOptions.uppercase}
-                    onCheckedChange={(checked) =>
-                      handleTextOptionChange("uppercase", !!checked)
-                    }
-                  />
-                  <Label htmlFor="uppercase">Uppercase</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="lowercase"
-                    checked={textOptions.lowercase}
-                    onCheckedChange={(checked) =>
-                      handleTextOptionChange("lowercase", !!checked)
-                    }
-                  />
-                  <Label htmlFor="lowercase">Lowercase</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="numbers"
-                    checked={textOptions.numbers}
-                    onCheckedChange={(checked) =>
-                      handleTextOptionChange("numbers", !!checked)
-                    }
-                  />
-                  <Label htmlFor="numbers">Numbers</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="symbols"
-                    checked={textOptions.symbols}
-                    onCheckedChange={(checked) =>
-                      handleTextOptionChange("symbols", !!checked)
-                    }
-                  />
-                  <Label htmlFor="symbols">Symbols</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="meaningful"
-                    checked={textOptions.meaningful}
-                    onCheckedChange={(checked) =>
-                      handleTextOptionChange("meaningful", !!checked)
-                    }
-                  />
-                  <Label htmlFor="meaningful">Meaningful</Label>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleOptOut}
-                  className="ml-2 mt-2"
-                >
-                  Use System Default
-                </Button>
-              </div>
-            )}
-          </div>
-          {error && <div className="text-destructive text-sm">{error}</div>}
-          <DialogFooter>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <Loader className="animate-spin" />
               ) : (
-                "Create Tournament"
+                <div className="p-4 border rounded-md mt-2 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    {(
+                      Object.keys(defaultTextOptions) as Array<
+                        keyof TextOptions
+                      >
+                    ).map((key) => (
+                      <div className="flex items-center gap-2" key={key}>
+                        <Checkbox
+                          id={key}
+                          checked={textOptions[key]}
+                          onCheckedChange={(checked) =>
+                            handleTextOptionChange(key, !!checked)
+                          }
+                        />
+                        <Label htmlFor={key} className="capitalize">
+                          {key}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setTextOptions(null)}
+                    className="w-full text-muted-foreground"
+                  >
+                    Use System Default Text
+                  </Button>
+                </div>
               )}
-            </Button>
-          </DialogFooter>
-        </form>
+            </div>
+            {error && <div className="text-red-500 text-sm">{error}</div>}
+            <DialogFooter>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <Loader className="animate-spin" />
+                ) : (
+                  "Create Tournament"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </BackgroundGradient>
       </DialogContent>
     </Dialog>
   );
