@@ -135,7 +135,7 @@ export function CreateTournamentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] p-0 border-0">
+      <DialogContent className="sm:max-w-[576px] p-0 border-0">
         <BackgroundGradient className="rounded-[22px] p-6 bg-slate-900">
           <DialogHeader>
             {/* --- THIS IS THE CORRECTED IMPLEMENTATION --- */}
