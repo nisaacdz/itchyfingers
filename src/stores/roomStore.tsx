@@ -195,28 +195,32 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
     };
 
     const optimisticState = cursorHistory[rid] as CursorState | null;
-
+    let newCursorHistory: CursorState[] | null = null;
     if (
-      !optimisticState ||
-      optimisticState.correctPosition !== serverState.correctPosition ||
-      optimisticState.currentPosition !== serverState.currentPosition
+      optimisticState &&
+      (optimisticState.correctPosition !== serverState.correctPosition ||
+        optimisticState.currentPosition !== serverState.currentPosition)
     ) {
-      // greater rid will be ignored (with their server updates too) for new events to be sent by the client
-      set({
-        ...(optimisticState && {
-          cursorHistory: [...cursorHistory.slice(0, rid), serverState],
-        }),
-        ...(id && {
-          participants: {
-            ...participants,
-            [id]: {
-              ...participants[id],
-              ...serverState,
-            },
-          },
-        }),
-      });
+      // if optimisticState is undefined, that state was likely already
+      // reset from a previous server `me` update
+      // so no need to reset again
+      newCursorHistory = [...cursorHistory.slice(0, rid), serverState];
     }
+
+    set({
+      ...(newCursorHistory && {
+        cursorHistory: newCursorHistory,
+      }),
+      ...(id && {
+        participants: {
+          ...participants,
+          [id]: {
+            ...participants[id],
+            ...serverState,
+          },
+        },
+      }),
+    });
   },
 }));
 
