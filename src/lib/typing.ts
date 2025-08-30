@@ -89,6 +89,18 @@ export function predictCursorState(
   }
 
   if (character === "\b") {
+    /*
+    if session.current_position > session.correct_position {
+        session.current_position -= 1;
+    } else if session.current_position == session.correct_position
+        && session.current_position > 0
+    {
+        if challenge_text[session.current_position - 1] != b' ' {
+            session.correct_position -= 1;
+            session.current_position -= 1;
+        }
+    }
+    */
     if (currentPosition > correctPosition) {
       currentPosition -= 1;
     } else if (currentPosition === correctPosition && currentPosition > 0) {
@@ -97,8 +109,19 @@ export function predictCursorState(
         currentPosition -= 1;
       }
     }
-  } else if (character.length === 1) {
-    // Ensure it's a single character
+  } else {
+    /*
+    session.total_keystrokes += 1;
+    if session.current_position < text_len {
+        let expected_char = challenge_text[session.current_position];
+        if session.current_position == session.correct_position
+            && (current_char as u32) == (expected_char as u32)
+        {
+            session.correct_position += 1;
+        }
+        session.current_position += 1;
+    }
+    */
     if (currentPosition < textLen) {
       const expectedChar = challengeText[currentPosition];
       if (currentPosition === correctPosition && character === expectedChar) {

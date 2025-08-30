@@ -34,7 +34,7 @@ export interface RoomActions {
     options: Omit<
       ConnectOptions,
       "onJoinSuccess" | "onDisconnect" | "onJoinFailure" | "onConnectError"
-    >,
+    >
   ) => void;
   disconnect: () => void;
   onChar: (char: string) => void;
@@ -112,7 +112,7 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
       const nextState = predictCursorState(
         currentState,
         char,
-        state.data?.text || "",
+        state.data?.text || ""
       );
       const rid = state.cursorHistory.length;
       socketService.emit("type", { character: char, rid });
@@ -122,13 +122,10 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
   },
 
   _handleJoinSuccess: (payload) => {
-    const participants = payload.participants.reduce(
-      (acc, p) => {
-        acc[p.member.id] = p;
-        return acc;
-      },
-      {} as Record<string, ParticipantData>,
-    );
+    const participants = payload.participants.reduce((acc, p) => {
+      acc[p.member.id] = p;
+      return acc;
+    }, {} as Record<string, ParticipantData>);
 
     set({
       socketStatus: "connected",
@@ -188,21 +185,27 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
   _handleUpdateMe: (payload) => {
     const id = get().member?.id;
 
+    const cursorHistory = get().cursorHistory;
+    const participants = get().participants;
+
     const { rid, updates } = payload;
     const serverState = {
       correctPosition: updates.correctPosition,
       currentPosition: updates.currentPosition,
     };
-    const cursorHistory = get().cursorHistory;
-    const participants = get().participants;
+
+    const optimisticState = cursorHistory[rid] as CursorState | null;
 
     if (
-      !cursorHistory[rid] ||
-      cursorHistory[rid].correctPosition !== serverState.correctPosition ||
-      cursorHistory[rid].currentPosition !== serverState.currentPosition
+      !optimisticState ||
+      optimisticState.correctPosition !== serverState.correctPosition ||
+      optimisticState.currentPosition !== serverState.currentPosition
     ) {
+      // greater rid will be ignored (with their server updates too) for new events to be sent by the client
       set({
-        cursorHistory: [serverState],
+        ...(optimisticState && {
+          cursorHistory: [...cursorHistory.slice(0, rid), serverState],
+        }),
         ...(id && {
           participants: {
             ...participants,
@@ -219,17 +222,17 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
 
 export const useIsParticipating = () =>
   useRoomStore(
-    (state) => !!(state.member && state.participants[state.member.id]),
+    (state) => !!(state.member && state.participants[state.member.id])
   );
 
 export const useMyParticipantData = () =>
   useRoomStore((state) =>
-    state.member ? state.participants[state.member.id] : null,
+    state.member ? state.participants[state.member.id] : null
   );
 
 export const useCursorState = () =>
   useRoomStore((state) =>
     state.cursorHistory.length
       ? state.cursorHistory[state.cursorHistory.length - 1]
-      : null,
+      : null
   );
