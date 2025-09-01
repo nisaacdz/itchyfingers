@@ -121,7 +121,6 @@ export const SparklesCore = (props: ParticlesProps) => {
                   enable: true,
                   retries: 0,
                 },
-                
               },
               color: {
                 value: particleColor || "#ffffff",

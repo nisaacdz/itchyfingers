@@ -1,5 +1,3 @@
-// @/components/tournament/utils/typingArenaUtils.ts
-
 /**
  * Computes the absolute position (top, left) of a character at a given string index
  * within a rendered paragraph element. It accounts for text wrapping and different

@@ -33,7 +33,7 @@ export const EvervaultCardContainer = ({
   return (
     <div
       className={cn(
-        "p-0.5 bg-transparent aspect-video flex items-center justify-center w-full h-full relative",
+        "p-0.5 bg-transparent flex items-center justify-center w-full h-full relative",
         className,
       )}
     >
@@ -78,7 +78,7 @@ function CardPattern({ mouseX, mouseY, randomString }: any) {
 
 const characters =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-export const generateRandomString = (length: number) => {
+const generateRandomString = (length: number) => {
   let result = "";
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));

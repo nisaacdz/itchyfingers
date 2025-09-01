@@ -14,6 +14,10 @@ import Tournament from "./pages/Tournament";
 import TournamentLobby from "./pages/TournamentLobby";
 import NotFound from "./pages/NotFound";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import Practice from "./pages/Practice";
+import Dashboard from "./pages/Dashboard";
+import Leaderboard from "./pages/Leaderboard";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +50,10 @@ const App = () => {
                   />
                 </Route>
                 <Route path="/tournaments" element={<TournamentLobby />} />
+                <Route path="/practice" element={<Practice />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/leaderboards" element={<Leaderboard />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route
                   path="/tournaments/:tournamentId"
                   element={<Tournament />}

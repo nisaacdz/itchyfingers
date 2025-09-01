@@ -34,7 +34,7 @@ export interface RoomActions {
     options: Omit<
       ConnectOptions,
       "onJoinSuccess" | "onDisconnect" | "onJoinFailure" | "onConnectError"
-    >
+    >,
   ) => void;
   disconnect: () => void;
   onChar: (char: string) => void;
@@ -108,11 +108,11 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
     set((state) => {
       const currentState = state.cursorHistory[
         state.cursorHistory.length - 1
-      ] || { correctPosition: 0, currentPosition: 0 };
+      ] ?? { correctPosition: 0, currentPosition: 0 };
       const nextState = predictCursorState(
         currentState,
         char,
-        state.data?.text || ""
+        state.data?.text || "",
       );
       const rid = state.cursorHistory.length;
       socketService.emit("type", { character: char, rid });
@@ -122,10 +122,13 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
   },
 
   _handleJoinSuccess: (payload) => {
-    const participants = payload.participants.reduce((acc, p) => {
-      acc[p.member.id] = p;
-      return acc;
-    }, {} as Record<string, ParticipantData>);
+    const participants = payload.participants.reduce(
+      (acc, p) => {
+        acc[p.member.id] = p;
+        return acc;
+      },
+      {} as Record<string, ParticipantData>,
+    );
 
     set({
       socketStatus: "connected",
@@ -194,17 +197,16 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
       currentPosition: updates.currentPosition,
     };
 
-    const optimisticState = cursorHistory[rid] as CursorState | null;
+    const optimisticState = cursorHistory[rid];
     let newCursorHistory: CursorState[] | null = null;
     if (
       optimisticState &&
       (optimisticState.correctPosition !== serverState.correctPosition ||
         optimisticState.currentPosition !== serverState.currentPosition)
     ) {
-      // if optimisticState is undefined, that state was likely already
-      // reset from a previous server `me` update
-      // so no need to reset again
-      newCursorHistory = [...cursorHistory.slice(0, rid), serverState];
+      newCursorHistory = [...cursorHistory, serverState];
+      // we want rid to be strictly increasing to be sure that rid is always
+      // unique for each event
     }
 
     set({
@@ -226,17 +228,17 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
 
 export const useIsParticipating = () =>
   useRoomStore(
-    (state) => !!(state.member && state.participants[state.member.id])
+    (state) => !!(state.member && state.participants[state.member.id]),
   );
 
 export const useMyParticipantData = () =>
   useRoomStore((state) =>
-    state.member ? state.participants[state.member.id] : null
+    state.member ? state.participants[state.member.id] : null,
   );
 
 export const useCursorState = () =>
   useRoomStore((state) =>
     state.cursorHistory.length
       ? state.cursorHistory[state.cursorHistory.length - 1]
-      : null
+      : null,
   );
