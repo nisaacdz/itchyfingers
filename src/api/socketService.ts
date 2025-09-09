@@ -77,7 +77,7 @@ export class SocketService {
     this.options = options;
 
     if (this.socket) {
-      console.log("SocketService: Disconnecting from previous tournament.");
+      //console.log("SocketService: Disconnecting from previous tournament.");
       this.disconnect();
     }
 
@@ -108,9 +108,9 @@ export class SocketService {
 
     this.socket?.on("reconnect_attempt", () => {
       this.registerConnectionListeners();
-      console.log(
-        `SocketService: Connecting to WS tournament ${options.tournamentId}`,
-      );
+      // console.log(
+      //   `SocketService: Connecting to WS tournament ${options.tournamentId}`,
+      // );
     });
 
     this.socket?.on("disconnect", (reason) =>
@@ -126,9 +126,9 @@ export class SocketService {
     }
 
     if (this.options && this.socket) {
-      console.log(
-        `SocketService: Connecting to WS tournament: ${this.options.tournamentId}`,
-      );
+      // console.log(
+      //   `SocketService: Connecting to WS tournament: ${this.options.tournamentId}`,
+      // );
 
       this.registerConnectionListeners();
 
@@ -178,7 +178,7 @@ export class SocketService {
 
   public disconnect(): void {
     if (this.socket) {
-      console.log("SocketService: Disconnecting socket...");
+      //console.log("SocketService: Disconnecting socket...");
       this.socket.disconnect();
     }
   }

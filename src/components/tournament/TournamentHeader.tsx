@@ -51,7 +51,6 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
       if ("success" in response) {
         toast.success(response.success.message);
         navigate("/tournaments");
-        console.log("Successfully left tournament");
       } else {
         throw new Error(response.failure.message);
       }
@@ -60,7 +59,7 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
       toast.error(
         `Failed to leave tournament: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`,
+        }`
       );
     }
   };
@@ -137,7 +136,7 @@ export const TournamentHeader = ({ toWatch }: TournamentHeaderProps) => {
             status === "ended" && "text-warning",
             status !== "started" &&
               status !== "ended" &&
-              "text-muted-foreground",
+              "text-muted-foreground"
           )}
         >
           {statusText}
