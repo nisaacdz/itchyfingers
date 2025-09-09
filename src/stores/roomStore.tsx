@@ -11,13 +11,7 @@ import {
   ParticipantLeftPayload,
   UpdateMePayload,
 } from "@/types/api";
-import { predictCursorState } from "@/lib/typing";
-
-// Define the shape of the cursor state
-type CursorState = {
-  currentPosition: number;
-  correctPosition: number;
-};
+import { calculateNextTypingState, TypingState } from "@/lib/typing";
 
 // Define the state structure
 export interface RoomState {
@@ -25,7 +19,7 @@ export interface RoomState {
   participants: Record<string, ParticipantData>;
   data: TournamentData | null;
   member: TournamentRoomMember | null;
-  cursorHistory: CursorState[];
+  typingStateHistory: TypingState[];
 }
 
 // Define the actions available on the store
@@ -34,7 +28,7 @@ export interface RoomActions {
     options: Omit<
       ConnectOptions,
       "onJoinSuccess" | "onDisconnect" | "onJoinFailure" | "onConnectError"
-    >,
+    >
   ) => void;
   disconnect: () => void;
   onChar: (char: string) => void;
@@ -51,7 +45,7 @@ const initialState: RoomState = {
   participants: {},
   data: null,
   member: null,
-  cursorHistory: [],
+  typingStateHistory: [],
 };
 
 export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
@@ -73,8 +67,14 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
       tournamentId,
       spectator,
       anonymous,
-      onJoinSuccess: (payload) => get()._handleJoinSuccess(payload),
-      onDisconnect: () => set({ socketStatus: "disconnected" }),
+      onJoinSuccess: (payload) => {
+        get()._handleJoinSuccess(payload);
+        console.log("Successfully joined the room");
+      },
+      onDisconnect: () => {
+        set({ socketStatus: "disconnected" });
+        console.warn("Disconnected from server");
+      },
       onJoinFailure: (payload) => {
         console.error("Join failed:", payload);
         set({ socketStatus: "failed" });
@@ -106,36 +106,33 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
 
   onChar: (char: string) => {
     set((state) => {
-      const currentState = state.cursorHistory[
-        state.cursorHistory.length - 1
-      ] ?? { correctPosition: 0, currentPosition: 0 };
-      const nextState = predictCursorState(
+      const currentState = state.typingStateHistory[
+        state.typingStateHistory.length - 1
+      ] ?? { correctPosition: 0, currentPosition: 0, totalKeystrokes: 0 };
+      const nextState = calculateNextTypingState(
         currentState,
         char,
-        state.data?.text || "",
+        state.data?.text || ""
       );
-      const rid = state.cursorHistory.length;
-      socketService.emit("type", { character: char, rid });
+      const rid = state.typingStateHistory.length;
+      socketService.emit("progress", { ...nextState, rid });
 
-      return { cursorHistory: [...state.cursorHistory, nextState] };
+      return { typingStateHistory: [...state.typingStateHistory, nextState] };
     });
   },
 
   _handleJoinSuccess: (payload) => {
-    const participants = payload.participants.reduce(
-      (acc, p) => {
-        acc[p.member.id] = p;
-        return acc;
-      },
-      {} as Record<string, ParticipantData>,
-    );
+    const participants = payload.participants.reduce((acc, p) => {
+      acc[p.member.id] = p;
+      return acc;
+    }, {} as Record<string, ParticipantData>);
 
     set({
       socketStatus: "connected",
       participants,
       data: payload.data,
       member: payload.member,
-      cursorHistory: [],
+      typingStateHistory: [],
     });
   },
 
@@ -188,37 +185,38 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
   _handleUpdateMe: (payload) => {
     const id = get().member?.id;
 
-    const cursorHistory = get().cursorHistory;
+    const typingStateHistory = get().typingStateHistory;
     const participants = get().participants;
 
     const { rid, updates } = payload;
     const serverState = {
       correctPosition: updates.correctPosition,
       currentPosition: updates.currentPosition,
+      totalKeystrokes: updates.totalKeystrokes,
     };
 
-    const optimisticState = cursorHistory[rid];
-    let newCursorHistory: CursorState[] | null = null;
+    const optimisticState = typingStateHistory[rid];
+    let newTypingStateHistory: TypingState[] | null = null;
     if (
       optimisticState &&
       (optimisticState.correctPosition !== serverState.correctPosition ||
         optimisticState.currentPosition !== serverState.currentPosition)
     ) {
-      newCursorHistory = [...cursorHistory, serverState];
+      newTypingStateHistory = [...typingStateHistory, serverState];
       // we want rid to be strictly increasing to be sure that rid is always
       // unique for each event
     }
 
     set({
-      ...(newCursorHistory && {
-        cursorHistory: newCursorHistory,
+      ...(newTypingStateHistory && {
+        typingStateHistory: newTypingStateHistory,
       }),
       ...(id && {
         participants: {
           ...participants,
           [id]: {
-            ...participants[id],
-            ...serverState,
+            ...updates,
+            member: participants[id].member,
           },
         },
       }),
@@ -228,17 +226,20 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
 
 export const useIsParticipating = () =>
   useRoomStore(
-    (state) => !!(state.member && state.participants[state.member.id]),
+    (state) => !!(state.member && state.participants[state.member.id])
   );
 
 export const useMyParticipantData = () =>
   useRoomStore((state) =>
-    state.member ? state.participants[state.member.id] : null,
+    state.member ? state.participants[state.member.id] : null
   );
 
 export const useCursorState = () =>
   useRoomStore((state) =>
-    state.cursorHistory.length
-      ? state.cursorHistory[state.cursorHistory.length - 1]
-      : null,
+    state.typingStateHistory.length
+      ? state.typingStateHistory[state.typingStateHistory.length - 1]
+      : null
   );
+
+export const connect = useRoomStore.getState().connect;
+export const disconnect = useRoomStore.getState().disconnect;

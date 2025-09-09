@@ -74,60 +74,65 @@ function getAllTextNodes(node: Node): Text[] {
   return textNodes;
 }
 
-export function predictCursorState(
-  currentState: { correctPosition: number; currentPosition: number },
+/**
+ * The state of the user's typing progress.
+ */
+export type TypingState = {
+  correctPosition: number;
+  currentPosition: number;
+  totalKeystrokes: number;
+};
+
+/**
+ * Processes a single character input against the current typing state and the challenge text
+ * to produce the next state. This function is a pure, client-side mirror of the
+ * backend's single-character processing logic.
+ *
+ * @param currentState - The current typing state.
+ * @param character - The character that was typed (e.g., "a", " ", or "\b" for backspace).
+ * @param challengeText - The full text of the typing challenge.
+ * @returns The next TypingState after applying the character.
+ */
+export function calculateNextTypingState(
+  currentState: TypingState,
   character: string,
   challengeText: string,
-): { correctPosition: number; currentPosition: number } {
-  let { correctPosition, currentPosition } = { ...currentState };
+): TypingState {
+  // Create a mutable copy of the state
+  let { correctPosition, currentPosition, totalKeystrokes } = { ...currentState };
   const textLen = challengeText?.length ?? 0;
 
   if (correctPosition >= textLen) {
-    return { correctPosition, currentPosition };
+    // Already finished, no changes needed
+    return { correctPosition, currentPosition, totalKeystrokes };
   }
 
   if (character === "\b") {
-    /*
-    if session.current_position > session.correct_position {
-        session.current_position -= 1;
-    } else if session.current_position == session.correct_position
-        && session.current_position > 0
-    {
-        if challenge_text[session.current_position - 1] != b' ' {
-            session.correct_position -= 1;
-            session.current_position -= 1;
-        }
-    }
-    */
+    // Handle backspace
     if (currentPosition > correctPosition) {
       currentPosition -= 1;
     } else if (currentPosition === correctPosition && currentPosition > 0) {
+      // Only allow backspacing over non-space characters when correct
       if (challengeText[currentPosition - 1] !== " ") {
         correctPosition -= 1;
         currentPosition -= 1;
       }
     }
+    // Note: Backspace does not count towards totalKeystrokes
   } else {
-    /*
-    session.total_keystrokes += 1;
-    if session.current_position < text_len {
-        let expected_char = challenge_text[session.current_position];
-        if session.current_position == session.correct_position
-            && (current_char as u32) == (expected_char as u32)
-        {
-            session.correct_position += 1;
-        }
-        session.current_position += 1;
-    }
-    */
+    // Handle a regular character
+    totalKeystrokes += 1;
+
     if (currentPosition < textLen) {
       const expectedChar = challengeText[currentPosition];
       if (currentPosition === correctPosition && character === expectedChar) {
+        // Correct character typed
         correctPosition += 1;
       }
+      // Always advance the cursor
       currentPosition += 1;
     }
   }
 
-  return { correctPosition, currentPosition };
+  return { correctPosition, currentPosition, totalKeystrokes };
 }

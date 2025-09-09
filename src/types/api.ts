@@ -95,6 +95,13 @@ export type TypeEventPayload = {
   rid: number;
 };
 
+export type ProgressEventPayload = {
+  currentPosition: number;
+  correctPosition: number;
+  totalKeystrokes: number;
+  rid: number;
+};
+
 export type JoinSuccessPayload = {
   data: TournamentData;
   member: TournamentRoomMember;
@@ -104,10 +111,7 @@ export type JoinSuccessPayload = {
 export type MeSuccessPayload = ParticipantData;
 
 export type UpdateMePayload = {
-  updates: Partial<Omit<ParticipantData, "member">> & {
-    currentPosition: number;
-    correctPosition: number;
-  };
+  updates: Omit<ParticipantData, "member">;
   rid: number;
 };
 

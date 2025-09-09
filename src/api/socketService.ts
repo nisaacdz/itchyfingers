@@ -13,6 +13,7 @@ import {
   UpdateDataPayload,
   UpdateMePayload,
   WsFailurePayload,
+  ProgressEventPayload,
 } from "@/types/api";
 import { io, Socket as SocketIoClientSocket } from "socket.io-client"; // Renamed Socket from socket.io-client
 
@@ -49,6 +50,7 @@ type PollableEvents = {
 
 type EmitOnlyEvents = {
   type: TypeEventPayload;
+  progress: ProgressEventPayload;
 };
 
 export class SocketService {
