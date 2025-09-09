@@ -13,7 +13,6 @@ const AuthLayout = () => {
   const { setUser } = useAuthStore();
   const login = useGoogleLogin({
     onSuccess: async (codeResponse) => {
-      console.log("Google login success:", codeResponse);
       try {
         const response = await httpService.post<LoginSchema>("/auth/google", {
           code: codeResponse.code,

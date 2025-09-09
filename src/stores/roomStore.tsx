@@ -28,7 +28,7 @@ export interface RoomActions {
     options: Omit<
       ConnectOptions,
       "onJoinSuccess" | "onDisconnect" | "onJoinFailure" | "onConnectError"
-    >
+    >,
   ) => void;
   disconnect: () => void;
   onChar: (char: string) => void;
@@ -112,7 +112,7 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
       const nextState = calculateNextTypingState(
         currentState,
         char,
-        state.data?.text || ""
+        state.data?.text || "",
       );
       const rid = state.typingStateHistory.length;
       socketService.emit("progress", { ...nextState, rid });
@@ -122,10 +122,13 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
   },
 
   _handleJoinSuccess: (payload) => {
-    const participants = payload.participants.reduce((acc, p) => {
-      acc[p.member.id] = p;
-      return acc;
-    }, {} as Record<string, ParticipantData>);
+    const participants = payload.participants.reduce(
+      (acc, p) => {
+        acc[p.member.id] = p;
+        return acc;
+      },
+      {} as Record<string, ParticipantData>,
+    );
 
     set({
       socketStatus: "connected",
@@ -137,6 +140,7 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
   },
 
   _handleUpdateAll: (payload) => {
+    console.log("update all triggered");
     if (!payload.updates.length) return;
     set((state) => {
       const newParticipants = { ...state.participants };
@@ -183,6 +187,7 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
   },
 
   _handleUpdateMe: (payload) => {
+    console.log("Update me triggered!");
     const id = get().member?.id;
 
     const typingStateHistory = get().typingStateHistory;
@@ -226,19 +231,19 @@ export const useRoomStore = create<RoomState & RoomActions>((set, get) => ({
 
 export const useIsParticipating = () =>
   useRoomStore(
-    (state) => !!(state.member && state.participants[state.member.id])
+    (state) => !!(state.member && state.participants[state.member.id]),
   );
 
 export const useMyParticipantData = () =>
   useRoomStore((state) =>
-    state.member ? state.participants[state.member.id] : null
+    state.member ? state.participants[state.member.id] : null,
   );
 
 export const useCursorState = () =>
   useRoomStore((state) =>
     state.typingStateHistory.length
       ? state.typingStateHistory[state.typingStateHistory.length - 1]
-      : null
+      : null,
   );
 
 export const connect = useRoomStore.getState().connect;

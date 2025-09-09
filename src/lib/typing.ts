@@ -99,7 +99,9 @@ export function calculateNextTypingState(
   challengeText: string,
 ): TypingState {
   // Create a mutable copy of the state
-  let { correctPosition, currentPosition, totalKeystrokes } = { ...currentState };
+  let { correctPosition, currentPosition, totalKeystrokes } = {
+    ...currentState,
+  };
   const textLen = challengeText?.length ?? 0;
 
   if (correctPosition >= textLen) {
